@@ -203,10 +203,7 @@ class OneShotExecutionResult:
 
 def _force_kill(proc: asyncio.subprocess.Process) -> None:
     """Force-kill a subprocess and any descendants."""
-    if proc.pid is not None:
-        force_kill_process_tree(proc.pid)
-        return
-    proc.kill()
+    force_kill_process_tree(proc.pid)
 
 
 async def execute_one_shot(  # noqa: PLR0913

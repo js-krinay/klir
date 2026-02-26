@@ -412,11 +412,7 @@ async def _finish_stream_process(
 
 def _force_kill_process(process: asyncio.subprocess.Process) -> None:
     """Force-kill a subprocess and any descendants."""
-    if process.pid is not None:
-        force_kill_process_tree(process.pid)
-        return
-    with contextlib.suppress(OSError):
-        process.kill()
+    force_kill_process_tree(process.pid)
 
 
 def _build_stream_exit_event(

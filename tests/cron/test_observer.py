@@ -519,7 +519,7 @@ class TestCronObserverExecution:
         ):
             await observer._execute_job("slow", "Take forever", "slow")
 
-        mock_proc.kill.assert_called_once()
+        assert mock_proc.communicate.await_count >= 2
         job = mgr.get_job("slow")
         assert job is not None
         assert job.last_run_status == "error:timeout"

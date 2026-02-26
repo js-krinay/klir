@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 _KILL_WAIT_SECONDS = 5.0
 _KILL_POLL_INTERVAL = 0.2
 
+
 def _is_process_alive(pid: int) -> bool:
     """Check if a process with the given PID is still running."""
     try:

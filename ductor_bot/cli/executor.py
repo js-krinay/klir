@@ -202,7 +202,4 @@ async def _cancel_drain(drain: asyncio.Task[bytes]) -> None:
 
 def _force_kill(process: asyncio.subprocess.Process) -> None:
     """Force-kill a subprocess and its descendants."""
-    if process.pid is not None:
-        force_kill_process_tree(process.pid)
-        return
-    process.kill()
+    force_kill_process_tree(process.pid)

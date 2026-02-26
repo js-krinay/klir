@@ -396,7 +396,7 @@ class TestDispatchCronTask:
             result = await observer._dispatch("ct-hook", {"msg": "go"})
 
         assert result.status == "error:timeout"
-        mock_proc.kill.assert_called_once()
+        assert mock_proc.communicate.await_count >= 2
 
     async def test_cron_task_uses_stdin_devnull(self, tmp_path: Path) -> None:
         paths = _make_paths(tmp_path)

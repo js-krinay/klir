@@ -135,10 +135,7 @@ def _send_sigterm(entries: list[TrackedProcess]) -> int:
             continue
         try:
             _close_stdin(tracked.process)
-            if tracked.process.pid is not None:
-                terminate_process_tree(tracked.process.pid)
-            else:
-                tracked.process.terminate()
+            terminate_process_tree(tracked.process.pid)
             logger.debug("Terminate sent: pid=%s label=%s", tracked.process.pid, tracked.label)
             count += 1
         except ProcessLookupError:
@@ -153,10 +150,7 @@ def _send_sigkill(entries: list[TrackedProcess]) -> None:
             continue
         try:
             _close_stdin(tracked.process)
-            if tracked.process.pid is not None:
-                force_kill_process_tree(tracked.process.pid)
-            else:
-                tracked.process.kill()
+            force_kill_process_tree(tracked.process.pid)
             logger.debug("SIGKILL sent: pid=%s label=%s", tracked.process.pid, tracked.label)
         except ProcessLookupError:
             pass
