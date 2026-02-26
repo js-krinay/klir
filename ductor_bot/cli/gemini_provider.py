@@ -180,7 +180,7 @@ class GeminiCLI(BaseCLI):
                     stdout, stderr = await process.communicate(input=prompt.encode())
             except TimeoutError:
                 logger.warning("Gemini send timed out")
-                _force_kill_process(process)
+                force_kill_process_tree(process.pid)
                 stdout, stderr = await process.communicate()
                 return CLIResponse(
                     result="Timeout",
@@ -405,14 +405,9 @@ async def _finish_stream_process(
 ) -> bytes:
     """Ensure process shutdown and return collected stderr."""
     if process.returncode is None:
-        _force_kill_process(process)
+        force_kill_process_tree(process.pid)
     await process.wait()
     return await stderr_task
-
-
-def _force_kill_process(process: asyncio.subprocess.Process) -> None:
-    """Force-kill a subprocess and any descendants."""
-    force_kill_process_tree(process.pid)
 
 
 def _build_stream_exit_event(

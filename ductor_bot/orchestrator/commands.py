@@ -14,7 +14,7 @@ from ductor_bot.infra.version import check_pypi, get_current_version
 from ductor_bot.orchestrator.cron_selector import cron_selector_start
 from ductor_bot.orchestrator.model_selector import model_selector_start, switch_model
 from ductor_bot.orchestrator.registry import OrchestratorResult
-from ductor_bot.text.response_format import SEP, fmt, new_session_text, stop_text
+from ductor_bot.text.response_format import SEP, fmt, new_session_text
 from ductor_bot.workspace.loader import read_mainmemory
 
 if TYPE_CHECKING:
@@ -32,13 +32,6 @@ async def cmd_reset(orch: Orchestrator, chat_id: int, _text: str) -> Orchestrato
     await orch._process_registry.kill_all(chat_id)
     provider = await orch.reset_active_provider_session(chat_id)
     return OrchestratorResult(text=new_session_text(provider))
-
-
-async def cmd_stop(orch: Orchestrator, chat_id: int, _text: str) -> OrchestratorResult:
-    """Handle /stop: kill all active processes."""
-    logger.info("Stop requested")
-    killed = await orch._process_registry.kill_all(chat_id)
-    return OrchestratorResult(text=stop_text(bool(killed), orch.active_provider_name))
 
 
 async def cmd_status(orch: Orchestrator, chat_id: int, _text: str) -> OrchestratorResult:

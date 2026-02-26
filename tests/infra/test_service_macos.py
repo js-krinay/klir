@@ -133,7 +133,7 @@ class TestInstallService:
     @patch("ductor_bot.infra.service_macos.is_service_installed", return_value=False)
     @patch("ductor_bot.infra.service_macos.is_service_available", return_value=True)
     @patch(
-        "ductor_bot.infra.service_macos._find_ductor_binary", return_value="/usr/local/bin/ductor"
+        "ductor_bot.infra.service_macos.find_ductor_binary", return_value="/usr/local/bin/ductor"
     )
     @patch("ductor_bot.infra.service_macos._plist_path")
     @patch("ductor_bot.infra.service_macos.resolve_paths")
@@ -168,7 +168,7 @@ class TestInstallService:
         assert install_service(console) is False
 
     @patch("ductor_bot.infra.service_macos.is_service_available", return_value=True)
-    @patch("ductor_bot.infra.service_macos._find_ductor_binary", return_value=None)
+    @patch("ductor_bot.infra.service_macos.find_ductor_binary", return_value=None)
     def test_install_fails_without_binary(self, _binary: MagicMock, _avail: MagicMock) -> None:
         console = MagicMock()
         assert install_service(console) is False

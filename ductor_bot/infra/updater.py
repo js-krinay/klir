@@ -59,11 +59,6 @@ class UpdateObserver:
 # ---------------------------------------------------------------------------
 
 
-async def perform_upgrade() -> tuple[bool, str]:
-    """Run the package upgrade. Returns ``(success, output)``."""
-    return await _perform_upgrade_impl(target_version=None, force_reinstall=False)
-
-
 def _normalize_target_version(target_version: str | None) -> str | None:
     """Normalize optional target version value for upgrade commands."""
     if target_version is None:

@@ -41,7 +41,7 @@ class TestParseFileRefs:
         assert refs[1]["is_image"] is True
 
     def test_windows_file_ref_is_normalized(self) -> None:
-        with patch("ductor_bot.files.tags._is_windows", return_value=True):
+        with patch("ductor_bot.files.tags.is_windows", return_value=True):
             refs = _parse_file_refs("<file:/C/Users/alice/output_to_user/out.zip>")
         assert refs[0]["path"] == "C:/Users/alice/output_to_user/out.zip"
         assert refs[0]["name"] == "out.zip"

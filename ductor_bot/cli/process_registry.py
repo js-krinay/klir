@@ -122,11 +122,6 @@ class ProcessRegistry:
         return killed
 
 
-def kill_process_tree(pid: int) -> None:
-    """Force-kill the entire process tree for *pid* (cross-platform)."""
-    force_kill_process_tree(pid)
-
-
 def _send_sigterm(entries: list[TrackedProcess]) -> int:
     """Terminate all live processes. Returns count signalled."""
     count = 0

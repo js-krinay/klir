@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from shutil import which
 
+from ductor_bot.infra.platform import is_windows
+
 logger = logging.getLogger(__name__)
 
 
@@ -344,7 +346,7 @@ def _find_node_binary() -> str | None:
     except (FileNotFoundError, OSError):
         return None
 
-    names = ("node.exe", "node") if _is_windows() else ("node",)
+    names = ("node.exe", "node") if is_windows() else ("node",)
     for name in names:
         candidate = cli.parent / name
         if candidate.is_file():
@@ -394,7 +396,7 @@ def _find_gemini_fallback(home: Path) -> str | None:
 
 def _iter_gemini_bin_dirs(home: Path) -> list[Path]:
     candidates: list[Path] = []
-    if _is_windows():
+    if is_windows():
         appdata = os.environ.get("APPDATA")
         if appdata:
             candidates.append(Path(appdata) / "npm")
@@ -419,13 +421,9 @@ def _iter_nvm_bin_dirs(home: Path) -> list[Path]:
 
 
 def _gemini_exec_names() -> tuple[str, ...]:
-    if _is_windows():
+    if is_windows():
         return ("gemini.cmd", "gemini.exe", "gemini")
     return ("gemini",)
-
-
-def _is_windows() -> bool:
-    return os.name == "nt"
 
 
 def _gemini_index_from_node_modules_root(node_modules_root: Path) -> Path:

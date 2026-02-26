@@ -12,7 +12,6 @@ from ductor_bot.orchestrator.commands import (
     cmd_memory,
     cmd_model,
     cmd_status,
-    cmd_stop,
 )
 from ductor_bot.orchestrator.core import Orchestrator
 
@@ -204,22 +203,6 @@ async def test_diagnose_shows_effective_runtime_target(orch: Orchestrator) -> No
 
     assert "Configured: claude / opus" in result.text
     assert "Effective runtime: claude / opus" in result.text
-
-
-# -- cmd_stop --
-
-
-async def test_stop_kills_one_process(orch: Orchestrator) -> None:
-    object.__setattr__(orch._process_registry, "kill_all", AsyncMock(return_value=1))
-    result = await cmd_stop(orch, 1, "/stop")
-    assert "terminated" in result.text
-    assert "queued messages discarded" in result.text
-
-
-async def test_stop_kills_multiple_processes(orch: Orchestrator) -> None:
-    object.__setattr__(orch._process_registry, "kill_all", AsyncMock(return_value=3))
-    result = await cmd_stop(orch, 1, "/stop")
-    assert "terminated" in result.text
 
 
 # -- cmd_model (unknown model) --

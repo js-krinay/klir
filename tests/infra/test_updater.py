@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, patch
 from ductor_bot.infra.updater import (
     UpdateObserver,
     consume_upgrade_sentinel,
-    perform_upgrade,
     perform_upgrade_pipeline,
     write_upgrade_sentinel,
 )
@@ -66,95 +65,6 @@ class TestUpgradeSentinel:
         raw = (tmp_path / "upgrade-sentinel.json").read_text(encoding="utf-8")
         data = json.loads(raw)
         assert data == {"chat_id": 99, "old_version": "1.0.0", "new_version": "1.1.0"}
-
-
-# ---------------------------------------------------------------------------
-# perform_upgrade
-# ---------------------------------------------------------------------------
-
-
-class TestPerformUpgrade:
-    """Test upgrade execution with mocked subprocess."""
-
-    async def test_uses_pipx_when_detected(self) -> None:
-        mock_proc = AsyncMock()
-        mock_proc.communicate = AsyncMock(return_value=(b"Upgraded!", None))
-        mock_proc.returncode = 0
-
-        with (
-            patch("ductor_bot.infra.install.detect_install_mode", return_value="pipx"),
-            patch(
-                "ductor_bot.infra.updater.asyncio.create_subprocess_exec",
-                return_value=mock_proc,
-            ) as mock_exec,
-        ):
-            success, output = await perform_upgrade()
-
-        assert success is True
-        assert output == "Upgraded!"
-        args = mock_exec.call_args[0]
-        assert "pipx" in args
-        assert "upgrade" in args
-
-    async def test_uses_pip_when_detected(self) -> None:
-        mock_proc = AsyncMock()
-        mock_proc.communicate = AsyncMock(return_value=(b"OK", None))
-        mock_proc.returncode = 0
-
-        with (
-            patch("ductor_bot.infra.install.detect_install_mode", return_value="pip"),
-            patch(
-                "ductor_bot.infra.updater.asyncio.create_subprocess_exec",
-                return_value=mock_proc,
-            ) as mock_exec,
-        ):
-            success, _output = await perform_upgrade()
-
-        assert success is True
-        args = mock_exec.call_args[0]
-        assert "pip" in " ".join(str(a) for a in args)
-        assert "install" in args
-
-    async def test_returns_failure_on_nonzero_exit(self) -> None:
-        mock_proc = AsyncMock()
-        mock_proc.communicate = AsyncMock(return_value=(b"Error: something broke", None))
-        mock_proc.returncode = 1
-
-        with (
-            patch("ductor_bot.infra.install.detect_install_mode", return_value="pip"),
-            patch(
-                "ductor_bot.infra.updater.asyncio.create_subprocess_exec",
-                return_value=mock_proc,
-            ),
-        ):
-            success, output = await perform_upgrade()
-
-        assert success is False
-        assert "something broke" in output
-
-    async def test_handles_empty_stdout(self) -> None:
-        mock_proc = AsyncMock()
-        mock_proc.communicate = AsyncMock(return_value=(None, None))
-        mock_proc.returncode = 0
-
-        with (
-            patch("ductor_bot.infra.install.detect_install_mode", return_value="pip"),
-            patch(
-                "ductor_bot.infra.updater.asyncio.create_subprocess_exec",
-                return_value=mock_proc,
-            ),
-        ):
-            success, output = await perform_upgrade()
-
-        assert success is True
-        assert output == ""
-
-    async def test_rejects_dev_mode(self) -> None:
-        with patch("ductor_bot.infra.install.detect_install_mode", return_value="dev"):
-            success, output = await perform_upgrade()
-
-        assert success is False
-        assert "git pull" in output.lower()
 
 
 class TestPerformUpgradePipeline:

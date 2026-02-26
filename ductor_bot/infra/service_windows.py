@@ -26,7 +26,7 @@ from ductor_bot.infra.service_base import (
     print_stop_failed,
     print_stopped,
 )
-from ductor_bot.infra.service_logs import print_recent_logs
+from ductor_bot.infra.service_logs import print_file_service_logs
 from ductor_bot.workspace.paths import resolve_paths
 
 if TYPE_CHECKING:
@@ -67,11 +67,6 @@ def _is_access_denied(result: subprocess.CompletedProcess[str]) -> bool:
     """Check if a schtasks result indicates an access-denied error."""
     text = (result.stderr + result.stdout).lower()
     return any(hint in text for hint in _ACCESS_DENIED_HINTS)
-
-
-def _find_ductor_binary() -> str | None:
-    """Find the ductor binary path."""
-    return find_ductor_binary()
 
 
 def _find_pythonw() -> str | None:
@@ -188,7 +183,7 @@ def install_service(console: Console | None = None) -> bool:
         command = pythonw
         arguments = "-m ductor_bot"
     else:
-        binary = _find_ductor_binary()
+        binary = find_ductor_binary()
         if not binary:
             print_binary_not_found(console)
             return False
@@ -313,10 +308,8 @@ def print_service_logs(console: Console | None = None) -> None:
     Windows has no journalctl equivalent, so we tail the ductor log file.
     """
     console = ensure_console(console)
-
-    if not is_service_installed():
-        console.print("[dim]Service not installed.[/dim]")
-        return
-
-    paths = resolve_paths()
-    print_recent_logs(console, paths.logs_dir)
+    print_file_service_logs(
+        console,
+        installed=is_service_installed(),
+        logs_dir=resolve_paths().logs_dir,
+    )

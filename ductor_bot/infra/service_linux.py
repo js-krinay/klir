@@ -22,6 +22,7 @@ from ductor_bot.infra.service_base import (
     print_started,
     print_stopped,
 )
+from ductor_bot.infra.service_logs import print_journal_service_logs
 
 if TYPE_CHECKING:
     from rich.console import Console
@@ -38,11 +39,6 @@ def _systemd_user_dir() -> Path:
 
 def _service_path() -> Path:
     return _systemd_user_dir() / _SERVICE_FILE
-
-
-def _find_ductor_binary() -> str | None:
-    """Find the ductor binary path."""
-    return find_ductor_binary()
 
 
 def _has_systemd() -> bool:
@@ -134,7 +130,7 @@ def install_service(console: Console | None = None) -> bool:
         )
         return False
 
-    binary = _find_ductor_binary()
+    binary = find_ductor_binary()
     if not binary:
         print_binary_not_found(console)
         return False
@@ -251,18 +247,8 @@ def print_service_status(console: Console | None = None) -> None:
 def print_service_logs(console: Console | None = None) -> None:
     """Show live journal logs for the service."""
     console = ensure_console(console)
-
-    if not is_service_installed():
-        console.print("[dim]Service not installed.[/dim]")
-        return
-
-    console.print("[dim]Showing logs (Ctrl+C to stop)...[/dim]\n")
-    try:
-        subprocess.run(
-            ["journalctl", "--user", "-u", _SERVICE_NAME, "-f", "--no-hostname"],
-            check=False,
-        )
-    except FileNotFoundError:
-        console.print("[bold red]journalctl not found.[/bold red]")
-    except KeyboardInterrupt:
-        pass
+    print_journal_service_logs(
+        console,
+        installed=is_service_installed(),
+        service_name=_SERVICE_NAME,
+    )

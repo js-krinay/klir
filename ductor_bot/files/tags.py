@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import mimetypes
-import os
 import re
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 import filetype as _filetype
+
+from ductor_bot.infra.platform import is_windows
 
 FILE_PATH_RE = re.compile(r"<file:([^>]+)>")
 
@@ -18,11 +19,6 @@ _SVG_SUFFIXES = frozenset({".svg", ".svgz"})
 def extract_file_paths(text: str) -> list[str]:
     """Return all ``<file:/path>`` references from *text*."""
     return FILE_PATH_RE.findall(text)
-
-
-def strip_file_tags(text: str) -> str:
-    """Remove all ``<file:/path>`` tags from *text* and strip whitespace."""
-    return FILE_PATH_RE.sub("", text).strip()
 
 
 def path_from_file_tag(file_tag: str) -> Path:
@@ -46,7 +42,7 @@ def path_from_file_tag(file_tag: str) -> Path:
             value = parsed.path or ""
 
     value = unquote(value)
-    if _is_windows():
+    if is_windows():
         value = _normalize_windows_tag_path(value)
     return Path(value)
 
@@ -86,12 +82,6 @@ def is_image_path(path_str: str) -> bool:
     """
     mime = mimetypes.guess_type(path_str)[0] or ""
     return mime.startswith("image/") and Path(path_str).suffix.lower() not in _SVG_SUFFIXES
-
-
-def _is_windows() -> bool:
-    """Return True when running on Windows."""
-    return os.name == "nt"
-
 
 def _normalize_windows_tag_path(value: str) -> str:
     """Normalize Windows drive-letter path variants from file tags."""

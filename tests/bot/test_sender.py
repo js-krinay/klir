@@ -368,7 +368,7 @@ class TestSendFilesFromText:
         bot = MagicMock()
 
         with (
-            patch("ductor_bot.files.tags._is_windows", return_value=True),
+            patch("ductor_bot.files.tags.is_windows", return_value=True),
             patch("ductor_bot.bot.sender.send_file", new_callable=AsyncMock) as mock_send_file,
         ):
             await send_files_from_text(
@@ -386,7 +386,7 @@ class TestWindowsTagNormalizationInSendRich:
         bot = MagicMock()
 
         with (
-            patch("ductor_bot.files.tags._is_windows", return_value=True),
+            patch("ductor_bot.files.tags.is_windows", return_value=True),
             patch("ductor_bot.bot.sender.send_file", new_callable=AsyncMock) as mock_send_file,
         ):
             await send_rich(bot, chat_id=1, text="<file:/C/Users/alice/result.apk>")

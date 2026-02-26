@@ -6,7 +6,7 @@ import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from ductor_bot.cli.process_registry import ProcessRegistry, TrackedProcess, kill_process_tree
+from ductor_bot.cli.process_registry import ProcessRegistry, TrackedProcess
 
 
 def _mock_process(*, pid: int = 1, returncode: int | None = None) -> MagicMock:
@@ -148,9 +148,3 @@ async def test_kill_stale_handles_already_exited() -> None:
 
     killed = await reg.kill_stale(max_age_seconds=60)
     assert killed == 0
-
-
-def test_kill_process_tree_delegates_to_force_kill() -> None:
-    with patch("ductor_bot.cli.process_registry.force_kill_process_tree") as mock_fk:
-        kill_process_tree(1234)
-    mock_fk.assert_called_once_with(1234)

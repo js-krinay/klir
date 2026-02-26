@@ -140,7 +140,7 @@ class TestInstallService:
     @patch("ductor_bot.infra.service_windows.is_service_installed", return_value=False)
     @patch("ductor_bot.infra.service_windows.is_service_available", return_value=True)
     @patch("ductor_bot.infra.service_windows._find_pythonw", return_value=None)
-    @patch("ductor_bot.infra.service_windows._find_ductor_binary", return_value="ductor.exe")
+    @patch("ductor_bot.infra.service_windows.find_ductor_binary", return_value="ductor.exe")
     @patch("ductor_bot.infra.service_windows._task_xml_path")
     def test_install_fallback_to_binary(
         self,
@@ -166,7 +166,7 @@ class TestInstallService:
 
     @patch("ductor_bot.infra.service_windows.is_service_available", return_value=True)
     @patch("ductor_bot.infra.service_windows._find_pythonw", return_value=None)
-    @patch("ductor_bot.infra.service_windows._find_ductor_binary", return_value=None)
+    @patch("ductor_bot.infra.service_windows.find_ductor_binary", return_value=None)
     def test_install_fails_without_binary(
         self, _binary: MagicMock, _pythonw: MagicMock, _avail: MagicMock
     ) -> None:

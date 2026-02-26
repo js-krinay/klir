@@ -11,7 +11,6 @@ from ductor_bot.files.tags import (
     guess_mime,
     is_image_path,
     path_from_file_tag,
-    strip_file_tags,
 )
 
 
@@ -27,17 +26,6 @@ class TestExtractFilePaths:
 
     def test_file_with_spaces(self) -> None:
         assert extract_file_paths("<file:/tmp/my file.txt>") == ["/tmp/my file.txt"]
-
-
-class TestStripFileTags:
-    def test_strips_single_tag(self) -> None:
-        assert strip_file_tags("text <file:/a.txt> more") == "text  more"
-
-    def test_strips_multiple_tags(self) -> None:
-        assert strip_file_tags("<file:/a> <file:/b>") == ""
-
-    def test_no_tags(self) -> None:
-        assert strip_file_tags("plain text") == "plain text"
 
 
 class TestIsImagePath:
@@ -118,7 +106,7 @@ class TestClassifyMime:
 
 class TestPathFromFileTag:
     def test_windows_path_slash_drive_form(self) -> None:
-        with patch("ductor_bot.files.tags._is_windows", return_value=True):
+        with patch("ductor_bot.files.tags.is_windows", return_value=True):
             path = path_from_file_tag("/C/Users/alice/out.zip")
         assert str(path).replace("\\", "/") == "C:/Users/alice/out.zip"
 
@@ -128,7 +116,7 @@ class TestPathFromFileTag:
             "file:///C:/Users/alice/out.zip",
             "file://C:/Users/alice/out.zip",
         ]
-        with patch("ductor_bot.files.tags._is_windows", return_value=True):
+        with patch("ductor_bot.files.tags.is_windows", return_value=True):
             parsed = [path_from_file_tag(v) for v in variants]
         normalized = [str(p).replace("\\", "/") for p in parsed]
         assert normalized == [
@@ -138,12 +126,12 @@ class TestPathFromFileTag:
         ]
 
     def test_windows_file_uri_decodes_spaces(self) -> None:
-        with patch("ductor_bot.files.tags._is_windows", return_value=True):
+        with patch("ductor_bot.files.tags.is_windows", return_value=True):
             path = path_from_file_tag("file:///C:/Users/alice/My%20File.zip")
         assert str(path).replace("\\", "/") == "C:/Users/alice/My File.zip"
 
     def test_posix_path_unchanged(self) -> None:
-        with patch("ductor_bot.files.tags._is_windows", return_value=False):
+        with patch("ductor_bot.files.tags.is_windows", return_value=False):
             path = path_from_file_tag("/tmp/out.zip")
         # On Windows Path("/tmp/out.zip") uses backslash; normalize for assertion
         assert str(path).replace("\\", "/") == "/tmp/out.zip"

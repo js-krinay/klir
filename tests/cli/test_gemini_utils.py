@@ -49,7 +49,7 @@ class TestFindGeminiCli:
         with (
             patch("ductor_bot.cli.gemini_utils.which", return_value=None),
             patch("ductor_bot.cli.gemini_utils.Path.home", return_value=tmp_path),
-            patch("ductor_bot.cli.gemini_utils._is_windows", return_value=True),
+            patch("ductor_bot.cli.gemini_utils.is_windows", return_value=True),
             patch.dict(
                 "os.environ", {"APPDATA": str(tmp_path / "AppData" / "Roaming")}, clear=False
             ),
@@ -130,7 +130,7 @@ class TestFindGeminiCliJs:
         with (
             patch("ductor_bot.cli.gemini_utils.which", return_value=None),
             patch("ductor_bot.cli.gemini_utils.Path.home", return_value=tmp_path),
-            patch("ductor_bot.cli.gemini_utils._is_windows", return_value=True),
+            patch("ductor_bot.cli.gemini_utils.is_windows", return_value=True),
             patch.dict("os.environ", {"APPDATA": str(appdata)}, clear=False),
         ):
             assert find_gemini_cli_js() == str(index_js)

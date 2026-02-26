@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -42,3 +43,39 @@ def print_recent_logs(
         return
 
     console.print(f"\n[dim]Full log: {latest_log}[/dim]")
+
+
+def print_file_service_logs(
+    console: Console,
+    *,
+    installed: bool,
+    logs_dir: Path,
+) -> None:
+    """Print recent service logs from log files when service is installed."""
+    if not installed:
+        console.print("[dim]Service not installed.[/dim]")
+        return
+    print_recent_logs(console, logs_dir)
+
+
+def print_journal_service_logs(
+    console: Console,
+    *,
+    installed: bool,
+    service_name: str,
+) -> None:
+    """Follow journalctl service logs when service is installed."""
+    if not installed:
+        console.print("[dim]Service not installed.[/dim]")
+        return
+
+    console.print("[dim]Showing logs (Ctrl+C to stop)...[/dim]\n")
+    try:
+        subprocess.run(
+            ["journalctl", "--user", "-u", service_name, "-f", "--no-hostname"],
+            check=False,
+        )
+    except FileNotFoundError:
+        console.print("[bold red]journalctl not found.[/bold red]")
+    except KeyboardInterrupt:
+        pass

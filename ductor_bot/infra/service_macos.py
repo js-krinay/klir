@@ -24,7 +24,7 @@ from ductor_bot.infra.service_base import (
     print_stop_failed,
     print_stopped,
 )
-from ductor_bot.infra.service_logs import print_recent_logs
+from ductor_bot.infra.service_logs import print_file_service_logs
 from ductor_bot.workspace.paths import resolve_paths
 
 if TYPE_CHECKING:
@@ -42,11 +42,6 @@ def _launch_agents_dir() -> Path:
 
 def _plist_path() -> Path:
     return _launch_agents_dir() / _PLIST_NAME
-
-
-def _find_ductor_binary() -> str | None:
-    """Find the ductor binary path."""
-    return find_ductor_binary()
 
 
 def _run_launchctl(*args: str) -> subprocess.CompletedProcess[str]:
@@ -133,7 +128,7 @@ def install_service(console: Console | None = None) -> bool:
         console.print("[bold red]launchctl not found. Service install requires macOS.[/bold red]")
         return False
 
-    binary = _find_ductor_binary()
+    binary = find_ductor_binary()
     if not binary:
         print_binary_not_found(console)
         return False
@@ -235,10 +230,8 @@ def print_service_status(console: Console | None = None) -> None:
 def print_service_logs(console: Console | None = None) -> None:
     """Show recent log output."""
     console = ensure_console(console)
-
-    if not is_service_installed():
-        console.print("[dim]Service not installed.[/dim]")
-        return
-
-    paths = resolve_paths()
-    print_recent_logs(console, paths.logs_dir)
+    print_file_service_logs(
+        console,
+        installed=is_service_installed(),
+        logs_dir=resolve_paths().logs_dir,
+    )
