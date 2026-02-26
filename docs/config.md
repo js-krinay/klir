@@ -98,7 +98,7 @@ Behavior notes:
 
 - missing execution fields fall back to global config via `resolve_cli_config()`,
 - `dependency` is global across cron + webhook `cron_task` runs (shared `DependencyQueue`),
-- quiet-hour checks fall back to global heartbeat quiet settings when per-task values are omitted.
+- quiet-hour checks run only when per-task quiet fields are set (no fallback to global heartbeat quiet settings).
 
 ## `StreamingConfig`
 

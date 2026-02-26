@@ -212,7 +212,7 @@ Lock usage is path-dependent (e.g., queue cancel and upgrade callbacks are handl
 - Uses timezone-aware scheduling (`job.timezone` -> `config.user_timezone` -> host TZ -> UTC).
 - Execution path:
   - optional dependency lock,
-  - quiet-hour gate,
+  - quiet-hour gate (job-level fields only; no fallback to heartbeat quiet settings),
   - validate task folder,
   - resolve task overrides (`provider`, `model`, `reasoning_effort`, `cli_parameters`),
   - build provider command,
@@ -244,7 +244,7 @@ Lock usage is path-dependent (e.g., queue cancel and upgrade callbacks are handl
 - Valid requests return `202` immediately; dispatch runs async.
 - Mode routing:
   - `wake`: uses bot wake handler (`_handle_webhook_wake`) and normal message pipeline under per-chat lock.
-  - `cron_task`: runs one-shot provider execution in `cron_tasks/<task_folder>` with task overrides + quiet hours + dependency queue.
+  - `cron_task`: runs one-shot provider execution in `cron_tasks/<task_folder>` with task overrides + hook-level quiet hours (no heartbeat fallback) + dependency queue.
 - Bot forwards only `cron_task` results from webhook result callback (`wake` responses already delivered by wake handler).
 
 ### Cleanup flow

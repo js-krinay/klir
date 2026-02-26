@@ -10,16 +10,18 @@ ductor routes chat input to official provider CLIs (`claude`, `codex`, `gemini`)
 4. `docs/config.md` -- config schema, merge behavior, provider/model resolution.
 5. `docs/modules/orchestrator.md` -- routing core and flow behavior.
 6. `docs/modules/bot.md` -- Telegram ingress, middleware, streaming UX, callbacks.
-7. `docs/modules/api.md` -- direct WebSocket API ingress and HTTP file endpoints.
-8. `docs/modules/files.md` -- shared file parsing/storage/prompt helpers.
-9. `docs/modules/cli.md` -- provider wrappers, stream parsing, process control.
-10. `docs/modules/workspace.md` -- `~/.ductor` seeding, rule deployment/sync, runtime notices.
-11. Remaining module docs (`background`, `session`, `cron`, `webhook`, `heartbeat`, `cleanup`, `infra`, `supervisor`, `security`, `logging`, `skill_system`).
+7. `docs/modules/text.md` -- shared response text primitives used by bot + orchestrator.
+8. `docs/modules/api.md` -- direct WebSocket API ingress and HTTP file endpoints.
+9. `docs/modules/files.md` -- shared file parsing/storage/prompt helpers.
+10. `docs/modules/cli.md` -- provider wrappers, stream parsing, process control.
+11. `docs/modules/workspace.md` -- `~/.ductor` seeding, rule deployment/sync, runtime notices.
+12. Remaining module docs (`background`, `session`, `cron`, `webhook`, `heartbeat`, `cleanup`, `infra`, `supervisor`, `security`, `logging`, `skill_system`).
 
 ## System in 60 Seconds
 
 - `ductor_bot/bot/`: aiogram handlers, auth/sequencing middleware, streaming editors, rich sender, file browser.
 - `ductor_bot/api/`: direct WebSocket ingress (`/ws`) plus authenticated `GET /files` and `POST /upload` endpoints.
+- `ductor_bot/text/`: shared user-facing response format/builders (`fmt`, `/new` + `/stop` text, session-error hints).
 - `ductor_bot/files/`: shared file tag parsing, MIME detection/classification, storage naming, transport-agnostic media prompt builder.
 - `ductor_bot/orchestrator/`: command dispatch, directives/hooks, normal + heartbeat flows, observer/server wiring.
 - `ductor_bot/cli/`: Claude/Codex/Gemini wrappers, stream-event normalization, process registry, auth detection, model caches.
@@ -48,6 +50,7 @@ Runtime behavior note:
   - [bot](modules/bot.md)
   - [background](modules/background.md)
   - [api](modules/api.md)
+  - [text](modules/text.md)
   - [files](modules/files.md)
   - [cli](modules/cli.md)
   - [orchestrator](modules/orchestrator.md)

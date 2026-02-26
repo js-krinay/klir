@@ -36,6 +36,11 @@ Execution overrides (`cron_task`):
 - `provider`, `model`, `reasoning_effort`, `cli_parameters`
 - `quiet_start`, `quiet_end`, `dependency`
 
+Quiet-hour note:
+
+- `cron_task` quiet hours are evaluated only from hook-level `quiet_start` / `quiet_end`.
+- no fallback to global heartbeat quiet hours.
+
 Template rendering (`render_template`):
 
 - placeholder syntax: `{{field}}`
@@ -90,7 +95,7 @@ When `webhooks.enabled=true`:
 One-shot isolated run in task folder:
 
 1. validate `task_folder`
-2. quiet-hour gate
+2. quiet-hour gate (hook-level only; no heartbeat quiet-hour fallback)
 3. dependency lock
 4. resolve task execution config
 5. build provider command (Claude/Codex/Gemini)

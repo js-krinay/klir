@@ -7,7 +7,7 @@ Telegram interface layer (`aiogram`): handlers, middleware, streaming delivery, 
 - `app.py`: `TelegramBot` lifecycle, handler registration, callback routing, observer bridges
 - `message_dispatch.py`: shared streaming/non-streaming execution paths
 - `handlers.py`: command helper handlers (`/new`, `/stop`, generic command path)
-- `response_format.py`: shared command/error text builders (`/new`, `/stop`, session error hints)
+- `text/response_format.py` (outside `bot/`): shared command/error text builders (`/new`, `/stop`, session error hints)
 - `middleware.py`: `AuthMiddleware`, `SequentialMiddleware`, quick-command bypass, queue tracking
 - `welcome.py`: `/start` text + quick action callbacks (`w:*`)
 - `file_browser.py`: interactive `~/.ductor/` browser (`sf:`/`sf!`)

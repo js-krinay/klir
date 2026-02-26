@@ -55,7 +55,7 @@ Rule-file sync behavior (all workspace directories, recursive):
 Runtime behavior:
 
 1. dependency lock (`dependency_queue`)
-2. quiet-hour check (`job.quiet_*` fallback global heartbeat quiet hours)
+2. quiet-hour check (only when `job.quiet_*` is set; no fallback to global heartbeat quiet hours)
 3. folder check
 4. resolve task overrides (`provider/model/reasoning/cli_parameters`)
 5. build provider command (`claude`, `codex`, or `gemini`)
@@ -105,6 +105,11 @@ Modes:
 Prompt payload is wrapped with safety markers before execution.
 
 `cron_task` mode supports the same override/quiet/dependency fields as cron jobs.
+
+Quiet-hour behavior in `cron_task` mode:
+
+- only `hook.quiet_start` / `hook.quiet_end` are considered
+- no fallback to global heartbeat quiet hours
 
 Typical status values:
 

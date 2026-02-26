@@ -49,7 +49,10 @@ Used by Telegram send path and API `GET /files` path checks.
 
 - `FILE_PATH_RE`: regex for `<file:...>` tags
 - `extract_file_paths(text)`
-- `strip_file_tags(text)`
+- `path_from_file_tag(file_tag)`:
+  - parses plain path payloads and `file:` URIs
+  - URL-decodes path segments
+  - normalizes Windows drive-letter variants (`/C/...`, `/C:/...`, `file://C:/...`)
 - `guess_mime(path)`:
   - magic-bytes detection via `filetype`
   - fallback to `mimetypes` extension detection
@@ -88,13 +91,13 @@ Dependency note:
   - `build_media_prompt(..., transport="Telegram")`
   - `prepare_destination`, `sanitize_filename`, `guess_mime`
 - `ductor_bot/bot/sender.py`:
-  - `FILE_PATH_RE`, `extract_file_paths`, `guess_mime`
+  - `FILE_PATH_RE`, `extract_file_paths`, `path_from_file_tag`, `guess_mime`
 - `ductor_bot/bot/app.py`:
   - `resolve_allowed_roots` for outbound file access policy
 - `ductor_bot/orchestrator/core.py`:
   - `resolve_allowed_roots` for API file endpoint policy
 - `ductor_bot/api/server.py`:
-  - all file helpers for upload/download/file-ref extraction/prompt creation
+  - all file helpers for upload/download/file-ref extraction (`path_from_file_tag`)/prompt creation
 
 ## Behavioral notes
 

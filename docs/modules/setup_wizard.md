@@ -6,7 +6,8 @@ Covers `ductor` CLI command behavior, onboarding wizard, and upgrade/restart/uni
 
 - `ductor_bot/__main__.py`: CLI command dispatch + process lifecycle
 - `ductor_bot/cli/init_wizard.py`: onboarding wizard + smart reset
-- `ductor_bot/infra/service*.py`: background service backends
+- `ductor_bot/infra/service.py`, `service_linux.py`, `service_macos.py`, `service_windows.py`: background service backends
+- `ductor_bot/infra/process_tree.py`: cross-platform process cleanup helpers (used by stop/upgrade paths)
 - `ductor_bot/infra/version.py`, `infra/updater.py`: version check + upgrade helpers
 - `ductor_bot/orchestrator/commands.py`: Telegram `/upgrade` command
 
@@ -15,7 +16,7 @@ Covers `ductor` CLI command behavior, onboarding wizard, and upgrade/restart/uni
 - `ductor`: start bot (auto-onboarding if not configured)
 - `ductor onboarding` / `ductor reset`: run onboarding (smart reset first if configured)
 - `ductor status`: show status panel
-- `ductor stop`: stop bot + docker container (if enabled)
+- `ductor stop`: stop service-managed bot processes + remaining ductor processes + docker container (if enabled)
 - `ductor restart`: stop and re-exec
 - `ductor upgrade`: CLI-side upgrade + restart (non-dev installs)
 - `ductor uninstall`: full removal workflow
@@ -49,6 +50,16 @@ Caller behavior:
 - both default start path and onboarding/reset path call `_stop_bot()` first to avoid duplicate runtime instances,
 - `ductor` default path: exits after successful service install; otherwise starts foreground bot
 - `ductor onboarding` / `ductor reset`: same behavior (no forced foreground start after successful service install)
+
+## Stop behavior (`ductor stop`)
+
+`_stop_bot()` runs a deterministic shutdown sequence:
+
+1. stop installed service backend first (prevents auto-respawn),
+2. terminate PID-file instance,
+3. kill remaining ductor processes (Windows includes pipx `pythonw` cleanup),
+4. wait briefly on Windows for file locks to release,
+5. stop/remove Docker container when enabled.
 
 ## Smart reset (`run_smart_reset`)
 

@@ -246,6 +246,7 @@ Full schema: [`docs/config.md`](docs/config.md)
 | Command | Description |
 |---|---|
 | `/start` | Welcome screen with quick actions |
+| `/help` | Show command overview |
 | `/new` | Reset active provider session for this chat |
 | `/stop` | Abort active run and drain queued messages |
 | `/model` | Interactive model/provider selector |

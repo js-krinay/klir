@@ -8,9 +8,11 @@ Runtime infrastructure: process lifecycle, restart/update flow, Docker sandbox, 
 - `restart.py`: restart marker/sentinel helpers, `EXIT_RESTART = 42`
 - `docker.py`: `DockerManager`
 - `install.py`: install mode detection (`pipx` / `pip` / `dev`)
+- `platform.py`: shared platform helpers (`is_windows`)
+- `process_tree.py`: cross-platform process-tree terminate/kill helpers
 - `service.py`: platform dispatch facade
 - `service_base.py`: shared console helper, NVM path collection
-- `service_logs.py`: shared recent-log renderer
+- `service_logs.py`: shared log rendering (`print_recent_logs`, file/journal adapters)
 - `service_linux.py`: Linux systemd backend
 - `service_macos.py`: macOS launchd backend
 - `service_windows.py`: Windows Task Scheduler backend
@@ -33,6 +35,8 @@ Shared helpers:
 
 - `ensure_console()` in `service_base.py`
 - `print_recent_logs()` in `service_logs.py`
+- `print_file_service_logs()` for file-based backends (macOS/Windows)
+- `print_journal_service_logs()` for journalctl backend (Linux)
 
 `print_recent_logs()` behavior:
 
@@ -50,7 +54,7 @@ Shared helpers:
 
 - plist: `~/Library/LaunchAgents/dev.ductor.plist`
 - launchd logs configured to `service.log` / `service.err`
-- `ductor service logs` uses `print_recent_logs()` over ductor log files
+- `ductor service logs` uses `print_file_service_logs()` over ductor log files
 
 ### Windows backend
 
@@ -59,7 +63,7 @@ Shared helpers:
 - restart-on-failure policy: up to 3 retries, 1 minute interval
 - prefers `pythonw.exe -m ductor_bot`, fallback `ductor` binary
 - explicit admin hint panel on access-denied `schtasks` errors
-- `ductor service logs` uses `print_recent_logs()`
+- `ductor service logs` uses `print_file_service_logs()`
 
 ## PID lock
 
@@ -71,11 +75,27 @@ Shared helpers:
 
 Windows compatibility includes broader `OSError` handling around PID liveness/termination checks.
 
+## Process-tree helpers
+
+`process_tree.py` centralizes process termination behavior used across CLI execution and runtime control:
+
+- POSIX: sends signals to process trees (`SIGTERM` then `SIGKILL`)
+- Windows: uses `taskkill /T` (`/F` for force-kill)
+- `kill_all_ductor_processes()` (Windows-only) additionally removes lingering `ductor.exe` and pipx venv `python/pythonw` processes to avoid upgrade file-lock issues
+
 ## Restart protocol
 
 - `/restart` or restart marker file triggers exit code `42`
 - restart sentinel stores chat + message for post-restart notification
 - sentinel consumed on next startup
+
+`ductor stop` (`__main__._stop_bot`) behavior:
+
+1. stop installed background service (prevents immediate respawn)
+2. kill PID-file instance
+3. kill remaining ductor processes (`kill_all_ductor_processes`)
+4. short Windows wait for lock release
+5. stop Docker container when enabled
 
 ## Docker manager
 

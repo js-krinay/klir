@@ -82,6 +82,7 @@ Hot paths:
 - queue/lock behavior: `ductor_bot/bot/middleware.py`
 - message flows: `ductor_bot/orchestrator/flows.py`
 - command handling: `ductor_bot/orchestrator/commands.py`
+- shared response text: `ductor_bot/text/response_format.py`
 - provider execution: `ductor_bot/cli/service.py`
 - provider wrappers: `ductor_bot/cli/claude_provider.py`, `ductor_bot/cli/codex_provider.py`, `ductor_bot/cli/gemini_provider.py`
 - direct API ingress: `ductor_bot/api/server.py`

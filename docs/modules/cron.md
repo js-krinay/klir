@@ -56,7 +56,7 @@ Watcher:
 When a job fires:
 
 1. acquire dependency lock when configured
-2. quiet-hour gate (`job quiet_*` fallback global heartbeat quiet hours)
+2. quiet-hour gate (only when `job.quiet_*` is set; no fallback to global heartbeat quiet hours)
 3. resolve/validate task folder (`workspace/cron_tasks/<task_folder>`)
 4. resolve `TaskExecutionConfig` via `resolve_cli_config(...)`
 5. enrich prompt with `<task_folder>_MEMORY.md` instructions
