@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>Claude Code, Codex CLI, and Gemini CLI as your Telegram assistant.</strong><br>
-  Persistent memory. Scheduled tasks. Live streaming. Docker sandboxing.<br>
+  Named sessions. Persistent memory. Scheduled tasks. Live streaming. Docker sandboxing.<br>
   Uses only official CLIs. Nothing spoofed, nothing proxied.
 </p>
 
@@ -76,9 +76,26 @@ ductor executes the real provider CLIs as subprocesses. It does not proxy or spo
 - Queue tracking with per-message cancel while lock is held
 - Telegram forum topic support (`message_thread_id` propagation)
 
+### Named sessions
+
+Run tasks in the background while you keep chatting. Each session gets a unique name and supports follow-ups:
+
+```text
+/session Fix the login bug              -> starts "firmowl" on default provider
+/session @codex Refactor the parser     -> starts "pureray" on Codex
+/session @opus Analyze the architecture -> starts "goldfly" on Claude (opus)
+/session @flash Check the logs          -> starts "slimelk" on Gemini (flash)
+
+@firmowl Also check the tests           -> foreground follow-up
+/session @firmowl Add error handling     -> background follow-up
+
+/sessions                                -> list/manage active sessions
+```
+
+`@model` shortcuts resolve the provider automatically (`@opus` = Claude, `@flash` = Gemini, `@codex` = Codex).
+
 ### Automation
 
-- Named sessions (`/session`): persistent background sessions with follow-ups, provider isolation, and interactive management via `/sessions`
 - Cron jobs: in-process scheduler with timezone support, per-job overrides, quiet hours, dependency queue
 - Webhooks: `wake` (inject into active chat) and `cron_task` (isolated task run) modes
 - Heartbeat: proactive checks in active sessions with cooldown + quiet hours
@@ -198,6 +215,7 @@ Session behavior (important):
 ~/.ductor/
   config/config.json
   sessions.json
+  named_sessions.json
   cron_jobs.json
   webhooks.json
   CLAUDE.md
