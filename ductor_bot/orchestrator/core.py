@@ -588,14 +588,15 @@ class Orchestrator:
         )
         return self._bg_observer.submit(sub, exec_config)
 
-    def submit_named_session(
+    def submit_named_session(  # noqa: PLR0913
         self,
         chat_id: int,
         prompt: str,
+        *,
         message_id: int,
         thread_id: int | None,
-        *,
         provider_override: str | None = None,
+        model_override: str | None = None,
     ) -> tuple[str, str]:
         """Submit a new named background session. Returns (task_id, session_name)."""
         from ductor_bot.cli.param_resolver import resolve_cli_config
@@ -607,7 +608,7 @@ class Orchestrator:
         model_name, provider_name = self.resolve_runtime_target(self._config.model)
         if provider_override:
             provider_name = provider_override
-            model_name = self._config.model
+            model_name = model_override or self.default_model_for_provider(provider_override)
 
         ns = self._named_sessions.create(chat_id, provider_name, model_name, prompt)
         exec_config = resolve_cli_config(self._config, self._codex_cache)
@@ -667,6 +668,26 @@ class Orchestrator:
         await self._process_registry.kill_by_label(chat_id, f"ns:{name}")
         self._process_registry.clear_label_abort(chat_id, f"ns:{name}")
         return self._named_sessions.end_session(chat_id, name)
+
+    def is_known_model(self, candidate: str) -> bool:
+        """Return True if *candidate* is a recognized model ID for any provider."""
+        if candidate in self._known_model_ids:
+            return True
+        return bool(self._codex_cache and self._codex_cache.validate_model(candidate))
+
+    def default_model_for_provider(self, provider: str) -> str:
+        """Return the default model ID for a provider, or empty string if unknown."""
+        if provider == "claude":
+            return self._config.model if self._config.provider == "claude" else "sonnet"
+        if provider == "codex":
+            if self._codex_cache:
+                for m in self._codex_cache.models:
+                    if m.is_default:
+                        return m.id
+            return ""
+        if provider == "gemini":
+            return ""
+        return ""
 
     def get_named_session(self, chat_id: int, name: str) -> NamedSession | None:
         """Look up a named session."""

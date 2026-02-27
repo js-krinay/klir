@@ -470,16 +470,24 @@ class TelegramBot:
 
         prompt = parts[1].strip()
 
-        # Parse optional @provider or @session-name prefix
+        # Parse optional @provider [@model], @session-name prefix
         provider_override: str | None = None
+        model_override: str | None = None
         session_followup: str | None = None
-        directive_match = re.match(r"@([a-zA-Z][a-zA-Z0-9_-]*)\s+", prompt)
+        directive_match = re.match(r"@([a-zA-Z][a-zA-Z0-9_.-]*)\s+", prompt)
         if directive_match:
             key = directive_match.group(1).lower()
             rest = prompt[directive_match.end() :]
             if key in ("claude", "codex", "gemini"):
                 provider_override = key
                 prompt = rest
+                # Check for optional model after provider: @claude opus <prompt>
+                model_match = re.match(r"([a-zA-Z][a-zA-Z0-9_.-]*)\s+", prompt)
+                if model_match:
+                    candidate = model_match.group(1).lower()
+                    if self._orch.is_known_model(candidate):
+                        model_override = candidate
+                        prompt = prompt[model_match.end() :]
             elif self._orch.get_named_session(chat_id, key):
                 session_followup = key
                 prompt = rest
@@ -504,23 +512,26 @@ class TelegramBot:
                 task_id, session_name = self._orch.submit_named_session(
                     chat_id,
                     prompt,
-                    message.message_id,
-                    thread_id,
+                    message_id=message.message_id,
+                    thread_id=thread_id,
                     provider_override=provider_override,
+                    model_override=model_override,
                 )
-                _model, provider = self._orch.resolve_runtime_target(self._orch._config.model)
-                if provider_override:
-                    provider = provider_override
+                ns = self._orch.get_named_session(chat_id, session_name)
+                provider = ns.provider if ns else (provider_override or self._orch._config.provider)
+                model = ns.model if ns else ""
                 provider_label = {"claude": "Claude", "codex": "Codex", "gemini": "Gemini"}.get(
                     provider, provider
                 )
+                model_info = f" ({model})" if model else ""
                 await send_rich(
                     self._bot,
                     chat_id,
                     fmt(
                         f"**Session `{session_name}` started**",
                         SEP,
-                        f"Running on {provider_label}.\nFollow up: `@{session_name} <message>`",
+                        f"Running on {provider_label}{model_info}.\n"
+                        f"Follow up: `@{session_name} <message>`",
                     ),
                     reply_to=message,
                     thread_id=thread_id,
