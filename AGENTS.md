@@ -1,10 +1,8 @@
-# AGENTS.md
-
 This file gives coding agents a current map of the repository.
 
 ## Project Overview
 
-ductor is a Telegram bot that routes chat input to official provider CLIs (`claude`, `codex`, `gemini`), streams responses back to Telegram, persists per-chat state, and runs cron/webhook/heartbeat automation in-process. It also supports `/bg` one-shot background tasks and an optional direct WebSocket API server (`api.enabled=true`) with authenticated file upload/download endpoints.
+ductor is a Telegram bot that routes chat input to official provider CLIs (`claude`, `codex`, `gemini`), streams responses back to Telegram, persists per-chat state, and runs cron/webhook/heartbeat automation in-process.
 
 Stack:
 
@@ -46,14 +44,6 @@ Telegram Update
   -> CLIService
   -> provider subprocess (claude/codex/gemini)
   -> Telegram output (stream edit or one-shot)
-
-Direct API Message (optional)
-  -> ApiServer (/ws)
-  -> per-chat API lock
-  -> Orchestrator.handle_message_streaming
-  -> CLIService
-  -> provider subprocess
-  -> WebSocket stream events + final result
 ```
 
 ## Module Map
@@ -61,12 +51,10 @@ Direct API Message (optional)
 | Module | Purpose |
 |---|---|
 | `bot/` | Telegram handlers, callback routing, streaming delivery, queue UX |
-| `api/` | Direct aiohttp WebSocket API (`/ws`) plus `/health`, `/files`, `/upload` endpoints |
-| `files/` | Shared file helpers (path tags, MIME detection, storage naming, media prompt builder) |
 | `orchestrator/` | command registry, directives/hooks, flow routing, observer wiring |
 | `cli/` | provider wrappers, stream parsing, auth checks, process registry, model caches |
-| `background/` | on-demand `/bg` task runner and async result delivery |
 | `session/` | chat sessions with provider-isolated buckets |
+| `background/` | fire-and-forget `/bg` tasks with notification delivery |
 | `cron/` | in-process scheduler and one-shot task execution |
 | `webhook/` | HTTP hooks (`wake` and `cron_task`) |
 | `heartbeat/` | periodic proactive checks in active sessions |
@@ -85,15 +73,14 @@ Direct API Message (optional)
 - Skill sync spans `~/.ductor/workspace/skills`, `~/.claude/skills`, `~/.codex/skills`, `~/.gemini/skills`.
   - normal mode: links
   - Docker mode: managed copies (`.ductor_managed` marker)
-- Docker user mounts (`docker.mounts`) map host directories into the sandbox under `/mnt/<name>`.
 - Streaming fallback is automatic; `/stop` abort checks are enforced during event loop processing.
 - Session state is provider-isolated; `/new` resets only the active provider bucket.
-- File access policy (`file_access`) is shared by Telegram file sends and API file downloads (`GET /files`).
 
 ## Background Systems
 
-Periodic in-process tasks:
+All run as in-process asyncio tasks:
 
+- `BackgroundObserver`
 - `CronObserver`
 - `HeartbeatObserver`
 - `WebhookObserver`
@@ -103,14 +90,6 @@ Periodic in-process tasks:
 - rule sync watcher
 - skill sync watcher
 - update observer (upgradeable installs)
-
-On-demand in-process subsystem:
-
-- `BackgroundObserver` (`/bg` task execution)
-
-Optional network service (not a periodic observer task):
-
-- `ApiServer`
 
 ## Service Backends
 
@@ -134,11 +113,6 @@ Optional network service (not a periodic observer task):
 | `ductor docker rebuild` | Stop bot, remove container & image, rebuilt on next start |
 | `ductor docker enable` | Set `docker.enabled = true` |
 | `ductor docker disable` | Stop container, set `docker.enabled = false` |
-| `ductor docker mount <path>` | Add host directory mount to `docker.mounts` |
-| `ductor docker unmount <path>` | Remove host directory mount from `docker.mounts` |
-| `ductor docker mounts` | Show configured Docker mounts and targets |
-| `ductor api enable` | Enable direct WebSocket API server config (beta) |
-| `ductor api disable` | Disable direct WebSocket API server config (beta) |
 | `ductor service install` | Install as background service |
 | `ductor service [sub]` | Service management (status/stop/logs/...) |
 
@@ -149,7 +123,6 @@ Optional network service (not a periodic observer task):
 - `cron_jobs.json`
 - `webhooks.json`
 - `logs/agent.log`
-- `workspace/api_files/` (API uploads)
 
 ## Conventions
 

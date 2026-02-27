@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 This file gives coding agents a current map of the repository.
 
 ## Project Overview

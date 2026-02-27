@@ -1,5 +1,3 @@
-# GEMINI.md
-
 This file gives coding agents a current map of the repository.
 
 ## Project Overview
@@ -56,6 +54,7 @@ Telegram Update
 | `orchestrator/` | command registry, directives/hooks, flow routing, observer wiring |
 | `cli/` | provider wrappers, stream parsing, auth checks, process registry, model caches |
 | `session/` | chat sessions with provider-isolated buckets |
+| `background/` | fire-and-forget `/bg` tasks with notification delivery |
 | `cron/` | in-process scheduler and one-shot task execution |
 | `webhook/` | HTTP hooks (`wake` and `cron_task`) |
 | `heartbeat/` | periodic proactive checks in active sessions |
@@ -81,6 +80,7 @@ Telegram Update
 
 All run as in-process asyncio tasks:
 
+- `BackgroundObserver`
 - `CronObserver`
 - `HeartbeatObserver`
 - `WebhookObserver`
