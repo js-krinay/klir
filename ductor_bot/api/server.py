@@ -432,6 +432,7 @@ class ApiServer:
         e2e_valid = isinstance(e2e_pk, str) and bool(e2e_pk)
         if e2e_valid:
             try:
+                assert isinstance(e2e_pk, str)
                 e2e.set_remote_key(e2e_pk)
             except Exception:
                 e2e_valid = False

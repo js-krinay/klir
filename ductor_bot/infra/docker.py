@@ -10,7 +10,7 @@ import sys
 import tempfile
 from pathlib import Path
 from shutil import which
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from ductor_bot.config import DockerConfig
 from ductor_bot.workspace.paths import DuctorPaths
@@ -95,7 +95,13 @@ class DockerManager:
 
     Every step that can fail logs a warning and returns ``None`` so the
     caller can fall back to host execution.
+
+    In multi-agent mode multiple ``DockerManager`` instances (one per agent)
+    share a single container.  A class-level lock serialises ``setup()`` so
+    the first caller creates the container and subsequent callers reuse it.
     """
+
+    _setup_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
 
     def __init__(self, config: DockerConfig, paths: DuctorPaths) -> None:
         self._config = config
@@ -123,7 +129,16 @@ class DockerManager:
             self._console.print(msg)
 
     async def setup(self) -> str | None:
-        """Start or reuse the sandbox container. Returns name or ``None``."""
+        """Start or reuse the sandbox container. Returns name or ``None``.
+
+        Serialised via a class-level lock so that in multi-agent mode only the
+        first caller creates the container; subsequent callers reuse it.
+        """
+        async with self._setup_lock:
+            return await self._setup_unlocked()
+
+    async def _setup_unlocked(self) -> str | None:
+        """Inner setup logic, always called under ``_setup_lock``."""
         if not which("docker"):
             self._status(
                 "[bold red]Docker binary not found, falling back to host execution.[/bold red]"
@@ -251,7 +266,13 @@ class DockerManager:
         await self._exec("docker", "rm", "-f", name)
 
     async def _start_container(self, name: str, image: str) -> bool:
+        # Always mount the root ductor home, even when called from a sub-agent.
+        # Sub-agent homes live at <root>/agents/<name>/; the container must see
+        # the full tree so every agent can access its own workspace via paths
+        # like /ductor/agents/<name>/workspace.
         ductor_home = self._paths.ductor_home
+        if ductor_home.parent.name == "agents":
+            ductor_home = ductor_home.parent.parent
 
         cmd: list[str] = [
             "docker",
@@ -266,6 +287,9 @@ class DockerManager:
             f"{ductor_home}:{_DUCTOR_MOUNT}",
             "-e",
             f"DUCTOR_HOME={_DUCTOR_MOUNT}",
+            # Allow inter-agent communication from inside the container back
+            # to the host's InternalAgentAPI (127.0.0.1:8799).
+            "--add-host=host.docker.internal:host-gateway",
         ]
 
         # Linux (incl. WSL) needs explicit UID/GID so files created inside the

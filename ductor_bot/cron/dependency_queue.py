@@ -156,6 +156,8 @@ _dependency_queue: list[DependencyQueue | None] = [None]
 
 def get_dependency_queue() -> DependencyQueue:
     """Get or create the global dependency queue singleton."""
-    if _dependency_queue[0] is None:
-        _dependency_queue[0] = DependencyQueue()
-    return _dependency_queue[0]
+    q = _dependency_queue[0]
+    if q is None:
+        q = DependencyQueue()
+        _dependency_queue[0] = q
+    return q

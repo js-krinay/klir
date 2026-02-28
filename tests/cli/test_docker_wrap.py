@@ -20,6 +20,8 @@ def test_docker_wrap_with_container() -> None:
     assert result_cmd == [
         "docker",
         "exec",
+        "-w",
+        "/ductor/workspace",
         "-e",
         "DUCTOR_CHAT_ID=42",
         "-e",
@@ -27,9 +29,9 @@ def test_docker_wrap_with_container() -> None:
         "-e",
         "DUCTOR_INTERAGENT_PORT=8799",
         "-e",
-        "DUCTOR_HOME=/",
+        "DUCTOR_HOME=/ductor",
         "-e",
-        "DUCTOR_SHARED_MEMORY_PATH=/SHAREDMEMORY.md",
+        "DUCTOR_SHARED_MEMORY_PATH=/ductor/SHAREDMEMORY.md",
         "-e",
         "DUCTOR_INTERAGENT_HOST=host.docker.internal",
         "my-sandbox",
@@ -48,6 +50,8 @@ def test_docker_wrap_interactive() -> None:
         "docker",
         "exec",
         "-i",
+        "-w",
+        "/ductor/workspace",
         "-e",
         "DUCTOR_CHAT_ID=42",
         "-e",
@@ -55,9 +59,9 @@ def test_docker_wrap_interactive() -> None:
         "-e",
         "DUCTOR_INTERAGENT_PORT=8799",
         "-e",
-        "DUCTOR_HOME=/",
+        "DUCTOR_HOME=/ductor",
         "-e",
-        "DUCTOR_SHARED_MEMORY_PATH=/SHAREDMEMORY.md",
+        "DUCTOR_SHARED_MEMORY_PATH=/ductor/SHAREDMEMORY.md",
         "-e",
         "DUCTOR_INTERAGENT_HOST=host.docker.internal",
         "my-sandbox",
@@ -88,3 +92,42 @@ def test_docker_wrap_extra_env() -> None:
     result_cmd, _ = docker_wrap(cmd, cfg, extra_env={"FOO": "bar"})
     assert "-e" in result_cmd
     assert "FOO=bar" in result_cmd
+
+
+# -- Multi-agent: sub-agent uses container-relative paths --------------------
+
+
+def test_docker_wrap_sub_agent_container_paths() -> None:
+    """Sub-agent working_dir maps to /ductor/agents/<name>/workspace inside container."""
+    cmd = ["claude", "-p", "hi"]
+    cfg = CLIConfig(
+        docker_container="sandbox",
+        chat_id=1,
+        working_dir="/home/user/.ductor/agents/test/workspace",
+        agent_name="test",
+    )
+    result_cmd, cwd = docker_wrap(cmd, cfg)
+    assert cwd is None
+    # -w sets correct sub-agent workspace
+    w_idx = result_cmd.index("-w")
+    assert result_cmd[w_idx + 1] == "/ductor/agents/test/workspace"
+    # DUCTOR_HOME is the sub-agent home inside the container
+    assert "DUCTOR_HOME=/ductor/agents/test" in result_cmd
+    # Shared memory is at the root
+    assert "DUCTOR_SHARED_MEMORY_PATH=/ductor/SHAREDMEMORY.md" in result_cmd
+
+
+def test_docker_wrap_main_agent_container_paths() -> None:
+    """Main agent working_dir maps to /ductor/workspace inside container."""
+    cmd = ["claude", "-p", "hi"]
+    cfg = CLIConfig(
+        docker_container="sandbox",
+        chat_id=1,
+        working_dir="/home/user/.ductor/workspace",
+        agent_name="main",
+    )
+    result_cmd, _ = docker_wrap(cmd, cfg)
+    w_idx = result_cmd.index("-w")
+    assert result_cmd[w_idx + 1] == "/ductor/workspace"
+    assert "DUCTOR_HOME=/ductor" in result_cmd
+    assert "DUCTOR_SHARED_MEMORY_PATH=/ductor/SHAREDMEMORY.md" in result_cmd

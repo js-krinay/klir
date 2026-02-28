@@ -366,3 +366,87 @@ class TestDockerManager:
         assert mgr.container is None
         mgr._container = "x"
         assert mgr.container == "x"
+
+    async def test_sub_agent_mounts_root_ductor_home(
+        self, docker_config: DockerConfig, tmp_path: Path
+    ) -> None:
+        """Sub-agent container mounts ~/.ductor (root), not ~/.ductor/agents/test."""
+        from ductor_bot.infra.docker import DockerManager
+
+        root_home = tmp_path / ".ductor"
+        agent_home = root_home / "agents" / "test"
+        agent_ws = agent_home / "workspace"
+        for d in (root_home, agent_home, agent_ws, agent_ws / "tools"):
+            d.mkdir(parents=True, exist_ok=True)
+        fw = tmp_path / "framework"
+        fw.mkdir()
+        paths = DuctorPaths(
+            ductor_home=agent_home, home_defaults=fw / "workspace", framework_root=fw
+        )
+        mgr = DockerManager(docker_config, paths)
+        run_args: list[str] = []
+
+        async def mock_exec(*args: str, **_kwargs: object) -> tuple[int, str]:
+            cmd = " ".join(args)
+            if "docker info" in cmd:
+                return 0, "ok"
+            if "image inspect" in cmd:
+                return 0, "ok"
+            if "container inspect" in cmd:
+                return 1, ""
+            if "rm -f" in cmd:
+                return 0, ""
+            if "docker run" in cmd:
+                run_args.extend(args)
+                return 0, "cid"
+            return 0, ""
+
+        with (
+            patch("shutil.which", return_value="/usr/bin/docker"),
+            patch.object(mgr, "_exec", side_effect=mock_exec),
+            patch("ductor_bot.infra.docker._needs_uid_mapping", return_value=False),
+        ):
+            await mgr.setup()
+
+        run_str = " ".join(run_args)
+        # Must mount root home, not sub-agent home
+        assert f"{root_home}:/ductor" in run_str
+        assert f"{agent_home}:/ductor" not in run_str
+
+    async def test_setup_lock_serialises_concurrent_calls(
+        self, docker_config: DockerConfig, docker_paths: DuctorPaths
+    ) -> None:
+        """Second concurrent setup() reuses the container created by the first."""
+        import asyncio
+
+        from ductor_bot.infra.docker import DockerManager
+
+        mgr1 = DockerManager(docker_config, docker_paths)
+        mgr2 = DockerManager(docker_config, docker_paths)
+        container_created = False
+
+        async def mock_exec(*args: str, **_kwargs: object) -> tuple[int, str]:
+            nonlocal container_created
+            cmd = " ".join(args)
+            if "docker info" in cmd:
+                return 0, "ok"
+            if "image inspect" in cmd:
+                return 0, "ok"
+            if "container inspect" in cmd:
+                # After first setup creates it, second sees it running
+                return (0, "true") if container_created else (1, "")
+            if "rm -f" in cmd:
+                return 0, ""
+            if "docker run" in cmd:
+                container_created = True
+                return 0, "cid"
+            return 0, ""
+
+        with (
+            patch("shutil.which", return_value="/usr/bin/docker"),
+            patch.object(DockerManager, "_exec", side_effect=mock_exec),
+        ):
+            r1, r2 = await asyncio.gather(mgr1.setup(), mgr2.setup())
+
+        assert r1 == "test-ctr"
+        assert r2 == "test-ctr"

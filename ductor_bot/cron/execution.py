@@ -86,8 +86,14 @@ def parse_codex_result(stdout: bytes) -> str:
     raw = stdout.decode(errors="replace").strip()
     if not raw:
         return ""
-    result_text, _thread_id, _usage = parse_codex_jsonl(raw)
-    return result_text or raw[:2000]
+    result_text, thread_id, usage = parse_codex_jsonl(raw)
+    # If the JSONL was successfully parsed (thread_id or usage present),
+    # an empty result genuinely means no output — don't leak raw events.
+    if result_text:
+        return result_text
+    if thread_id is not None or usage is not None:
+        return ""
+    return raw[:2000]
 
 
 def parse_result(provider: str, stdout: bytes) -> str:

@@ -30,7 +30,12 @@ from ductor_bot.bot.handlers import (
     handle_new_session,
     strip_mention,
 )
-from ductor_bot.bot.media import has_media, is_media_addressed, is_message_addressed, resolve_media_text
+from ductor_bot.bot.media import (
+    has_media,
+    is_media_addressed,
+    is_message_addressed,
+    resolve_media_text,
+)
 from ductor_bot.bot.message_dispatch import (
     NonStreamingDispatch,
     StreamingDispatch,

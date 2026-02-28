@@ -221,6 +221,29 @@ class TestParseCodex:
     def test_empty_bytes(self) -> None:
         assert parse_codex_result(b"") == ""
 
+    def test_parsed_jsonl_with_no_text_returns_empty(self) -> None:
+        """Silent-success: valid JSONL events but no assistant text -> empty."""
+        raw = (
+            '{"type":"thread.started","thread_id":"t1"}\n'
+            '{"type":"turn.started"}\n'
+            '{"type":"item.started","item":{"type":"command_execution"}}\n'
+            '{"type":"item.completed","item":{"type":"command_execution"}}\n'
+            '{"type":"turn.completed","usage":{"input_tokens":10}}\n'
+        )
+        assert parse_codex_result(raw.encode()) == ""
+
+    def test_parsed_jsonl_with_text_returns_text(self) -> None:
+        raw = (
+            '{"type":"thread.started","thread_id":"t1"}\n'
+            '{"type":"item.completed","item":{"type":"agent_message","text":"Hello"}}\n'
+            '{"type":"turn.completed","usage":{"input_tokens":10}}\n'
+        )
+        assert parse_codex_result(raw.encode()) == "Hello"
+
+    def test_non_jsonl_returns_raw(self) -> None:
+        raw = b"Plain text output from codex"
+        assert parse_codex_result(raw) == "Plain text output from codex"
+
 
 class TestParseGemini:
     def test_empty_bytes(self) -> None:

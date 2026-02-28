@@ -26,11 +26,23 @@ _DEFAULT_PORT = 8799
 
 
 class InternalAgentAPI:
-    """Localhost-only HTTP server for CLI → Bus communication."""
+    """HTTP server for CLI → Bus communication.
 
-    def __init__(self, bus: InterAgentBus, port: int = _DEFAULT_PORT) -> None:
+    Binds to ``127.0.0.1`` by default.  When *docker_mode* is ``True`` it
+    binds to ``0.0.0.0`` so that CLI processes running inside a Docker
+    container can reach the API via ``host.docker.internal``.
+    """
+
+    def __init__(
+        self,
+        bus: InterAgentBus,
+        port: int = _DEFAULT_PORT,
+        *,
+        docker_mode: bool = False,
+    ) -> None:
         self._bus = bus
         self._port = port
+        self._bind_host = "0.0.0.0" if docker_mode else "127.0.0.1"  # noqa: S104
         self._health_ref: dict[str, AgentHealth] | None = None
         self._app = web.Application()
         self._app.router.add_post("/interagent/send", self._handle_send)
@@ -48,13 +60,13 @@ class InternalAgentAPI:
         return self._port
 
     async def start(self) -> None:
-        """Start the internal API server on 127.0.0.1."""
+        """Start the internal API server."""
         self._runner = web.AppRunner(self._app, access_log=None)
         await self._runner.setup()
         try:
-            site = web.TCPSite(self._runner, "127.0.0.1", self._port)
+            site = web.TCPSite(self._runner, self._bind_host, self._port)
             await site.start()
-            logger.info("Internal agent API listening on 127.0.0.1:%d", self._port)
+            logger.info("Internal agent API listening on %s:%d", self._bind_host, self._port)
         except OSError:
             logger.exception(
                 "Failed to start internal agent API on port %d",

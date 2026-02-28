@@ -173,10 +173,16 @@ def _is_managed_copy(path: Path) -> bool:
 
 
 def _newest_mtime(directory: Path) -> float:
-    """Return the newest mtime of any file or directory under *directory*."""
+    """Return the newest mtime of any file or directory under *directory*.
+
+    Tolerates files disappearing during iteration (concurrent modifications).
+    """
     newest = directory.stat().st_mtime
     for entry in directory.rglob("*"):
-        newest = max(newest, entry.stat().st_mtime)
+        try:
+            newest = max(newest, entry.stat().st_mtime)
+        except OSError:
+            continue
     return newest
 
 
@@ -186,20 +192,27 @@ def _ensure_copy(dest: Path, source: Path) -> bool:
     Skips the copy when *dest* already has the marker and *source* has not
     been modified since the last copy (recursive mtime comparison).
 
+    Tolerates concurrent modifications from other agents running skill sync
+    in parallel (marker may vanish between check and stat, rmtree may race
+    with Python's import machinery or another agent's copytree).
+
     Returns ``True`` if a new copy was made.
     """
     marker = dest / _MANAGED_MARKER
     if _is_managed_copy(dest):
-        if _newest_mtime(source) <= marker.stat().st_mtime:
-            return False
-        shutil.rmtree(dest)
+        try:
+            if _newest_mtime(source) <= marker.stat().st_mtime:
+                return False
+        except OSError:
+            pass  # marker removed concurrently — proceed with fresh copy
+        shutil.rmtree(dest, ignore_errors=True)
     elif dest.exists() and not dest.is_symlink():
         return False
 
     if dest.is_symlink():
         dest.unlink()
 
-    shutil.copytree(source, dest, symlinks=True)
+    shutil.copytree(source, dest, symlinks=True, dirs_exist_ok=True)
     marker.touch()
     return True
 

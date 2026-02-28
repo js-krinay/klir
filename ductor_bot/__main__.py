@@ -113,7 +113,11 @@ def _is_configured() -> bool:
     token = data.get("telegram_token", "")
     users = data.get("allowed_user_ids", [])
     group_mention_only = data.get("group_mention_only", False)
-    return bool(token) and not str(token).startswith("YOUR_") and (bool(users) or bool(group_mention_only))
+    return (
+        bool(token)
+        and not str(token).startswith("YOUR_")
+        and (bool(users) or bool(group_mention_only))
+    )
 
 
 def load_config() -> AgentConfig:
@@ -561,9 +565,11 @@ def _fetch_live_health() -> dict[str, dict[str, object]]:
         opener = urllib.request.build_opener()
         with opener.open(req, timeout=2) as resp:
             data = json.loads(resp.read())
-        return data.get("agents", {})
     except Exception:
         return {}
+    else:
+        result: dict[str, dict[str, object]] = data.get("agents", {})
+        return result
 
 
 def _print_agents_status(agents: list[dict[str, object]], *, bot_running: bool = False) -> None:

@@ -63,22 +63,28 @@ def is_message_addressed(
     ):
         return True
     # Check caption entities (media messages)
-    if message.caption_entities and message.caption and bot_username:
-        if any(
+    if (
+        message.caption_entities
+        and message.caption
+        and bot_username
+        and any(
             e.type == "mention"
             and message.caption[e.offset : e.offset + e.length].lower() == f"@{bot_username}"
             for e in message.caption_entities
-        ):
-            return True
+        )
+    ):
+        return True
     # Check text entities (plain text messages)
-    if message.entities and message.text and bot_username:
-        if any(
+    return bool(
+        message.entities
+        and message.text
+        and bot_username
+        and any(
             e.type == "mention"
             and message.text[e.offset : e.offset + e.length].lower() == f"@{bot_username}"
             for e in message.entities
-        ):
-            return True
-    return False
+        )
+    )
 
 
 def is_media_addressed(

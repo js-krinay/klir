@@ -46,6 +46,7 @@ class AgentSupervisor:
         self._watcher = FileWatcher(self._agents_path, self._on_agents_changed)
         self._running = False
         self._main_done: asyncio.Event = asyncio.Event()
+        self._main_ready: asyncio.Event = asyncio.Event()
         self._agents_lock = asyncio.Lock()
 
         # Bus, internal API, and shared knowledge — created lazily in start()
@@ -74,7 +75,9 @@ class AgentSupervisor:
         from ductor_bot.multiagent.internal_api import InternalAgentAPI
 
         self._bus = InterAgentBus()
-        self._internal_api = InternalAgentAPI(self._bus)
+        self._internal_api = InternalAgentAPI(
+            self._bus, docker_mode=self._main_config.docker.enabled
+        )
         self._internal_api.set_health_ref(self._health)
         await self._internal_api.start()
         logger.info("InterAgentBus and internal API started")
@@ -95,20 +98,28 @@ class AgentSupervisor:
             name="agent:main",
         )
 
-        # 2. Load and start sub-agents from agents.json
+        # 2. Wait for main agent startup (Docker, workspace, auth) before
+        #    starting sub-agents.  This ensures Docker is set up exactly once
+        #    by the main agent; sub-agents reuse the existing container.
+        try:
+            await asyncio.wait_for(self._main_ready.wait(), timeout=120)
+        except TimeoutError:
+            logger.warning("Main agent startup timed out after 120s, starting sub-agents anyway")
+
+        # 3. Load and start sub-agents from agents.json
         await self._sync_sub_agents()
 
-        # 3. Start shared knowledge sync (SHAREDMEMORY.md → all agents)
+        # 4. Start shared knowledge sync (SHAREDMEMORY.md → all agents)
         from ductor_bot.multiagent.shared_knowledge import SharedKnowledgeSync
 
         shared_path = self._main_paths.ductor_home / "SHAREDMEMORY.md"
         self._shared_knowledge = SharedKnowledgeSync(shared_path, self)
         await self._shared_knowledge.start()
 
-        # 4. Start FileWatcher for agents.json
+        # 5. Start FileWatcher for agents.json
         await self._watcher.start()
 
-        # 5. Wait for main agent to finish — it determines the exit code
+        # 6. Wait for main agent to finish — it determines the exit code
         await self._main_done.wait()
         main_task = self._tasks.get("main")
         exit_code = 0
@@ -170,6 +181,7 @@ class AgentSupervisor:
 
         if name == "main":
             logger.exception("Main agent crashed, terminating supervisor")
+            self._main_ready.set()  # unblock sub-agent startup if still waiting
             self._main_done.set()
             return stack, retry_count, True
 
@@ -264,6 +276,9 @@ class AgentSupervisor:
         The orchestrator is created during TelegramBot._on_startup(). We register
         an additional startup handler that fires AFTER _on_startup and sets the
         supervisor reference + registers multi-agent commands on the main agent.
+
+        For the main agent this also signals ``_main_ready`` so the supervisor
+        knows Docker and workspace init are complete before starting sub-agents.
         """
         supervisor = self
 
@@ -274,6 +289,7 @@ class AgentSupervisor:
             orch._supervisor = supervisor
             if stack.is_main:
                 orch.register_multiagent_commands()
+                supervisor._main_ready.set()
             logger.debug("Supervisor reference injected into agent '%s'", stack.name)
 
         # aiogram runs startup handlers in registration order;

@@ -105,6 +105,20 @@ class CLIConfig:
     interagent_port: int = 8799
 
 
+_CONTAINER_DUCTOR_MOUNT = "/ductor"
+
+
+def _to_container_path(host_path: Path, main_home: Path) -> str:
+    """Map a host path under *main_home* to its container equivalent.
+
+    The Docker container mounts the root ductor home at ``/ductor``.
+    """
+    rel = host_path.relative_to(main_home)
+    if str(rel) == ".":
+        return _CONTAINER_DUCTOR_MOUNT
+    return f"{_CONTAINER_DUCTOR_MOUNT}/{rel}"
+
+
 def docker_wrap(
     cmd: list[str],
     config: CLIConfig,
@@ -125,10 +139,17 @@ def docker_wrap(
         stdin_flag: list[str] = ["-i"] if interactive else []
         working_dir = Path(config.working_dir)
         ductor_home = working_dir.parent if working_dir.name == "workspace" else working_dir
-        if config.agent_name == "main":
-            shared_memory = ductor_home / "SHAREDMEMORY.md"
-        else:
-            shared_memory = ductor_home.parent.parent / "SHAREDMEMORY.md"
+
+        # Resolve root ductor home for host → container path mapping.
+        # Sub-agents live at <root>/agents/<name>/; the Docker mount is the root.
+        main_home = ductor_home
+        if main_home.parent.name == "agents":
+            main_home = main_home.parent.parent
+
+        container_cwd = _to_container_path(working_dir, main_home)
+        container_home = _to_container_path(ductor_home, main_home)
+        container_shared = _to_container_path(main_home / "SHAREDMEMORY.md", main_home)
+
         env_flags: list[str] = [
             "-e",
             f"DUCTOR_CHAT_ID={config.chat_id}",
@@ -137,9 +158,9 @@ def docker_wrap(
             "-e",
             f"DUCTOR_INTERAGENT_PORT={config.interagent_port}",
             "-e",
-            f"DUCTOR_HOME={ductor_home}",
+            f"DUCTOR_HOME={container_home}",
             "-e",
-            f"DUCTOR_SHARED_MEMORY_PATH={shared_memory}",
+            f"DUCTOR_SHARED_MEMORY_PATH={container_shared}",
             "-e",
             "DUCTOR_INTERAGENT_HOST=host.docker.internal",
         ]
@@ -147,7 +168,16 @@ def docker_wrap(
             for key, value in extra_env.items():
                 env_flags += ["-e", f"{key}={value}"]
         return (
-            ["docker", "exec", *stdin_flag, *env_flags, config.docker_container, *cmd],
+            [
+                "docker",
+                "exec",
+                *stdin_flag,
+                "-w",
+                container_cwd,
+                *env_flags,
+                config.docker_container,
+                *cmd,
+            ],
             None,
         )
     return cmd, str(Path(config.working_dir).resolve())

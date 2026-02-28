@@ -29,7 +29,7 @@ def test_docker_wrap_with_container(tmp_path: Path) -> None:
     result_cmd, cwd = docker_wrap(cmd, cfg)
     assert result_cmd[0] == "docker"
     assert "my-container" in result_cmd
-    assert "DUCTOR_CHAT_ID=42" in result_cmd[3]
+    assert "DUCTOR_CHAT_ID=42" in result_cmd
     assert cwd is None
 
 
