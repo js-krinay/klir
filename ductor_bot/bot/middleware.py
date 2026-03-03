@@ -22,7 +22,7 @@ from aiogram.types import (
 
 from ductor_bot.bot.abort import is_abort_all_message, is_abort_message
 from ductor_bot.bot.dedup import DedupeCache, build_dedup_key
-from ductor_bot.bot.topic import get_session_key, get_thread_id
+from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
 from ductor_bot.bus.lock_pool import LockPool
 from ductor_bot.log_context import set_log_context
 
@@ -150,8 +150,13 @@ class SequentialMiddleware(BaseMiddleware):
     (via inline keyboard) or bulk-discarded on ``/stop``.
     """
 
-    def __init__(self, lock_pool: LockPool | None = None) -> None:
+    def __init__(
+        self,
+        lock_pool: LockPool | None = None,
+        topic_names: TopicNameCache | None = None,
+    ) -> None:
         self._lock_pool = lock_pool if lock_pool is not None else LockPool()
+        self._topic_names = topic_names
         self._dedup = DedupeCache()
         self._abort_handler: AbortHandler | None = None
         self._abort_all_handler: AbortAllHandler | None = None
@@ -264,9 +269,14 @@ class SequentialMiddleware(BaseMiddleware):
         if not isinstance(event, Message) or not event.chat:
             return await handler(event, data)
 
+        topic_label: str | None = None
+        if event.is_topic_message and event.message_thread_id and self._topic_names:
+            topic_label = self._topic_names.resolve(event.chat.id, event.message_thread_id)
+
         set_log_context(
             operation="msg",
             chat_id=event.chat.id if hasattr(event, "chat") else None,
+            topic=topic_label,
         )
 
         chat_id = event.chat.id

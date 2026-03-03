@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
@@ -50,7 +50,7 @@ from ductor_bot.bot.message_dispatch import (
 from ductor_bot.bot.middleware import MQ_PREFIX, AuthMiddleware, SequentialMiddleware
 from ductor_bot.bot.sender import SendRichOpts, send_rich
 from ductor_bot.bot.sender import send_files_from_text as _send_files_from_text
-from ductor_bot.bot.topic import get_session_key, get_thread_id
+from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
 from ductor_bot.bot.typing import TypingContext as _TypingContext
 from ductor_bot.bot.welcome import (
     build_welcome_keyboard,
@@ -152,13 +152,16 @@ class TelegramBot:
         self._allowed_users = allowed
         self._allowed_groups = allowed_groups
         self._chat_tracker: ChatTracker | None = None  # set in _on_startup
+        self._topic_names = TopicNameCache()
         self._lock_pool = LockPool()
         self._bus = MessageBus(lock_pool=self._lock_pool)
 
         from ductor_bot.bus.telegram_transport import TelegramTransport
 
         self._bus.register_transport(TelegramTransport(self))
-        self._sequential = SequentialMiddleware(lock_pool=self._lock_pool)
+        self._sequential = SequentialMiddleware(
+            lock_pool=self._lock_pool, topic_names=self._topic_names
+        )
         self._sequential.set_bot(self._bot)
         self._sequential.set_abort_handler(self._on_abort)
         self._sequential.set_abort_all_handler(self._on_abort_all)
@@ -250,6 +253,8 @@ class TelegramBot:
             base_cmds += ["agents", "agent_start", "agent_stop", "agent_restart"]
         for cmd in base_cmds:
             r.message(Command(cmd, ignore_case=True))(self._on_command)
+        r.message(F.forum_topic_created)(self._on_forum_topic_created)
+        r.message(F.forum_topic_edited)(self._on_forum_topic_edited)
         r.message()(self._on_message)
         r.callback_query()(self._on_callback_query)
 
@@ -721,7 +726,29 @@ class TelegramBot:
         await handle_command(self._orch, self._bot, message)
 
     async def _on_new(self, message: Message) -> None:
-        await handle_new_session(self._orch, self._bot, message)
+        await handle_new_session(self._orch, self._bot, message, topic_names=self._topic_names)
+
+    async def _on_forum_topic_created(self, message: Message) -> None:
+        """Cache the name when a forum topic is created."""
+        from ductor_bot.bot.topic import get_topic_name_from_message
+
+        name = get_topic_name_from_message(message)
+        if name and message.message_thread_id is not None:
+            self._topic_names.set(message.chat.id, message.message_thread_id, name)
+            logger.debug(
+                "Topic name cached: %d/%d = %s", message.chat.id, message.message_thread_id, name
+            )
+
+    async def _on_forum_topic_edited(self, message: Message) -> None:
+        """Update the cache when a forum topic is renamed."""
+        from ductor_bot.bot.topic import get_topic_name_from_message
+
+        name = get_topic_name_from_message(message)
+        if name and message.message_thread_id is not None:
+            self._topic_names.set(message.chat.id, message.message_thread_id, name)
+            logger.debug(
+                "Topic name updated: %d/%d = %s", message.chat.id, message.message_thread_id, name
+            )
 
     def _build_session_help(self) -> str:
         """Build the /session hub: explain the system + show commands."""

@@ -55,7 +55,17 @@ class CommandRegistry:
         key: SessionKey,
         text: str,
     ) -> OrchestratorResult | None:
-        """Dispatch *cmd* to a registered handler. Returns None if unknown."""
+        """Dispatch *cmd* to a registered handler. Returns None if unknown.
+
+        Strips ``@botname`` suffixes so group commands like
+        ``/status@mybot`` match the registered ``/status`` entry.
+        """
+        # Normalize: "/status@mybot args" -> "/status args"
+        parts = cmd.split(None, 1)
+        if parts and "@" in parts[0]:
+            parts[0] = parts[0].split("@", 1)[0]
+            cmd = " ".join(parts)
+
         for entry in self._commands:
             if entry.match_prefix:
                 if cmd.startswith(entry.name):

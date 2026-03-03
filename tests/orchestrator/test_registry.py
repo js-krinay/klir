@@ -50,3 +50,23 @@ async def test_exact_match_no_extra(registry: CommandRegistry) -> None:
 
     result = await registry.dispatch("/status extra", AsyncMock(), 1, "/status extra")
     assert result is None
+
+
+async def test_dispatch_strips_bot_mention(registry: CommandRegistry) -> None:
+    """Commands like /status@mybot in group chats must match /status."""
+    handler = AsyncMock(return_value=OrchestratorResult(text="ok"))
+    registry.register_async("/status", handler)
+
+    result = await registry.dispatch("/status@mybot", AsyncMock(), 1, "/status@mybot")
+    assert result is not None
+    assert result.text == "ok"
+
+
+async def test_prefix_match_strips_bot_mention(registry: CommandRegistry) -> None:
+    """/model@mybot sonnet must match the prefix entry /model ."""
+    handler = AsyncMock(return_value=OrchestratorResult(text="matched"))
+    registry.register_async("/model ", handler)
+
+    result = await registry.dispatch("/model@mybot sonnet", AsyncMock(), 1, "/model@mybot sonnet")
+    assert result is not None
+    assert result.text == "matched"

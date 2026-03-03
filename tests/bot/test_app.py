@@ -947,7 +947,9 @@ class TestCommandHandlers:
 
         await tg_bot._on_new(msg)
 
-        mock_new.assert_called_once_with(orch, tg_bot.bot_instance, msg)
+        mock_new.assert_called_once_with(
+            orch, tg_bot.bot_instance, msg, topic_names=tg_bot._topic_names
+        )
 
     @patch("ductor_bot.bot.app.handle_abort", new_callable=AsyncMock, return_value=True)
     async def test_on_abort_returns_handled(self, mock_abort: AsyncMock) -> None:

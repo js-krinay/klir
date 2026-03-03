@@ -300,7 +300,9 @@ async def _build_status(orch: Orchestrator, key: SessionKey) -> str:
 
     session = await orch._sessions.get_active(key)
     if session:
+        topic_line = f"Topic: {session.topic_name}\n" if session.topic_name else ""
         session_block = (
+            f"{topic_line}"
             f"Session: `{session.session_id[:8]}...`\n"
             f"Messages: {session.message_count}\n"
             f"Tokens: {session.total_tokens:,}\n"

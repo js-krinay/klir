@@ -48,6 +48,13 @@ async def run_startup(bot: TelegramBot) -> None:
 
     bot._chat_tracker = ChatTracker(bot._orch.paths.chat_activity_path)
 
+    # Seed topic name cache from persisted sessions and wire the resolver.
+    all_sessions = await bot._orch._sessions.list_all()
+    seeded = bot._topic_names.seed_from_sessions(all_sessions)
+    if seeded:
+        logger.info("Topic name cache seeded with %d name(s)", seeded)
+    bot._orch._sessions.set_topic_name_resolver(bot._topic_names.resolve)
+
     me = await bot.bot_instance.get_me()
     bot._bot_id = me.id
     bot._bot_username = (me.username or "").lower()

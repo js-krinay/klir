@@ -221,6 +221,8 @@ Both `allowed_user_ids` and `allowed_group_ids` are **hot-reloadable** — edit 
 
 Sub-agents each have their own `allowed_user_ids` and `allowed_group_ids` in `agents.json` — they do not inherit from the main agent.
 
+> **Important:** By default Telegram bots have **Privacy Mode** enabled and only receive `/commands` in groups — not regular messages or @mentions. To let the bot see all messages, either **make it a group admin** or disable Privacy Mode via BotFather (`/setprivacy` → Disable). If you change the privacy setting after the bot has already joined, remove and re-add the bot for the change to take effect.
+
 ### Group management
 
 When the bot is added to a group that is **not** in `allowed_group_ids`, it sends a warning and auto-leaves. If a group is removed from `allowed_group_ids` later, the bot leaves automatically — on config hot-reload, on every restart, and via a periodic 24h audit.

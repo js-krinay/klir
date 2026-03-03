@@ -66,6 +66,7 @@ from ductor_bot.orchestrator.observers import ObserverManager
 from ductor_bot.orchestrator.registry import CommandRegistry, OrchestratorResult
 from ductor_bot.security import detect_suspicious_patterns
 from ductor_bot.session import SessionKey, SessionManager
+from ductor_bot.session.manager import SessionData
 from ductor_bot.session.named import NamedSessionRegistry
 from ductor_bot.webhook.manager import WebhookManager
 from ductor_bot.workspace.init import inject_runtime_environment
@@ -747,6 +748,11 @@ class Orchestrator:
     def list_named_sessions(self, chat_id: int) -> list[NamedSession]:
         """List active named sessions for a chat."""
         return self._named_sessions.list_active(chat_id)
+
+    async def list_topic_sessions(self, chat_id: int) -> list[SessionData]:
+        """Return fresh topic sessions for *chat_id*."""
+        all_sessions = await self._sessions.list_active_for_chat(chat_id)
+        return [s for s in all_sessions if s.topic_id is not None]
 
     def active_background_tasks(self, chat_id: int | None = None) -> list[BackgroundTask]:
         """Return active background tasks, optionally filtered by chat_id."""

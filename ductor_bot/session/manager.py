@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -90,6 +90,7 @@ class SessionData:
 
     chat_id: int
     topic_id: int | None
+    topic_name: str | None
     provider: str
     model: str
     created_at: str
@@ -99,6 +100,7 @@ class SessionData:
     def __init__(self, chat_id: int, **raw: object) -> None:
         """Create session data from current or legacy serialized fields."""
         topic_id = _as_optional_int(raw.pop("topic_id", None))
+        topic_name = _as_optional_str(raw.pop("topic_name", None))
         provider = _as_str(raw.pop("provider", "claude"), default="claude")
         model = _as_str(raw.pop("model", "opus"), default="opus")
         created_at = _as_str(raw.pop("created_at", ""), default="")
@@ -113,6 +115,7 @@ class SessionData:
 
         self.chat_id = chat_id
         self.topic_id = topic_id
+        self.topic_name = topic_name
         self.provider = provider
         self.model = model
 
@@ -248,6 +251,10 @@ class SessionData:
             return 0.0
 
 
+TopicNameResolver = Callable[[int, int], str]
+"""Callback: (chat_id, topic_id) → human-readable topic name."""
+
+
 class SessionManager:
     """Manages session lifecycle with JSON file persistence."""
 
@@ -255,6 +262,20 @@ class SessionManager:
         self._path = sessions_path
         self._config = config
         self._lock = asyncio.Lock()
+        self._topic_name_resolver: TopicNameResolver | None = None
+
+    def set_topic_name_resolver(self, resolver: TopicNameResolver) -> None:
+        """Register a callback that resolves ``(chat_id, topic_id)`` to a name."""
+        self._topic_name_resolver = resolver
+
+    def _apply_topic_name(self, session: SessionData) -> bool:
+        """Fill ``topic_name`` from the resolver when missing. Returns True if changed."""
+        if session.topic_id is None or self._topic_name_resolver is None:
+            return False
+        if session.topic_name:
+            return False
+        session.topic_name = self._topic_name_resolver(session.chat_id, session.topic_id)
+        return True
 
     async def resolve_session(
         self,
@@ -278,6 +299,8 @@ class SessionManager:
                 and bool(existing.provider.strip())
                 and bool(existing.model.strip())
             ):
+                if self._apply_topic_name(existing):
+                    await self._save(sessions)
                 return existing, not bool(existing.session_id)
             changed = False
             if existing.provider != prov:
@@ -287,13 +310,20 @@ class SessionManager:
             if existing.model != model_name:
                 existing.model = model_name
                 changed = True
+            if self._apply_topic_name(existing):
+                changed = True
             if changed:
                 await self._save(sessions)
             return existing, not bool(existing.session_id)
 
+        topic_name: str | None = None
+        if key.topic_id is not None and self._topic_name_resolver is not None:
+            topic_name = self._topic_name_resolver(key.chat_id, key.topic_id)
+
         new = SessionData(
             chat_id=key.chat_id,
             topic_id=key.topic_id,
+            topic_name=topic_name,
             provider=prov,
             model=model_name,
             provider_sessions={},
@@ -307,6 +337,16 @@ class SessionManager:
         """Return the current session for *key* without creating one."""
         sessions = await self._load()
         return sessions.get(key.storage_key)
+
+    async def list_active_for_chat(self, chat_id: int) -> list[SessionData]:
+        """Return all fresh sessions belonging to *chat_id*."""
+        sessions = await self._load()
+        return [s for s in sessions.values() if s.chat_id == chat_id and self._is_fresh(s)]
+
+    async def list_all(self) -> list[SessionData]:
+        """Return all persisted sessions (fresh or stale)."""
+        sessions = await self._load()
+        return list(sessions.values())
 
     async def reset_session(
         self,
@@ -382,6 +422,8 @@ class SessionManager:
                 self._merge_provider_sessions(current, session)
                 current.provider = session.provider
                 current.model = session.model
+                if session.topic_name and not current.topic_name:
+                    current.topic_name = session.topic_name
 
             current.last_active = datetime.now(UTC).isoformat()
             current.message_count += 1
