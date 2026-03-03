@@ -242,6 +242,7 @@ class AgentConfig(BaseModel):
     group_mention_only: bool = False
     telegram_token: str = ""
     allowed_user_ids: list[int] = Field(default_factory=list)
+    allowed_group_ids: list[int] = Field(default_factory=list)
 
     @field_validator("gemini_api_key", mode="before")
     @classmethod

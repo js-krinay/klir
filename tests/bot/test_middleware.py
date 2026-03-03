@@ -80,46 +80,71 @@ class TestAuthMiddleware:
         handler.assert_called_once()
         assert result == "pass"
 
-    async def test_group_mention_only_passes_group_message(self) -> None:
-        """Any user in a group passes through when group_mention_only is on."""
+    async def test_group_allowed_group_and_user_passes(self) -> None:
+        """Message passes when both group and user are allowlisted."""
         from ductor_bot.bot.middleware import AuthMiddleware
 
-        mw = AuthMiddleware(allowed_user_ids=set(), group_mention_only=True)
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids={-1001})
         handler = AsyncMock(return_value="ok")
-        msg = _make_message(user_id=999, chat_type="group")
+        msg = _make_message(user_id=100, chat_type="group", chat_id=-1001)
 
         result = await mw(handler, msg, {})
         handler.assert_called_once()
         assert result == "ok"
 
-    async def test_group_mention_only_passes_supergroup(self) -> None:
+    async def test_group_blocked_group(self) -> None:
+        """Message dropped when group is not in allowed_group_ids."""
         from ductor_bot.bot.middleware import AuthMiddleware
 
-        mw = AuthMiddleware(allowed_user_ids=set(), group_mention_only=True)
-        handler = AsyncMock(return_value="ok")
-        msg = _make_message(user_id=999, chat_type="supergroup")
-
-        result = await mw(handler, msg, {})
-        handler.assert_called_once()
-        assert result == "ok"
-
-    async def test_group_mention_only_blocks_private(self) -> None:
-        """Private messages still require allowed_user_ids."""
-        from ductor_bot.bot.middleware import AuthMiddleware
-
-        mw = AuthMiddleware(allowed_user_ids={100}, group_mention_only=True)
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids={-1002})
         handler = AsyncMock()
-        msg = _make_message(user_id=999, chat_type="private")
+        msg = _make_message(user_id=100, chat_type="group", chat_id=-1001)
 
         result = await mw(handler, msg, {})
         handler.assert_not_called()
         assert result is None
 
-    async def test_group_mention_only_allowed_private_passes(self) -> None:
-        """Allowed user in private chat still passes with group_mention_only."""
+    async def test_group_blocked_user_in_allowed_group(self) -> None:
+        """Message dropped when user is not allowed, even if group is."""
         from ductor_bot.bot.middleware import AuthMiddleware
 
-        mw = AuthMiddleware(allowed_user_ids={100}, group_mention_only=True)
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids={-1001})
+        handler = AsyncMock()
+        msg = _make_message(user_id=999, chat_type="group", chat_id=-1001)
+
+        result = await mw(handler, msg, {})
+        handler.assert_not_called()
+        assert result is None
+
+    async def test_group_empty_group_ids_blocks_all(self) -> None:
+        """Empty allowed_group_ids means no groups are allowed (fail-closed)."""
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(allowed_user_ids={100})
+        handler = AsyncMock()
+        msg = _make_message(user_id=100, chat_type="group", chat_id=-1001)
+
+        result = await mw(handler, msg, {})
+        handler.assert_not_called()
+        assert result is None
+
+    async def test_supergroup_uses_group_check(self) -> None:
+        """Supergroups also go through group allowlist check."""
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids={-1001})
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(user_id=100, chat_type="supergroup", chat_id=-1001)
+
+        result = await mw(handler, msg, {})
+        handler.assert_called_once()
+        assert result == "ok"
+
+    async def test_private_message_ignores_group_ids(self) -> None:
+        """Private messages only check allowed_user_ids, not group IDs."""
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids=set())
         handler = AsyncMock(return_value="ok")
         msg = _make_message(user_id=100, chat_type="private")
 
@@ -127,15 +152,45 @@ class TestAuthMiddleware:
         handler.assert_called_once()
         assert result == "ok"
 
-    async def test_group_mention_only_off_blocks_group(self) -> None:
-        """With group_mention_only=False, unauthorized group users are blocked."""
+    async def test_callback_query_in_group_checks_both(self) -> None:
+        """CallbackQuery from a group enforces both group and user checks."""
+        from aiogram.types import CallbackQuery
+
         from ductor_bot.bot.middleware import AuthMiddleware
 
-        mw = AuthMiddleware(allowed_user_ids={100}, group_mention_only=False)
-        handler = AsyncMock()
-        msg = _make_message(user_id=999, chat_type="group")
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids={-1001})
+        handler = AsyncMock(return_value="ok")
 
-        result = await mw(handler, msg, {})
+        cb = MagicMock(spec=CallbackQuery)
+        cb.from_user = MagicMock()
+        cb.from_user.id = 100
+        cb.message = MagicMock()
+        cb.message.chat = MagicMock()
+        cb.message.chat.type = "group"
+        cb.message.chat.id = -1001
+
+        result = await mw(handler, cb, {})
+        handler.assert_called_once()
+        assert result == "ok"
+
+    async def test_callback_query_blocked_group(self) -> None:
+        """CallbackQuery from an unauthorized group is dropped."""
+        from aiogram.types import CallbackQuery
+
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(allowed_user_ids={100}, allowed_group_ids={-1002})
+        handler = AsyncMock()
+
+        cb = MagicMock(spec=CallbackQuery)
+        cb.from_user = MagicMock()
+        cb.from_user.id = 100
+        cb.message = MagicMock()
+        cb.message.chat = MagicMock()
+        cb.message.chat.type = "group"
+        cb.message.chat.id = -1001
+
+        result = await mw(handler, cb, {})
         handler.assert_not_called()
         assert result is None
 

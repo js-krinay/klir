@@ -103,4 +103,5 @@ Parameters are inserted before the `--` separator in commands.
 ### Access Control
 
 - `allowed_user_ids`
+- `allowed_group_ids`
 - `telegram_token`

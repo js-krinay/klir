@@ -5,7 +5,7 @@
 ```text
 Telegram Update
   -> aiogram Dispatcher/Router
-  -> AuthMiddleware (allowlist; group/supergroup pass-through when `group_mention_only=true`)
+  -> AuthMiddleware (user allowlist + group allowlist; `group_mention_only` controls mention gating only)
   -> SequentialMiddleware (message updates only)
        - exact /stop_all (or stop-all phrase): kill local active CLI process(es) + optional cross-agent callback + drain pending queue
        - exact /stop or bare abort keyword: kill active local CLI process(es) + drain pending queue
@@ -62,7 +62,7 @@ Multi-agent runtime core (always active; sub-agents optional):
 
 Default path:
 
-1. `_is_configured()` validates `telegram_token` and access mode: either `allowed_user_ids` is non-empty or `group_mention_only=true`.
+1. `_is_configured()` validates `telegram_token` and access mode: either `allowed_user_ids` or `allowed_group_ids` is non-empty.
 2. If unconfigured: run onboarding wizard (`init_wizard.run_onboarding()`).
 3. If onboarding successfully installed a service, exit early.
 4. Configure logging.

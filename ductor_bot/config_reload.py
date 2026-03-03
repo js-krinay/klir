@@ -60,6 +60,7 @@ _RESTART_REQUIRED: frozenset[str] = frozenset(
     {
         "telegram_token",
         "allowed_user_ids",
+        "allowed_group_ids",
         "docker",
         "api",
         "webhooks",

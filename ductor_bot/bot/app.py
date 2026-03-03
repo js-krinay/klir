@@ -144,15 +144,18 @@ class TelegramBot:
         self._upgrade_lock = asyncio.Lock()
 
         allowed = set(config.allowed_user_ids)
+        allowed_groups = set(config.allowed_group_ids)
         self._sequential = SequentialMiddleware()
         self._sequential.set_bot(self._bot)
         self._sequential.set_abort_handler(self._on_abort)
         self._sequential.set_abort_all_handler(self._on_abort_all)
         self._sequential.set_quick_command_handler(self._on_quick_command)
-        auth = AuthMiddleware(allowed, group_mention_only=config.group_mention_only)
+        auth = AuthMiddleware(allowed, allowed_group_ids=allowed_groups)
         self._router.message.outer_middleware(auth)
         self._router.message.outer_middleware(self._sequential)
-        self._router.callback_query.outer_middleware(AuthMiddleware(allowed))
+        self._router.callback_query.outer_middleware(
+            AuthMiddleware(allowed, allowed_group_ids=allowed_groups)
+        )
 
         self._register_handlers()
         self._dp.include_router(self._router)

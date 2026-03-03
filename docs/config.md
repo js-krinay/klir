@@ -55,8 +55,9 @@ API config persistence note:
 | `file_access` | `str` | `"all"` | File access scope (`all`, `home`, `workspace`) for Telegram sends and API `GET /files`; unknown values fall back to workspace-only |
 | `gemini_api_key` | `str \| None` | `None` | Config fallback key injected for Gemini API-key mode |
 | `telegram_token` | `str` | `""` | Telegram bot token |
-| `allowed_user_ids` | `list[int]` | `[]` | Telegram allowlist |
-| `group_mention_only` | `bool` | `false` | In group/supergroup chats, allow messages from any user but process only messages that explicitly mention/reply to the bot |
+| `allowed_user_ids` | `list[int]` | `[]` | Telegram user allowlist (applies in both private and group chats) |
+| `allowed_group_ids` | `list[int]` | `[]` | Telegram group allowlist (which groups the bot can operate in; default `[]` = no groups, fail-closed). In groups, both the group and the user must be allowlisted |
+| `group_mention_only` | `bool` | `false` | In allowlisted group chats, only process messages that explicitly mention or reply to the bot (mention-gating filter; not an auth bypass) |
 | `streaming` | `StreamingConfig` | see below | Streaming tuning |
 | `docker` | `DockerConfig` | see below | Docker sidecar config |
 | `heartbeat` | `HeartbeatConfig` | see below | Background heartbeat config |
@@ -277,7 +278,7 @@ Observer lifecycle caveat:
 
 Restart-required top-level fields:
 
-- `telegram_token`, `allowed_user_ids`, `group_mention_only`
+- `telegram_token`, `allowed_user_ids`, `allowed_group_ids`, `group_mention_only`
 - `docker`, `api`, `webhooks`
 - `ductor_home`, `log_level`, `gemini_api_key`, `timeouts`, `tasks`
 
@@ -362,7 +363,8 @@ Managed via:
 |---|---|---|---|---|
 | `name` | `str` | yes | | Unique lowercase identifier |
 | `telegram_token` | `str` | yes | | Separate bot token from @BotFather |
-| `allowed_user_ids` | `list[int]` | no | `[]` | Telegram allowlist |
+| `allowed_user_ids` | `list[int]` | no | `[]` | Telegram user allowlist |
+| `allowed_group_ids` | `list[int]` | no | `[]` | Telegram group allowlist |
 | `provider` | `str` | no | inherited | Default provider |
 | `model` | `str` | no | inherited | Default model |
 | `log_level` | `str` | no | inherited | |
@@ -426,7 +428,7 @@ Example:
 Then it always forces:
 
 - `ductor_home = ~/.ductor/agents/<name>/`
-- `telegram_token` and `allowed_user_ids` from the sub-agent entry
+- `telegram_token`, `allowed_user_ids`, and `allowed_group_ids` from the sub-agent entry
 - `api.enabled = false` when no explicit `api` block is provided
 
 Notes:

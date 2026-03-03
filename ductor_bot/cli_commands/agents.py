@@ -134,6 +134,17 @@ def print_agents_status(agents: list[dict[str, object]], *, bot_running: bool = 
     )
 
 
+def _parse_int_list(raw: str, *, allow_negative: bool = False) -> list[int]:
+    """Parse a comma-separated string of integers."""
+    result: list[int] = []
+    for part in raw.split(","):
+        stripped = part.strip()
+        digits = stripped.lstrip("-") if allow_negative else stripped
+        if digits and digits.isdigit():
+            result.append(int(stripped))
+    return result
+
+
 def validate_agent_name(name: str | None, agents: list[dict[str, object]]) -> str | None:
     """Validate an agent name for ``ductor agents add``. Returns clean name or None on error."""
     if not name:
@@ -195,11 +206,17 @@ def agents_add(rest: list[str]) -> None:
         _console.print("[dim]Cancelled.[/dim]")
         return
 
-    user_ids: list[int] = []
-    for raw_id in users_raw.split(","):
-        stripped = raw_id.strip()
-        if stripped.isdigit():
-            user_ids.append(int(stripped))
+    user_ids = _parse_int_list(users_raw)
+
+    groups_raw: str | None = questionary.text(
+        "Allowed group IDs (comma-separated, leave empty for none):",
+        default="",
+    ).ask()
+    if groups_raw is None:
+        _console.print("[dim]Cancelled.[/dim]")
+        return
+
+    group_ids = _parse_int_list(groups_raw, allow_negative=True)
 
     provider: str | None = questionary.select(
         "Provider:",
@@ -222,6 +239,7 @@ def agents_add(rest: list[str]) -> None:
         "name": name,
         "telegram_token": token.strip(),
         "allowed_user_ids": user_ids,
+        "allowed_group_ids": group_ids,
         "provider": provider,
         "model": model.strip(),
     }

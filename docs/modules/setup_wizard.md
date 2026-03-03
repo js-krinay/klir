@@ -82,7 +82,7 @@ If already configured and onboarding/reset is requested:
 `_is_configured()` requires:
 
 - valid non-placeholder `telegram_token`
-- and either non-empty `allowed_user_ids` or `group_mention_only=true`
+- and either non-empty `allowed_user_ids` or non-empty `allowed_group_ids`
 
 ## Status panel (`ductor status`)
 

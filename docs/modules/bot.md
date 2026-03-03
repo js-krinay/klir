@@ -38,7 +38,8 @@ Orchestrator-routed commands:
 ### `AuthMiddleware`
 
 - drops message/callback updates from users outside `allowed_user_ids`
-- when `group_mention_only=true`, group/supergroup message events bypass the allowlist check (access is then gated by mention/reply checks in message resolution)
+- in group/supergroup chats, requires the group to be in `allowed_group_ids` AND the user to be in `allowed_user_ids`
+- `group_mention_only` controls only whether non-mention messages are filtered in allowlisted groups (mention-gating filter, not an auth bypass)
 
 ### `SequentialMiddleware`
 

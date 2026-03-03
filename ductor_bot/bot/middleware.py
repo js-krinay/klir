@@ -60,16 +60,21 @@ def is_quick_command(text: str) -> bool:
 
 
 class AuthMiddleware(BaseMiddleware):
-    """Outer middleware: silently drop messages from unauthorized users.
+    """Outer middleware: silently drop messages from unauthorized users/groups.
 
-    When *group_mention_only* is True, messages in group/supergroup chats
-    bypass the user-ID check (the mention filter in ``_resolve_text``
-    already gates access).
+    In private chats only ``allowed_user_ids`` is checked.
+    In group/supergroup chats **both** the group (``allowed_group_ids``)
+    and the sender (``allowed_user_ids``) must be allowlisted.
     """
 
-    def __init__(self, allowed_user_ids: set[int], *, group_mention_only: bool = False) -> None:
-        self._allowed = allowed_user_ids
-        self._group_mention_only = group_mention_only
+    def __init__(
+        self,
+        allowed_user_ids: set[int],
+        *,
+        allowed_group_ids: set[int] | None = None,
+    ) -> None:
+        self._allowed_users = allowed_user_ids
+        self._allowed_groups = allowed_group_ids or set()
 
     async def __call__(
         self,
@@ -85,14 +90,22 @@ class AuthMiddleware(BaseMiddleware):
         if not user:
             return None
 
-        # In group_mention_only mode, let group messages through regardless
-        # of allowed_user_ids — the mention filter handles access control.
-        if self._group_mention_only and isinstance(event, Message):
-            chat_type = event.chat.type if event.chat else None
-            if chat_type in ("group", "supergroup"):
-                return await handler(event, data)
+        # Resolve chat: Message.chat directly, CallbackQuery via .message.chat.
+        chat = None
+        if isinstance(event, Message):
+            chat = event.chat
+        elif isinstance(event, CallbackQuery) and event.message is not None:
+            chat = getattr(event.message, "chat", None)
 
-        if user.id not in self._allowed:
+        chat_type = chat.type if chat else None
+
+        if chat_type in ("group", "supergroup"):
+            group_id = chat.id if chat else None
+            if group_id not in self._allowed_groups:
+                return None
+            if user.id not in self._allowed_users:
+                return None
+        elif user.id not in self._allowed_users:
             return None
 
         return await handler(event, data)

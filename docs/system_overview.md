@@ -38,7 +38,7 @@ Notes:
 - `/stop` is handled before normal routing (middleware/bot path).
 - `/stop_all` is also middleware/bot-level; on the main agent it aborts active runs across all agents (on sub-agents it falls back to local abort).
 - `/new` resets only the active provider bucket, not all provider buckets.
-- `group_mention_only=true` allows group/supergroup ingress without allowlist match, but only mention-addressed messages are processed.
+- In group chats, both the group (`allowed_group_ids`) and the user (`allowed_user_ids`) must be allowlisted. `group_mention_only` only controls whether the bot responds to all messages or only @mentions in allowlisted groups.
 
 ## 3) Optional API path (WebSocket)
 

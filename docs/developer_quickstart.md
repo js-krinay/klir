@@ -13,7 +13,7 @@ pip install -e ".[dev]"
 Optional for full runtime validation:
 
 - install/auth at least one provider CLI (`claude`, `codex`, or `gemini`)
-- create Telegram bot token + user ID (or run mention-only group mode via `group_mention_only=true`)
+- create Telegram bot token + user ID (add group IDs to `allowed_group_ids` for group chat support)
 
 ## 2) Run the bot
 

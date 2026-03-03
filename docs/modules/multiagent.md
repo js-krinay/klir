@@ -118,6 +118,7 @@ Removing a sub-agent stops its Telegram bot but preserves its workspace under `~
 | `name` | `str` | yes | Unique lowercase identifier |
 | `telegram_token` | `str` | yes | Separate bot token from @BotFather |
 | `allowed_user_ids` | `list[int]` | no | Defaults to empty list |
+| `allowed_group_ids` | `list[int]` | no | Defaults to empty list |
 | `provider` | `str` | no | Inherits from main if omitted |
 | `model` | `str` | no | Inherits from main if omitted |
 | `log_level` | `str` | no | Inherits from main |
@@ -156,7 +157,7 @@ Timeout note:
 1. Start with the main agent's config as base.
 2. Override with any non-None fields from `SubAgentConfig`.
 3. Always set `ductor_home` to `~/.ductor/agents/<name>/`.
-4. Always use `telegram_token` and `allowed_user_ids` from the sub-agent definition.
+4. Always use `telegram_token`, `allowed_user_ids`, and `allowed_group_ids` from the sub-agent definition.
 5. Disable `api.enabled` unless the sub-agent explicitly provides an `api` config (sub-agents use the InterAgentBus, not the user-facing API server).
 
 ### What is isolated per sub-agent

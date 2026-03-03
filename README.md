@@ -43,7 +43,7 @@ ductor
 
 The onboarding wizard handles CLI checks, Telegram setup, timezone, optional Docker, and optional background service install.
 
-**Requirements:** Python 3.11+, at least one CLI installed (`claude`, `codex`, or `gemini`), a Telegram Bot Token from [@BotFather](https://t.me/BotFather), and either at least one Telegram user ID in `allowed_user_ids` or `group_mention_only=true`.
+**Requirements:** Python 3.11+, at least one CLI installed (`claude`, `codex`, or `gemini`), a Telegram Bot Token from [@BotFather](https://t.me/BotFather), and at least one Telegram user ID in `allowed_user_ids` (plus `allowed_group_ids` if you want group chat support).
 
 Detailed setup: [`docs/installation.md`](docs/installation.md)
 
@@ -195,6 +195,29 @@ All agents share knowledge through `SHAREDMEMORY.md` and can delegate background
 - **Multi-agent runtime:** main agent + sub-agents, each with own Telegram bot, workspace, background tasks, shared memory
 - **Auto-onboarding:** interactive setup wizard on first run
 - **Cross-tool skill sync:** shared skills across `~/.claude/`, `~/.codex/`, `~/.gemini/`
+
+## Auth
+
+ductor uses a dual-allowlist model. Every message must pass both checks before it reaches the bot logic.
+
+| Chat type | Check |
+|---|---|
+| **Private** | `user_id ∈ allowed_user_ids` |
+| **Group / Supergroup** | `group_id ∈ allowed_group_ids` AND `user_id ∈ allowed_user_ids` |
+
+- **`allowed_user_ids`** — Telegram user IDs that may talk to the bot (private and group chats). At least one ID is required.
+- **`allowed_group_ids`** — Telegram group IDs where the bot is allowed to operate. Default `[]` means no groups (fail-closed). The bot silently ignores messages from unlisted groups.
+- **`group_mention_only`** — When `true`, the bot only responds in groups when @mentioned or replied to. This is a content filter, not an auth bypass — the user and group must still be allowlisted.
+
+```json
+{
+  "allowed_user_ids": [123456789],
+  "allowed_group_ids": [-1001234567890],
+  "group_mention_only": true
+}
+```
+
+Sub-agents each have their own `allowed_user_ids` and `allowed_group_ids` in `agents.json` — they do not inherit from the main agent.
 
 ## How it works
 

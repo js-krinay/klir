@@ -28,6 +28,7 @@ class SubAgentConfig(BaseModel):
     name: str
     telegram_token: str
     allowed_user_ids: list[int] | None = None
+    allowed_group_ids: list[int] | None = None
 
     # Optional overrides — inherit from main agent if None
     provider: str | None = None
@@ -76,6 +77,7 @@ def merge_sub_agent_config(
     base["ductor_home"] = str(agent_home)
     base["telegram_token"] = sub.telegram_token
     base["allowed_user_ids"] = sub.allowed_user_ids or []
+    base["allowed_group_ids"] = sub.allowed_group_ids or []
 
     # Sub-agents don't need the user-facing API server (they use InterAgentBus).
     # Disable it unless the sub-agent explicitly provides an api config.

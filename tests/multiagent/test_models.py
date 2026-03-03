@@ -16,6 +16,7 @@ class TestSubAgentConfig:
         assert cfg.name == "sub1"
         assert cfg.telegram_token == "tok:123"
         assert cfg.allowed_user_ids is None
+        assert cfg.allowed_group_ids is None
         assert cfg.provider is None
         assert cfg.model is None
 
@@ -128,6 +129,29 @@ class TestMergeSubAgentConfig:
 
         # Should be empty, NOT [1, 2, 3] from main
         assert result.allowed_user_ids == []
+
+    def test_allowed_group_ids_from_sub(self) -> None:
+        """Sub-agent's allowed_group_ids override main config."""
+        main = self._main_config()
+        main.allowed_group_ids = [-1001, -1002]
+        sub = SubAgentConfig(
+            name="sub1",
+            telegram_token="sub-token",
+            allowed_group_ids=[-2001],
+        )
+        result = merge_sub_agent_config(main, sub, Path("/agents/sub1"))
+
+        assert result.allowed_group_ids == [-2001]
+
+    def test_allowed_group_ids_none_uses_empty_list(self) -> None:
+        """When sub-agent has no allowed_group_ids (None), result is empty list."""
+        main = self._main_config()
+        main.allowed_group_ids = [-1001]
+        sub = SubAgentConfig(name="sub1", telegram_token="sub-token")
+        result = merge_sub_agent_config(main, sub, Path("/agents/sub1"))
+
+        # Should be empty, NOT [-1001] from main (same pattern as allowed_user_ids)
+        assert result.allowed_group_ids == []
 
     def test_partial_overrides(self) -> None:
         """Only specified fields override, rest inherit from main."""

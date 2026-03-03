@@ -9,7 +9,7 @@
    - Codex CLI: `npm install -g @openai/codex && codex auth`
    - Gemini CLI: `npm install -g @google/gemini-cli` and authenticate in `gemini`
 4. Telegram bot token from [@BotFather](https://t.me/BotFather)
-5. Telegram user ID from [@userinfobot](https://t.me/userinfobot) (or `group_mention_only=true` mode if you only run in mention-gated group chats)
+5. Telegram user ID from [@userinfobot](https://t.me/userinfobot)
 6. Docker optional (recommended for sandboxing)
 
 ## Install
