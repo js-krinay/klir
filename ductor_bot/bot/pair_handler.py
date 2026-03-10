@@ -1,0 +1,29 @@
+"""Handler for /pair command — admin generates pairing codes."""
+
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aiogram.types import Message
+
+    from ductor_bot.pairing import PairingService
+
+logger = logging.getLogger(__name__)
+
+
+async def handle_pair(message: Message, pairing_svc: PairingService) -> None:
+    """Generate a pairing code for the admin to share with a new user."""
+    if message.chat.type != "private":
+        await message.reply("Pairing codes can only be generated in private DMs.")
+        return
+
+    user_id = message.from_user.id if message.from_user else 0
+    code = pairing_svc.generate_code(admin_user_id=user_id)
+
+    await message.reply(
+        f"<b>Pairing code:</b> <code>{code}</code>\n\n"
+        "Share this code with the user. They send it to the bot in DMs to pair.\n"
+        "The code is single-use and expires in 1 hour.",
+    )

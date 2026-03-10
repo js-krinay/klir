@@ -29,11 +29,12 @@ BOT_COMMANDS: list[tuple[str, str]] = [
     ("diagnose", "System diagnostics"),
     ("upgrade", "Check for updates"),
     ("restart", "Restart bot"),
+    ("pair", "Generate pairing code"),
 ]
 
 # Commands shown in group/supergroup chats — excludes admin/maintenance.
 # Kept as a separate list (not filtered) so order can be curated.
-_GROUP_EXCLUDED: frozenset[str] = frozenset({"diagnose", "upgrade", "restart", "agent_commands"})
+_GROUP_EXCLUDED: frozenset[str] = frozenset({"diagnose", "upgrade", "restart", "agent_commands", "pair"})
 
 GROUP_COMMANDS: list[tuple[str, str]] = [
     (cmd, desc) for cmd, desc in BOT_COMMANDS if cmd not in _GROUP_EXCLUDED

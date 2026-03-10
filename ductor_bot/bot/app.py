@@ -637,6 +637,18 @@ class TelegramBot:
             ),
         )
 
+    async def _on_pair(self, message: Message) -> None:
+        """Handle /pair: generate a pairing code (admin only, pairing must be enabled)."""
+        if not self._pairing_svc:
+            await message.reply(
+                "Pairing is not enabled. Set <code>pairing.enabled: true</code> in config."
+            )
+            return
+        from ductor_bot.bot.pair_handler import handle_pair
+        from ductor_bot.pairing import PairingService
+
+        await handle_pair(message, self._pairing_svc)  # type: ignore[arg-type]
+
     # -- Abort, commands, sessions ---------------------------------------------
 
     async def _on_abort_all(self, chat_id: int, message: Message) -> bool:
