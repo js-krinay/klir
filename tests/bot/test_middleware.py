@@ -967,3 +967,109 @@ class TestChannelAuth:
         result = await mw(handler, msg, {})
         handler.assert_not_called()
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Bot-mention filter in SequentialMiddleware
+# ---------------------------------------------------------------------------
+
+
+class TestSequentialMiddlewareBotMention:
+    """Quick commands and aborts addressed to other bots are ignored."""
+
+    async def test_quick_command_for_other_bot_not_dispatched(self) -> None:
+        from ductor_bot.bot.middleware import SequentialMiddleware
+
+        mw = SequentialMiddleware()
+        mw.set_bot_username("my_bot")
+        quick_handler = AsyncMock(return_value=True)
+        mw.set_quick_command_handler(quick_handler)
+
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(text="/status@other_bot", chat_type="supergroup")
+
+        result = await mw(handler, msg, {})
+        quick_handler.assert_not_called()
+        # Should fall through to the normal handler
+        handler.assert_called_once()
+
+    async def test_quick_command_for_our_bot_dispatched(self) -> None:
+        from ductor_bot.bot.middleware import SequentialMiddleware
+
+        mw = SequentialMiddleware()
+        mw.set_bot_username("my_bot")
+        quick_handler = AsyncMock(return_value=True)
+        mw.set_quick_command_handler(quick_handler)
+
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(text="/status@my_bot", chat_type="supergroup")
+
+        await mw(handler, msg, {})
+        quick_handler.assert_called_once()
+
+    async def test_abort_for_other_bot_not_handled(self) -> None:
+        from ductor_bot.bot.middleware import SequentialMiddleware
+
+        mw = SequentialMiddleware()
+        mw.set_bot_username("my_bot")
+        abort_handler = AsyncMock(return_value=True)
+        mw.set_abort_handler(abort_handler)
+
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(text="/stop@other_bot", chat_type="supergroup")
+
+        await mw(handler, msg, {})
+        abort_handler.assert_not_called()
+
+    async def test_abort_for_our_bot_handled(self) -> None:
+        from ductor_bot.bot.middleware import SequentialMiddleware
+
+        mw = SequentialMiddleware()
+        mw.set_bot_username("my_bot")
+        abort_handler = AsyncMock(return_value=True)
+        mw.set_abort_handler(abort_handler)
+
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(text="/stop@my_bot", chat_type="supergroup")
+
+        await mw(handler, msg, {})
+        abort_handler.assert_called_once()
+
+    async def test_no_bot_username_set_allows_all(self) -> None:
+        from ductor_bot.bot.middleware import SequentialMiddleware
+
+        mw = SequentialMiddleware()
+        # bot_username not set — should allow everything
+        quick_handler = AsyncMock(return_value=True)
+        mw.set_quick_command_handler(quick_handler)
+
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(text="/status@other_bot", chat_type="supergroup")
+
+        await mw(handler, msg, {})
+        quick_handler.assert_called_once()
+
+
+class TestIsQuickCommandBotAware:
+    """is_quick_command should not strip @other_bot and match."""
+
+    def test_quick_command_bare(self) -> None:
+        from ductor_bot.bot.middleware import is_quick_command
+
+        assert is_quick_command("/status") is True
+
+    def test_quick_command_with_our_bot(self) -> None:
+        from ductor_bot.bot.middleware import is_quick_command
+
+        # is_quick_command doesn't know about bot identity — it just
+        # checks the command name. The bot-mention check is done in
+        # __call__ before is_quick_command is reached.
+        assert is_quick_command("/status@my_bot") is True
+
+    def test_quick_command_with_other_bot(self) -> None:
+        from ductor_bot.bot.middleware import is_quick_command
+
+        # This still returns True for the command name, but the
+        # __call__ guard prevents dispatch. This test documents
+        # current behavior after Task 3.
+        assert is_quick_command("/status@other_bot") is True

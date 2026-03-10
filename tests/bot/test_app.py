@@ -1356,3 +1356,117 @@ class TestForumTopicPropagation:
 
         opts = mock_send.call_args[0][3]
         assert opts.thread_id == 44
+
+
+# ---------------------------------------------------------------------------
+# Bot-mention filter helpers & fixture
+# ---------------------------------------------------------------------------
+
+
+def _make_group_message(
+    text: str = "Hello",
+    chat_id: int = 1,
+    user_id: int = 100,
+) -> MagicMock:
+    """Create a mock group Message."""
+    return _make_message(chat_id=chat_id, text=text, chat_type="group", user_id=user_id)
+
+
+@pytest.fixture
+def telegram_bot() -> MagicMock:
+    """TelegramBot with mocked orchestrator, bot_username = 'test_bot'."""
+    tg_bot, _bot_instance = _make_tg_bot()
+    orch = _make_orchestrator()
+    tg_bot._orchestrator = orch
+    tg_bot._bot_username = "test_bot"
+    return tg_bot  # type: ignore[return-value]
+
+
+# ---------------------------------------------------------------------------
+# TestBotMentionFilter
+# ---------------------------------------------------------------------------
+
+
+class TestBotMentionFilter:
+    """Commands addressed to other bots are ignored in groups."""
+
+    @patch("ductor_bot.bot.app.handle_command", new_callable=AsyncMock)
+    async def test_on_command_ignores_other_bot(
+        self, mock_handle: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """_on_command returns early for /status@other_bot in a group."""
+        msg = _make_group_message(text="/status@other_bot")
+        await telegram_bot._on_command(msg)
+        mock_handle.assert_not_called()
+
+    @patch("ductor_bot.bot.app.handle_command", new_callable=AsyncMock)
+    async def test_on_command_accepts_our_bot(
+        self, mock_handle: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """_on_command proceeds for /status@test_bot in a group."""
+        msg = _make_group_message(text="/status@test_bot")
+        await telegram_bot._on_command(msg)
+        mock_handle.assert_called_once()
+
+    @patch("ductor_bot.bot.app.handle_command", new_callable=AsyncMock)
+    async def test_on_command_accepts_bare_command(
+        self, mock_handle: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """_on_command proceeds for bare /status in a group."""
+        msg = _make_group_message(text="/status")
+        await telegram_bot._on_command(msg)
+        mock_handle.assert_called_once()
+
+    @patch("ductor_bot.bot.app.send_rich", new_callable=AsyncMock)
+    async def test_on_help_ignores_other_bot(
+        self, mock_send: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """_on_help returns early for /help@other_bot."""
+        msg = _make_group_message(text="/help@other_bot")
+        await telegram_bot._on_help(msg)
+        mock_send.assert_not_called()
+
+    @patch("ductor_bot.bot.app.run_streaming_message", new_callable=AsyncMock)
+    async def test_on_message_ignores_command_for_other_bot(
+        self, mock_stream: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """_on_message ignores /something@other_bot in groups."""
+        msg = _make_group_message(text="/custom@other_bot do stuff")
+        await telegram_bot._on_message(msg)
+        mock_stream.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# TestBotMentionIntegration
+# ---------------------------------------------------------------------------
+
+
+class TestBotMentionIntegration:
+    """End-to-end: commands for other bots produce no response."""
+
+    @patch("ductor_bot.bot.app.send_rich", new_callable=AsyncMock)
+    async def test_group_command_other_bot_no_response(
+        self, mock_send: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """A /help@other_bot in a group chat produces zero bot replies."""
+        msg = _make_group_message(text="/help@other_bot")
+        await telegram_bot._on_help(msg)
+        mock_send.assert_not_called()
+
+    @patch("ductor_bot.bot.app.send_rich", new_callable=AsyncMock)
+    async def test_group_command_our_bot_produces_response(
+        self, mock_send: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """A /help@test_bot in a group chat produces a response."""
+        msg = _make_group_message(text="/help@test_bot")
+        await telegram_bot._on_help(msg)
+        mock_send.assert_called_once()
+
+    @patch("ductor_bot.bot.app.send_rich", new_callable=AsyncMock)
+    async def test_private_chat_command_other_bot_no_response(
+        self, mock_send: AsyncMock, telegram_bot: MagicMock
+    ) -> None:
+        """In private chats, /help@other_bot is also filtered (consistent behaviour)."""
+        msg = _make_message(text="/help@other_bot")
+        await telegram_bot._on_help(msg)
+        mock_send.assert_not_called()

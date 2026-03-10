@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import functools
 import logging
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
@@ -34,6 +35,7 @@ from ductor_bot.bot.handlers import (
     handle_abort_all,
     handle_command,
     handle_new_session,
+    is_command_for_bot,
     strip_mention,
 )
 from ductor_bot.bot.media import (
@@ -128,6 +130,23 @@ async def _cancel_task(task: asyncio.Task[None] | None) -> None:
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await task
+
+
+def _for_this_bot(method: Any) -> Any:
+    """Decorator: skip handler if the message commands a different bot.
+
+    Wraps ``async def _on_*(self, message: Message) -> None`` handlers so
+    they return immediately when the command's ``@mention`` doesn't match
+    ``self._bot_username``.  No-ops for bare commands and plain text.
+    """
+
+    @functools.wraps(method)
+    async def _wrapper(self: Any, message: Any) -> None:
+        if not is_command_for_bot(message.text or "", self._bot_username):
+            return
+        await method(self, message)
+
+    return _wrapper
 
 
 class TelegramBot:
@@ -602,10 +621,12 @@ class TelegramBot:
             return False
         return html_caption is not None
 
+    @_for_this_bot
     async def _on_start(self, message: Message) -> None:
         """Handle /start: always show welcome screen."""
         await self._show_welcome(message)
 
+    @_for_this_bot
     async def _on_help(self, message: Message) -> None:
         """Handle /help: show command reference."""
         await send_rich(
@@ -615,6 +636,7 @@ class TelegramBot:
             SendRichOpts(reply_to_message_id=message.message_id, thread_id=get_thread_id(message)),
         )
 
+    @_for_this_bot
     async def _on_agent_commands(self, message: Message) -> None:
         """Handle /agent_commands: explain multi-agent system + list commands."""
         chat_id = message.chat.id
@@ -644,6 +666,7 @@ class TelegramBot:
             SendRichOpts(reply_to_message_id=message.message_id, thread_id=thread_id),
         )
 
+    @_for_this_bot
     async def _on_info(self, message: Message) -> None:
         """Handle /info: show project links and version."""
         from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -681,6 +704,7 @@ class TelegramBot:
             ),
         )
 
+    @_for_this_bot
     async def _on_showfiles(self, message: Message) -> None:
         """Handle /showfiles: interactive file browser for ~/.ductor."""
         text, keyboard = await file_browser_start(self._orch.paths)
@@ -695,6 +719,7 @@ class TelegramBot:
             ),
         )
 
+    @_for_this_bot
     async def _on_pair(self, message: Message) -> None:
         """Handle /pair: generate a pairing code (admin only, pairing must be enabled)."""
         if not self._pairing_svc:
@@ -782,6 +807,7 @@ class TelegramBot:
         await handle_command(self._orchestrator, self._bot, message)
         return True
 
+    @_for_this_bot
     async def _on_stop_all(self, message: Message) -> None:
         await handle_abort_all(
             self._orchestrator,
@@ -791,6 +817,7 @@ class TelegramBot:
             abort_all_callback=self._abort_all_callback,
         )
 
+    @_for_this_bot
     async def _on_stop(self, message: Message) -> None:
         await handle_abort(
             self._orchestrator,
@@ -799,9 +826,11 @@ class TelegramBot:
             message=message,
         )
 
+    @_for_this_bot
     async def _on_command(self, message: Message) -> None:
         await handle_command(self._orch, self._bot, message)
 
+    @_for_this_bot
     async def _on_new(self, message: Message) -> None:
         await handle_new_session(self._orch, self._bot, message, topic_names=self._topic_names)
 
@@ -870,6 +899,7 @@ class TelegramBot:
 
         return fmt("**Background Sessions**", SEP, "\n".join(lines))
 
+    @_for_this_bot
     async def _on_session(self, message: Message) -> None:
         """Handle /session: submit a named background session."""
         import re
@@ -973,14 +1003,17 @@ class TelegramBot:
                 SendRichOpts(reply_to_message_id=message.message_id, thread_id=thread_id),
             )
 
+    @_for_this_bot
     async def _on_sessions(self, message: Message) -> None:
         """Handle /sessions: show session management UI."""
         await handle_command(self._orch, self._bot, message)
 
+    @_for_this_bot
     async def _on_tasks(self, message: Message) -> None:
         """Handle /tasks: show background task management UI."""
         await handle_command(self._orch, self._bot, message)
 
+    @_for_this_bot
     async def _on_restart(self, message: Message) -> None:
         from ductor_bot.infra.restart import write_restart_sentinel
 
@@ -1223,6 +1256,7 @@ class TelegramBot:
 
     # -- Messages --------------------------------------------------------------
 
+    @_for_this_bot
     async def _on_message(self, message: Message) -> None:
         text = await self._resolve_text(message)
         if text is None:

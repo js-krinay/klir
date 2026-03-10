@@ -58,6 +58,7 @@ async def run_startup(bot: TelegramBot) -> None:
     me = await bot.bot_instance.get_me()
     bot._bot_id = me.id
     bot._bot_username = (me.username or "").lower()
+    bot._sequential.set_bot_username(bot._bot_username)
     logger.info("Bot online: @%s (id=%d)", me.username, me.id)
 
     if bot._proxy_url:

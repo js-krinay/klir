@@ -184,6 +184,55 @@ class TestStripMention:
         assert strip_mention("@bot hi", None) == "@bot hi"
 
 
+class TestIsCommandForBot:
+    """Test is_command_for_bot filtering logic."""
+
+    def test_bare_command_accepted(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model", "my_bot") is True
+
+    def test_command_for_our_bot_accepted(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model@my_bot", "my_bot") is True
+
+    def test_command_for_our_bot_case_insensitive(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model@My_Bot", "my_bot") is True
+
+    def test_command_for_other_bot_rejected(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model@other_bot", "my_bot") is False
+
+    def test_command_with_args_for_other_bot_rejected(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model@other_bot sonnet", "my_bot") is False
+
+    def test_command_with_args_for_our_bot_accepted(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model@my_bot sonnet", "my_bot") is True
+
+    def test_non_command_text_accepted(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("hello world", "my_bot") is True
+
+    def test_no_bot_username_accepts_all(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("/model@other_bot", None) is True
+
+    def test_empty_text_accepted(self) -> None:
+        from ductor_bot.bot.handlers import is_command_for_bot
+
+        assert is_command_for_bot("", "my_bot") is True
+
+
 class TestForumTopicPropagation:
     """Test that handlers extract and propagate thread_id."""
 

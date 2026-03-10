@@ -164,6 +164,25 @@ async def handle_new_session(
     )
 
 
+def is_command_for_bot(text: str, bot_username: str | None) -> bool:
+    """Return True unless *text* is a /command@other_bot not addressed to us.
+
+    Bare commands (``/model``), commands addressed to our bot
+    (``/model@our_bot``), and non-command text always return True.
+    Only ``/cmd@someone_else`` returns False.
+    """
+    if not bot_username:
+        return True
+    stripped = text.strip()
+    if not stripped or not stripped.startswith("/"):
+        return True
+    cmd = stripped.split(None, 1)[0]
+    if "@" not in cmd:
+        return True
+    _, mention = cmd.split("@", 1)
+    return mention.lower() == bot_username.lower()
+
+
 def strip_mention(text: str, bot_username: str | None) -> str:
     """Remove @botusername from message text (case-insensitive)."""
     if not bot_username:

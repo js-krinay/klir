@@ -22,6 +22,7 @@ from aiogram.types import (
 
 from ductor_bot.bot.abort import is_abort_all_message, is_abort_message
 from ductor_bot.bot.dedup import DedupeCache, build_dedup_key
+from ductor_bot.bot.handlers import is_command_for_bot
 from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
 from ductor_bot.bus.lock_pool import LockPool
 from ductor_bot.log_context import set_log_context
@@ -202,6 +203,7 @@ class SequentialMiddleware(BaseMiddleware):
         self._pending: dict[int, list[_QueueEntry]] = {}
         self._entry_counter = 0
         self._bot: Bot | None = None
+        self._bot_username: str | None = None
 
     @property
     def lock_pool(self) -> LockPool:
@@ -211,6 +213,10 @@ class SequentialMiddleware(BaseMiddleware):
     def set_bot(self, bot: Bot) -> None:
         """Inject the Bot instance used to send/edit queue indicator messages."""
         self._bot = bot
+
+    def set_bot_username(self, username: str) -> None:
+        """Inject the bot username for command mention filtering."""
+        self._bot_username = username
 
     def set_abort_handler(self, handler: AbortHandler) -> None:
         """Register a callback invoked for abort triggers *before* the lock."""
@@ -320,10 +326,19 @@ class SequentialMiddleware(BaseMiddleware):
         chat_id = event.chat.id
         text = (event.text or "").strip()
 
-        if text and await self._check_abort(chat_id, text, event):
+        if (
+            text
+            and is_command_for_bot(text, self._bot_username)
+            and await self._check_abort(chat_id, text, event)
+        ):
             return None
 
-        if self._quick_command_handler and text and is_quick_command(text):
+        if (
+            self._quick_command_handler
+            and text
+            and is_command_for_bot(text, self._bot_username)
+            and is_quick_command(text)
+        ):
             logger.debug("Quick command bypass cmd=%s", text)
             handled = await self._quick_command_handler(chat_id, event)
             if handled:
