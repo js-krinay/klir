@@ -796,3 +796,44 @@ class TestForumTopicIndicator:
         release.set()
         await task1
         await task2
+
+
+class TestAuthMiddlewareEnabled:
+    async def test_disabled_chat_is_dropped(self) -> None:
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        resolver = MagicMock()
+        resolver.is_enabled.return_value = False
+
+        mw = AuthMiddleware(allowed_user_ids={100}, resolver=resolver)
+        handler = AsyncMock()
+        msg = _make_message(user_id=100, chat_id=555)
+
+        result = await mw(handler, msg, {})
+        handler.assert_not_called()
+        assert result is None
+
+    async def test_enabled_chat_passes(self) -> None:
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        resolver = MagicMock()
+        resolver.is_enabled.return_value = True
+
+        mw = AuthMiddleware(allowed_user_ids={100}, resolver=resolver)
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(user_id=100, chat_id=555)
+
+        result = await mw(handler, msg, {})
+        handler.assert_called_once()
+        assert result == "ok"
+
+    async def test_no_resolver_defaults_enabled(self) -> None:
+        """Without resolver, all chats are enabled (backward compat)."""
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(allowed_user_ids={100})
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(user_id=100)
+
+        result = await mw(handler, msg, {})
+        assert result == "ok"

@@ -89,10 +89,12 @@ class AuthMiddleware(BaseMiddleware):
         *,
         allowed_group_ids: set[int] | None = None,
         on_rejected: RejectedCallback | None = None,
+        resolver: object | None = None,
     ) -> None:
         self._allowed_users = allowed_user_ids
         self._allowed_groups = allowed_group_ids or set()
         self._on_rejected = on_rejected
+        self._resolver = resolver
 
     async def __call__(
         self,
@@ -127,6 +129,12 @@ class AuthMiddleware(BaseMiddleware):
                 return None
         elif user.id not in self._allowed_users:
             return None
+
+        # Check per-chat enabled status
+        if self._resolver is not None:
+            check_chat_id = chat.id if chat else (user.id if user else None)
+            if check_chat_id is not None and not self._resolver.is_enabled(check_chat_id):
+                return None
 
         return await handler(event, data)
 
