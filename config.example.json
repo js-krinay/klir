@@ -26,6 +26,12 @@
             "group_mention_only": true
         }
     },
+    "pairing": {
+        "enabled": false,
+        "code_ttl_minutes": 60,
+        "code_length": 6,
+        "max_active_codes": 10
+    },
     "streaming": {
         "enabled": true,
         "min_chars": 200,
