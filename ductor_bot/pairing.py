@@ -28,11 +28,18 @@ class PairingService:
         self._cfg = config.pairing
         self._codes: dict[str, _CodeEntry] = {}
 
-    def generate_code(self, admin_user_id: int) -> str:
-        """Generate a new pairing code. Returns the code string."""
+    def generate_code(self, admin_user_id: int) -> str | None:
+        """Generate a new pairing code. Returns the code string, or None if limit reached."""
         self._prune_expired()
 
-        code = "".join(secrets.choice(_ALPHABET) for _ in range(self._cfg.code_length))
+        if len(self._codes) >= self._cfg.max_active_codes:
+            return None
+
+        while True:
+            code = "".join(secrets.choice(_ALPHABET) for _ in range(self._cfg.code_length))
+            if code not in self._codes:
+                break
+
         self._codes[code] = _CodeEntry(
             admin_user_id=admin_user_id,
             created_at=time.time(),

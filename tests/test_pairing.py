@@ -24,16 +24,20 @@ class TestPairingService:
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
 
+        assert code is not None
         assert len(code) == 6
         assert code.isalnum()
 
     def test_generate_code_unique(self) -> None:
         from ductor_bot.pairing import PairingService
 
-        svc = PairingService(_make_config())
-        codes = {svc.generate_code(admin_user_id=100) for _ in range(20)}
-        # With 6 alphanum chars, collision in 20 codes is astronomically unlikely
-        assert len(codes) == 20
+        cfg = _make_config()
+        cfg.pairing.max_active_codes = 20
+        svc = PairingService(cfg)
+        codes = [svc.generate_code(admin_user_id=100) for _ in range(20)]
+        # All should succeed (max_active_codes=20) and be unique
+        assert all(c is not None for c in codes)
+        assert len(set(codes)) == 20
 
     def test_validate_correct_code(self) -> None:
         from ductor_bot.pairing import PairingService
@@ -99,6 +103,20 @@ class TestPairingService:
 
         svc = PairingService(_make_config(enabled=False))
         code = svc.generate_code(admin_user_id=100)
+        assert code is not None
 
         result = svc.validate(code, user_id=200)
         assert result is False
+
+    def test_max_active_codes_enforced(self) -> None:
+        from ductor_bot.pairing import PairingService
+
+        cfg = _make_config()
+        cfg.pairing.max_active_codes = 3
+        svc = PairingService(cfg)
+
+        codes = [svc.generate_code(admin_user_id=100) for _ in range(3)]
+        assert all(c is not None for c in codes)
+
+        overflow = svc.generate_code(admin_user_id=100)
+        assert overflow is None

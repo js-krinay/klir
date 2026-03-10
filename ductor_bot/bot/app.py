@@ -646,9 +646,8 @@ class TelegramBot:
             )
             return
         from ductor_bot.bot.pair_handler import handle_pair
-        from ductor_bot.pairing import PairingService
 
-        await handle_pair(message, self._pairing_svc)  # type: ignore[arg-type]
+        await handle_pair(message, self._pairing_svc)
 
     # -- Abort, commands, sessions ---------------------------------------------
 

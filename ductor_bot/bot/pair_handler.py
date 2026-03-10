@@ -22,8 +22,14 @@ async def handle_pair(message: Message, pairing_svc: PairingService) -> None:
     user_id = message.from_user.id if message.from_user else 0
     code = pairing_svc.generate_code(admin_user_id=user_id)
 
+    if code is None:
+        await message.reply("Maximum active pairing codes reached. Wait for existing codes to expire.")
+        return
+
+    ttl = pairing_svc._cfg.code_ttl_minutes
+    ttl_text = f"{ttl} minutes" if ttl != 60 else "1 hour"
     await message.reply(
         f"<b>Pairing code:</b> <code>{code}</code>\n\n"
-        "Share this code with the user. They send it to the bot in DMs to pair.\n"
-        "The code is single-use and expires in 1 hour.",
+        f"Share this code with the user. They send it to the bot in DMs to pair.\n"
+        f"The code is single-use and expires in {ttl_text}.",
     )
