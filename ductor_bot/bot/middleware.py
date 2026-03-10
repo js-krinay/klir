@@ -90,6 +90,7 @@ class AuthMiddleware(BaseMiddleware):
         allowed_user_ids: set[int],
         *,
         allowed_group_ids: set[int] | None = None,
+        allowed_channel_ids: set[int] | None = None,
         on_rejected: RejectedCallback | None = None,
         resolver: ChatConfigResolver | None = None,
         pairing_svc: object | None = None,
@@ -98,6 +99,7 @@ class AuthMiddleware(BaseMiddleware):
     ) -> None:
         self._allowed_users = allowed_user_ids
         self._allowed_groups = allowed_group_ids or set()
+        self._allowed_channels = allowed_channel_ids or set()
         self._on_rejected = on_rejected
         self._resolver = resolver
         self._pairing_svc = pairing_svc
@@ -115,7 +117,14 @@ class AuthMiddleware(BaseMiddleware):
         else:
             return await handler(event, data)
 
+        # Channel posts have no from_user — authenticate by chat ID only.
         if not user:
+            if (
+                isinstance(event, Message)
+                and event.chat.type == "channel"
+                and event.chat.id in self._allowed_channels
+            ):
+                return await handler(event, data)
             return None
 
         # Resolve chat: Message.chat directly, CallbackQuery via .message.chat.

@@ -153,8 +153,10 @@ class TelegramBot:
 
         allowed = set(config.allowed_user_ids)
         allowed_groups = set(config.allowed_group_ids)
+        allowed_channels = set(config.allowed_channel_ids)
         self._allowed_users = allowed
         self._allowed_groups = allowed_groups
+        self._allowed_channels = allowed_channels
         self._pairing_svc: PairingService | None = None
         if config.pairing.enabled:
             from ductor_bot.pairing import PairingService
@@ -189,6 +191,10 @@ class TelegramBot:
         self._router.callback_query.outer_middleware(
             AuthMiddleware(allowed, allowed_group_ids=allowed_groups, on_rejected=on_rejected)
         )
+        self._router.channel_post.outer_middleware(
+            AuthMiddleware(allowed, allowed_group_ids=allowed_groups, allowed_channel_ids=allowed_channels)
+        )
+        self._router.channel_post.outer_middleware(self._sequential)
 
         self._register_handlers()
         self._register_member_handlers()
@@ -273,6 +279,7 @@ class TelegramBot:
         r.message(F.forum_topic_created)(self._on_forum_topic_created)
         r.message(F.forum_topic_edited)(self._on_forum_topic_edited)
         r.message()(self._on_message)
+        r.channel_post()(self._on_channel_post)
         r.callback_query()(self._on_callback_query)
 
     def _register_member_handlers(self) -> None:
@@ -307,6 +314,10 @@ class TelegramBot:
             self._allowed_groups.update(config.allowed_group_ids)
             logger.info("Auth hot-reloaded: allowed_group_ids (%d)", len(self._allowed_groups))
             self._group_audit_task = asyncio.create_task(self._fire_audit())
+        if "allowed_channel_ids" in hot:
+            self._allowed_channels.clear()
+            self._allowed_channels.update(config.allowed_channel_ids)
+            logger.info("Auth hot-reloaded: allowed_channel_ids (%d)", len(self._allowed_channels))
 
     # -- Chat tracker (my_chat_member + /where + /leave) ------------------------
 
@@ -1204,6 +1215,24 @@ class TelegramBot:
             await self._reactions.done(chat_id, msg_id)
         except Exception:
             await self._reactions.error(chat_id, msg_id)
+            raise
+
+    async def _on_channel_post(self, message: Message) -> None:
+        """Handle channel_post updates from broadcast channels."""
+        text = await self._resolve_text(message)
+        if text is None:
+            return
+
+        key = get_session_key(message)
+        thread_id = get_thread_id(message)
+
+        try:
+            if self._config.streaming.enabled:
+                await self._handle_streaming(message, key, text, thread_id=thread_id)
+            else:
+                await self._handle_non_streaming(message, key, text, thread_id=thread_id)
+        except Exception:
+            logger.exception("Channel post handler failed for chat %d", message.chat.id)
             raise
 
     async def _resolve_text(self, message: Message) -> str | None:

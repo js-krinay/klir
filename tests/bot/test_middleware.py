@@ -932,3 +932,38 @@ class TestAuthMiddlewareEnabled:
 
         result = await mw(handler, msg, {})
         assert result == "ok"
+
+
+class TestChannelAuth:
+    async def test_channel_post_no_from_user_uses_chat_id(self) -> None:
+        """Channel posts have no from_user; auth should check channel ID only."""
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(
+            allowed_user_ids=set(),
+            allowed_group_ids=set(),
+            allowed_channel_ids={-1001234},
+        )
+        handler = AsyncMock(return_value="ok")
+        msg = _make_message(chat_id=-1001234, user_id=0, chat_type="channel")
+        msg.from_user = None  # Channel posts have no sender
+
+        result = await mw(handler, msg, {})
+        handler.assert_called_once()
+        assert result == "ok"
+
+    async def test_unknown_channel_rejected(self) -> None:
+        from ductor_bot.bot.middleware import AuthMiddleware
+
+        mw = AuthMiddleware(
+            allowed_user_ids=set(),
+            allowed_group_ids=set(),
+            allowed_channel_ids={-1001234},
+        )
+        handler = AsyncMock()
+        msg = _make_message(chat_id=-9999, user_id=0, chat_type="channel")
+        msg.from_user = None
+
+        result = await mw(handler, msg, {})
+        handler.assert_not_called()
+        assert result is None
