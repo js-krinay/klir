@@ -49,6 +49,7 @@ _HOT_RELOADABLE: frozenset[str] = frozenset(
         "file_access",
         "user_timezone",
         "streaming",
+        "reactions",
         "heartbeat",
         "cleanup",
         "cli_parameters",
