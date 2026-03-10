@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -38,6 +38,8 @@ class NonStreamingDispatch:
     polls_enabled: bool = False
     polls_anonymous: bool = True
     reply_to_mode: ReplyToMode = "first"
+    forwarding_enabled: bool = False
+    forwarding_targets: set[int] = field(default_factory=set)
 
 
 @dataclass(slots=True)
@@ -55,6 +57,8 @@ class StreamingDispatch:
     polls_enabled: bool = False
     polls_anonymous: bool = True
     reply_to_mode: ReplyToMode = "first"
+    forwarding_enabled: bool = False
+    forwarding_targets: set[int] = field(default_factory=set)
 
 
 async def run_non_streaming_message(
@@ -76,6 +80,8 @@ async def run_non_streaming_message(
             polls_enabled=dispatch.polls_enabled,
             polls_anonymous=dispatch.polls_anonymous,
             reply_to_mode=dispatch.reply_to_mode,
+            forwarding_enabled=dispatch.forwarding_enabled,
+            forwarding_targets=dispatch.forwarding_targets,
         ),
     )
     return result.text
@@ -157,6 +163,8 @@ async def run_streaming_message(
                 polls_enabled=dispatch.polls_enabled,
                 polls_anonymous=dispatch.polls_anonymous,
                 reply_to_mode=dispatch.reply_to_mode,
+                forwarding_enabled=dispatch.forwarding_enabled,
+                forwarding_targets=dispatch.forwarding_targets,
             ),
         )
     else:

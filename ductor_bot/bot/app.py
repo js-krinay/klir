@@ -1262,6 +1262,17 @@ class TelegramBot:
         if text is None:
             return
 
+        # Prepend forward origin context for forwarded messages
+        if self._config.forwarding.enabled and message.forward_origin:
+            from ductor_bot.bot.forward_context import (
+                extract_forward_context,
+                prepend_forward_context,
+            )
+
+            fwd_ctx = extract_forward_context(message)
+            if fwd_ctx:
+                text = prepend_forward_context(fwd_ctx, text)
+
         key = get_session_key(message)
         if key.topic_id is not None:
             self._topic_names.touch(key.chat_id, key.topic_id)
@@ -1337,6 +1348,8 @@ class TelegramBot:
                 polls_enabled=self._config.polls.enabled,
                 polls_anonymous=self._config.polls.is_anonymous,
                 reply_to_mode=self._orch.resolver.reply_to_mode(key.chat_id),
+                forwarding_enabled=self._config.forwarding.enabled,
+                forwarding_targets=self._config.allowed_forward_targets,
             ),
         )
 
@@ -1361,6 +1374,8 @@ class TelegramBot:
                 polls_enabled=self._config.polls.enabled,
                 polls_anonymous=self._config.polls.is_anonymous,
                 reply_to_mode=self._orch.resolver.reply_to_mode(key.chat_id),
+                forwarding_enabled=self._config.forwarding.enabled,
+                forwarding_targets=self._config.allowed_forward_targets,
             ),
         )
 

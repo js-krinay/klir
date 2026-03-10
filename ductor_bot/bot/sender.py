@@ -37,6 +37,8 @@ class SendRichOpts:
     polls_enabled: bool = False
     polls_anonymous: bool = True
     reply_to_mode: ReplyToMode = "first"
+    forwarding_enabled: bool = False
+    forwarding_targets: set[int] = field(default_factory=set)
 
 
 logger = logging.getLogger(__name__)
@@ -185,6 +187,20 @@ async def _send_text_chunks(
     return last_msg
 
 
+async def _process_forwards(bot: Bot, chat_id: int, text: str, targets: set[int]) -> str:
+    """Extract forward/copy directives from *text*, execute them, return cleaned text."""
+    from ductor_bot.bot.forward_parser import parse_forwards, strip_forwards
+    from ductor_bot.bot.forward_sender import send_forward as _send_forward
+
+    forwards = parse_forwards(text)
+    if not forwards:
+        return text
+    text = strip_forwards(text).strip()
+    for directive in forwards:
+        await _send_forward(bot, from_chat_id=chat_id, directive=directive, allowed_targets=targets)
+    return text
+
+
 async def send_rich(
     bot: Bot,
     chat_id: int,
@@ -217,6 +233,9 @@ async def send_rich(
                     thread_id=o.thread_id,
                     is_anonymous=o.polls_anonymous,
                 )
+
+    if o.forwarding_enabled:
+        clean_text = await _process_forwards(bot, chat_id, clean_text, o.forwarding_targets)
 
     button_markup = o.reply_markup if o.reply_markup is not None else extract_buttons(clean_text)[1]
     last_msg: Message | None = None

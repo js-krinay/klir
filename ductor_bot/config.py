@@ -247,6 +247,12 @@ class PollConfig(BaseModel):
     is_anonymous: bool = True
 
 
+class ForwardingConfig(BaseModel):
+    """Settings for message forwarding and copying."""
+
+    enabled: bool = False
+
+
 class ChatOverrides(BaseModel):
     """Per-chat configuration overrides. All fields optional (None = use global)."""
 
@@ -326,11 +332,19 @@ class AgentConfig(BaseModel):
     allowed_channel_ids: list[int] = Field(default_factory=list)
     pairing: PairingConfig = Field(default_factory=PairingConfig)
     polls: PollConfig = Field(default_factory=PollConfig)
+    forwarding: ForwardingConfig = Field(default_factory=ForwardingConfig)
     proxy: ProxyConfig = Field(default_factory=ProxyConfig)
     approval: ApprovalConfig = Field(default_factory=ApprovalConfig)
     thread_binding: ThreadBindingConfig = Field(default_factory=ThreadBindingConfig)
     reply_to_mode: ReplyToMode = "first"
     chat_overrides: dict[str, dict[str, object]] = Field(default_factory=dict)
+
+    @property
+    def allowed_forward_targets(self) -> set[int]:
+        """Union of all authorized chat IDs for forward/copy security."""
+        return (
+            set(self.allowed_user_ids) | set(self.allowed_group_ids) | set(self.allowed_channel_ids)
+        )
 
     @field_validator("gemini_api_key", mode="before")
     @classmethod
