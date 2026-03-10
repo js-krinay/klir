@@ -64,7 +64,7 @@ from ductor_bot.bus.bus import MessageBus
 from ductor_bot.bus.lock_pool import LockPool
 from ductor_bot.commands import BOT_COMMANDS as _COMMAND_DEFS
 from ductor_bot.commands import MULTIAGENT_SUB_COMMANDS as _MA_SUB_DEFS
-from ductor_bot.config import AgentConfig
+from ductor_bot.config import AgentConfig, update_config_file_async
 from ductor_bot.files.allowed_roots import resolve_allowed_roots
 from ductor_bot.infra.restart import EXIT_RESTART, consume_restart_marker
 from ductor_bot.infra.updater import UpdateObserver
@@ -111,7 +111,8 @@ _HELP_TEXT = fmt(
     f"Multi-Agent\n{_help_line('agent_commands')}",
     f"Browse & Info\n{_help_line('where')}\n{_help_line('leave')}\n"
     f"{_help_line('showfiles')}\n{_help_line('info')}\n{_help_line('help')}",
-    f"Maintenance\n{_help_line('diagnose')}\n{_help_line('upgrade')}\n{_help_line('restart')}",
+    f"Maintenance\n{_help_line('diagnose')}\n{_help_line('upgrade')}\n{_help_line('restart')}\n"
+    f"{_help_line('pair')}",
     SEP,
     "Send any message to start working with your agent.",
 )
@@ -175,7 +176,14 @@ class TelegramBot:
         self._sequential.set_abort_all_handler(self._on_abort_all)
         self._sequential.set_quick_command_handler(self._on_quick_command)
         on_rejected = self._on_group_rejected
-        auth = AuthMiddleware(allowed, allowed_group_ids=allowed_groups, on_rejected=on_rejected)
+        auth = AuthMiddleware(
+            allowed,
+            allowed_group_ids=allowed_groups,
+            on_rejected=on_rejected,
+            pairing_svc=self._pairing_svc,
+            on_unknown_dm=self._on_unknown_dm if self._pairing_svc else None,
+            on_paired=self._on_paired if self._pairing_svc else None,
+        )
         self._router.message.outer_middleware(auth)
         self._router.message.outer_middleware(self._sequential)
         self._router.callback_query.outer_middleware(
@@ -306,6 +314,25 @@ class TelegramBot:
         """Callback from AuthMiddleware when a group message is rejected."""
         if self._chat_tracker:
             self._chat_tracker.record_rejected(chat_id, chat_type, title)
+
+    async def _on_paired(self, user_id: int) -> None:
+        """Persist newly paired user to config.json."""
+        current = list(self._config.allowed_user_ids)
+        if user_id not in current:
+            current.append(user_id)
+            config_path = DuctorPaths(self._config.ductor_home).config_json
+            await update_config_file_async(config_path, allowed_user_ids=current)
+            self._config.allowed_user_ids = current
+            logger.info("Paired user %d added to allowed_user_ids", user_id)
+
+    async def _on_unknown_dm(self, user_id: int, message: Message) -> None:
+        """Send pairing prompt to unknown user."""
+        await self._bot.send_message(
+            user_id,
+            "Hi! I don't recognize you yet.\n\n"
+            "If you have a <b>pairing code</b>, send it here to get started.",
+            parse_mode=ParseMode.HTML,
+        )
 
     async def _on_bot_added(self, event: ChatMemberUpdated) -> None:
         """Bot was added to a group."""
