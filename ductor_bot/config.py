@@ -58,6 +58,23 @@ class StreamingConfig(BaseModel):
     sentence_break: bool = True
 
 
+class ReactionConfig(BaseModel):
+    """Settings for Telegram message reactions."""
+
+    level: str = "ack"
+    ack_emoji: str = "👀"
+    done_emoji: str = "✅"
+    error_emoji: str = "❌"
+
+    @field_validator("level")
+    @classmethod
+    def _validate_level(cls, v: str) -> str:
+        if v not in ("off", "ack", "full"):
+            msg = f"reaction level must be 'off', 'ack', or 'full', got '{v}'"
+            raise ValueError(msg)
+        return v
+
+
 class DockerConfig(BaseModel):
     """Settings for Docker-based CLI sandboxing."""
 
@@ -231,6 +248,7 @@ class AgentConfig(BaseModel):
     file_access: str = "all"
     gemini_api_key: str | None = None
     streaming: StreamingConfig = Field(default_factory=StreamingConfig)
+    reactions: ReactionConfig = Field(default_factory=ReactionConfig)
     docker: DockerConfig = Field(default_factory=DockerConfig)
     heartbeat: HeartbeatConfig = Field(default_factory=HeartbeatConfig)
     cleanup: CleanupConfig = Field(default_factory=CleanupConfig)
