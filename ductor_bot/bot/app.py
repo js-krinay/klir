@@ -254,6 +254,7 @@ class TelegramBot:
         r.message(Command("sessions", ignore_case=True))(self._on_sessions)
         r.message(Command("tasks", ignore_case=True))(self._on_tasks)
         r.message(Command("showfiles", ignore_case=True))(self._on_showfiles)
+        r.message(Command("pair", ignore_case=True))(self._on_pair)
         r.message(Command("agent_commands", ignore_case=True))(self._on_agent_commands)
         base_cmds = ["status", "memory", "model", "cron", "diagnose", "upgrade"]
         if self._agent_name == "main":

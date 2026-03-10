@@ -34,3 +34,26 @@ class TestSyncCommands:
         from ductor_bot.commands import BOT_COMMANDS, GROUP_COMMANDS
 
         assert len(GROUP_COMMANDS) < len(BOT_COMMANDS)
+
+    async def test_shutdown_deletes_commands(self) -> None:
+        """shutdown() should call delete_my_commands for clean state."""
+        from ductor_bot.config import AgentConfig
+
+        config = AgentConfig(telegram_token="test:token")
+
+        with patch("ductor_bot.bot.app.Bot") as MockBot:
+            mock_bot = MockBot.return_value
+            mock_bot.delete_my_commands = AsyncMock()
+            mock_bot.delete_webhook = AsyncMock()
+            mock_bot.session = MagicMock()
+            mock_bot.session.close = AsyncMock()
+
+            from ductor_bot.bot.app import TelegramBot
+
+            bot = TelegramBot(config)
+            bot._bot = mock_bot
+            bot._orchestrator = MagicMock()
+            bot._orchestrator.shutdown = AsyncMock()
+            await bot.shutdown()
+
+            mock_bot.delete_my_commands.assert_called()
