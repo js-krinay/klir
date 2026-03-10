@@ -237,6 +237,17 @@ class PairingConfig(BaseModel):
     max_active_codes: int = 10
 
 
+class ChatOverrides(BaseModel):
+    """Per-chat configuration overrides. All fields optional (None = use global)."""
+
+    provider: str | None = None
+    model: str | None = None
+    streaming: StreamingConfig | None = None
+    group_mention_only: bool | None = None
+    require_mention: bool | None = None
+    enabled: bool | None = None
+
+
 class AgentConfig(BaseModel):
     """Top-level configuration loaded from config.json."""
 
@@ -272,6 +283,7 @@ class AgentConfig(BaseModel):
     allowed_user_ids: list[int] = Field(default_factory=list)
     allowed_group_ids: list[int] = Field(default_factory=list)
     pairing: PairingConfig = Field(default_factory=PairingConfig)
+    chat_overrides: dict[str, dict[str, object]] = Field(default_factory=dict)
 
     @field_validator("gemini_api_key", mode="before")
     @classmethod
