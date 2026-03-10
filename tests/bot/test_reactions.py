@@ -87,3 +87,21 @@ class TestReactionService:
         bot.set_message_reaction.assert_called_once()
         call_kwargs = bot.set_message_reaction.call_args.kwargs
         assert call_kwargs["reaction"] == []
+
+    async def test_picks_up_config_change_via_parent_ref(self) -> None:
+        """Verify hot-reload works: service reads current config, not a stale snapshot."""
+        from ductor_bot.bot.reactions import ReactionService
+
+        bot = AsyncMock()
+        config = _make_config("ack")
+        svc = ReactionService(bot, config)
+
+        await svc.ack(chat_id=1, message_id=10)
+        assert bot.set_message_reaction.call_count == 1
+
+        # Simulate hot-reload: parent config's reactions field changes
+        config.reactions.level = "off"
+
+        await svc.ack(chat_id=1, message_id=10)
+        # Should NOT have called again since level is now "off"
+        assert bot.set_message_reaction.call_count == 1

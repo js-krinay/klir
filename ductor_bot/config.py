@@ -69,8 +69,8 @@ class ReactionConfig(BaseModel):
     @field_validator("level")
     @classmethod
     def _validate_level(cls, v: str) -> str:
-        if v not in ("off", "ack", "full"):
-            msg = f"reaction level must be 'off', 'ack', or 'full', got '{v}'"
+        if v not in ("off", "ack"):
+            msg = f"reaction level must be 'off' or 'ack', got '{v}'"
             raise ValueError(msg)
         return v
 

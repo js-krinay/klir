@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from aiogram import Bot
 
-    from ductor_bot.config import AgentConfig
+    from ductor_bot.config import AgentConfig, ReactionConfig
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,11 @@ class ReactionService:
 
     def __init__(self, bot: Bot, config: AgentConfig) -> None:
         self._bot = bot
-        self._cfg = config.reactions
+        self._config = config
+
+    @property
+    def _cfg(self) -> ReactionConfig:
+        return self._config.reactions
 
     @property
     def _level(self) -> str:

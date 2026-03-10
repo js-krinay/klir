@@ -15,7 +15,7 @@ class TestReactionConfig:
     def test_valid_levels(self) -> None:
         from ductor_bot.config import ReactionConfig
 
-        for level in ("off", "ack", "full"):
+        for level in ("off", "ack"):
             cfg = ReactionConfig(level=level)
             assert cfg.level == level
 
