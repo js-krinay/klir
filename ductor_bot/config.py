@@ -277,6 +277,15 @@ class ApprovalConfig(BaseModel):
     auto_deny_on_timeout: bool = True
 
 
+class ThreadBindingConfig(BaseModel):
+    """Settings for thread/topic binding lifecycle management."""
+
+    enabled: bool = True
+    idle_timeout_minutes: int = 60
+    max_age_minutes: int = 1440
+    cleanup_interval_minutes: int = 15
+
+
 class AgentConfig(BaseModel):
     """Top-level configuration loaded from config.json."""
 
@@ -316,6 +325,7 @@ class AgentConfig(BaseModel):
     polls: PollConfig = Field(default_factory=PollConfig)
     proxy: ProxyConfig = Field(default_factory=ProxyConfig)
     approval: ApprovalConfig = Field(default_factory=ApprovalConfig)
+    thread_binding: ThreadBindingConfig = Field(default_factory=ThreadBindingConfig)
     chat_overrides: dict[str, dict[str, object]] = Field(default_factory=dict)
 
     @field_validator("gemini_api_key", mode="before")

@@ -16,6 +16,7 @@ from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.filters import Command, CommandStart
 from aiogram.types import BotCommand, ChatMemberUpdated, FSInputFile, ReplyParameters
 
+from ductor_bot.bot.binding_cleanup import BindingCleanupObserver
 from ductor_bot.bot.callbacks import (
     edit_selector_response,
     mark_button_choice,
@@ -28,7 +29,6 @@ from ductor_bot.bot.file_browser import (
     is_file_browser_callback,
 )
 from ductor_bot.bot.formatting import markdown_to_telegram_html
-from ductor_bot.bot.session_factory import create_bot_session
 from ductor_bot.bot.handlers import (
     handle_abort,
     handle_abort_all,
@@ -52,6 +52,7 @@ from ductor_bot.bot.middleware import MQ_PREFIX, AuthMiddleware, SequentialMiddl
 from ductor_bot.bot.reactions import ReactionService
 from ductor_bot.bot.sender import SendRichOpts, send_rich
 from ductor_bot.bot.sender import send_files_from_text as _send_files_from_text
+from ductor_bot.bot.session_factory import create_bot_session
 from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
 from ductor_bot.bot.typing import TypingContext as _TypingContext
 from ductor_bot.bot.welcome import (
@@ -176,6 +177,10 @@ class TelegramBot:
             self._approval_svc = ApprovalService(config)
         self._chat_tracker: ChatTracker | None = None  # set in _on_startup
         self._topic_names = TopicNameCache()
+        self._binding_cleanup = BindingCleanupObserver(
+            config=config,
+            topic_cache=self._topic_names,
+        )
         self._lock_pool = LockPool()
         self._bus = MessageBus(lock_pool=self._lock_pool)
 
@@ -204,7 +209,9 @@ class TelegramBot:
             AuthMiddleware(allowed, allowed_group_ids=allowed_groups, on_rejected=on_rejected)
         )
         self._router.channel_post.outer_middleware(
-            AuthMiddleware(allowed, allowed_group_ids=allowed_groups, allowed_channel_ids=allowed_channels)
+            AuthMiddleware(
+                allowed, allowed_group_ids=allowed_groups, allowed_channel_ids=allowed_channels
+            )
         )
         self._router.channel_post.outer_middleware(self._sequential)
 
@@ -1222,6 +1229,8 @@ class TelegramBot:
             return
 
         key = get_session_key(message)
+        if key.topic_id is not None:
+            self._topic_names.touch(key.chat_id, key.topic_id)
         thread_id = get_thread_id(message)
         logger.debug("Message text=%s", text[:80])
 
@@ -1488,6 +1497,7 @@ class TelegramBot:
     async def shutdown(self) -> None:
         await _cancel_task(self._restart_watcher)
         await _cancel_task(self._group_audit_task)
+        await self._binding_cleanup.stop()
         if self._update_observer:
             await self._update_observer.stop()
         if self._orchestrator:
