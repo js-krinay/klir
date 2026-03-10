@@ -29,6 +29,8 @@ from ductor_bot.log_context import set_log_context
 if TYPE_CHECKING:
     from aiogram import Bot
 
+    from ductor_bot.config_resolver import ChatConfigResolver
+
 logger = logging.getLogger(__name__)
 
 AbortHandler = Callable[[int, "Message"], Awaitable[bool]]
@@ -89,7 +91,7 @@ class AuthMiddleware(BaseMiddleware):
         *,
         allowed_group_ids: set[int] | None = None,
         on_rejected: RejectedCallback | None = None,
-        resolver: object | None = None,
+        resolver: ChatConfigResolver | None = None,
         pairing_svc: object | None = None,
         on_unknown_dm: Callable[[int, Message], Awaitable[None]] | None = None,
         on_paired: Callable[[int], Awaitable[None]] | None = None,
