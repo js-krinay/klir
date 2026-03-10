@@ -11,6 +11,7 @@ from ductor_bot.bot.sender import SendRichOpts, send_files_from_text, send_rich
 from ductor_bot.bot.streaming import create_stream_editor
 from ductor_bot.bot.typing import TypingContext
 from ductor_bot.cli.coalescer import CoalesceConfig, StreamCoalescer
+from ductor_bot.config import ReplyToMode
 from ductor_bot.session.key import SessionKey
 
 if TYPE_CHECKING:
@@ -36,6 +37,7 @@ class NonStreamingDispatch:
     thread_id: int | None = None
     polls_enabled: bool = False
     polls_anonymous: bool = True
+    reply_to_mode: ReplyToMode = "first"
 
 
 @dataclass(slots=True)
@@ -52,6 +54,7 @@ class StreamingDispatch:
     thread_id: int | None = None
     polls_enabled: bool = False
     polls_anonymous: bool = True
+    reply_to_mode: ReplyToMode = "first"
 
 
 async def run_non_streaming_message(
@@ -72,6 +75,7 @@ async def run_non_streaming_message(
             thread_id=dispatch.thread_id,
             polls_enabled=dispatch.polls_enabled,
             polls_anonymous=dispatch.polls_anonymous,
+            reply_to_mode=dispatch.reply_to_mode,
         ),
     )
     return result.text
@@ -89,6 +93,7 @@ async def run_streaming_message(
         reply_to=dispatch.message,
         cfg=dispatch.streaming_cfg,
         thread_id=dispatch.thread_id,
+        reply_to_mode=dispatch.reply_to_mode,
     )
     coalescer = StreamCoalescer(
         config=CoalesceConfig(
@@ -151,6 +156,7 @@ async def run_streaming_message(
                 thread_id=dispatch.thread_id,
                 polls_enabled=dispatch.polls_enabled,
                 polls_anonymous=dispatch.polls_anonymous,
+                reply_to_mode=dispatch.reply_to_mode,
             ),
         )
     else:

@@ -1302,6 +1302,7 @@ class TelegramBot:
                 thread_id=thread_id,
                 polls_enabled=self._config.polls.enabled,
                 polls_anonymous=self._config.polls.is_anonymous,
+                reply_to_mode=self._orch.resolver.reply_to_mode(key.chat_id),
             ),
         )
 
@@ -1325,6 +1326,7 @@ class TelegramBot:
                 thread_id=thread_id,
                 polls_enabled=self._config.polls.enabled,
                 polls_anonymous=self._config.polls.is_anonymous,
+                reply_to_mode=self._orch.resolver.reply_to_mode(key.chat_id),
             ),
         )
 

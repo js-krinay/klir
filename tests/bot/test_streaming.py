@@ -288,3 +288,53 @@ class TestStreamEditorThreadId:
         await editor.append_text("First")
         await editor.append_text("Second")
         assert bot.send_message.call_args.kwargs["message_thread_id"] == 77
+
+
+class TestStreamEditorReplyToMode:
+    """Test reply_to_mode in StreamEditor."""
+
+    async def test_mode_off_never_uses_reply_to(self) -> None:
+        bot = MagicMock()
+        reply_msg = MagicMock(spec=Message)
+        sent_msg = MagicMock(spec=Message)
+        reply_msg.answer = AsyncMock(return_value=sent_msg)
+        bot.send_message = AsyncMock(return_value=sent_msg)
+
+        editor = StreamEditor(bot, chat_id=1, reply_to=reply_msg, reply_to_mode="off")
+        await editor.append_text("First chunk")
+        reply_msg.answer.assert_not_called()
+        bot.send_message.assert_called_once()
+
+    async def test_mode_first_replies_only_first(self) -> None:
+        bot = MagicMock()
+        reply_msg = MagicMock(spec=Message)
+        sent_msg = MagicMock(spec=Message)
+        reply_msg.answer = AsyncMock(return_value=sent_msg)
+        bot.send_message = AsyncMock(return_value=sent_msg)
+
+        editor = StreamEditor(bot, chat_id=1, reply_to=reply_msg, reply_to_mode="first")
+        await editor.append_text("First")
+        reply_msg.answer.assert_called_once()
+        await editor.append_text("Second")
+        # Second chunk uses send_message, not answer
+        assert reply_msg.answer.call_count == 1
+        assert bot.send_message.call_count == 1
+
+    async def test_mode_all_replies_every_message(self) -> None:
+        bot = MagicMock()
+        reply_msg = MagicMock(spec=Message)
+        sent_msg = MagicMock(spec=Message)
+        reply_msg.answer = AsyncMock(return_value=sent_msg)
+        bot.send_message = AsyncMock(return_value=sent_msg)
+
+        editor = StreamEditor(bot, chat_id=1, reply_to=reply_msg, reply_to_mode="all")
+        await editor.append_text("First")
+        await editor.append_text("Second")
+        await editor.append_text("Third")
+        assert reply_msg.answer.call_count == 3
+        bot.send_message.assert_not_called()
+
+    async def test_mode_default_is_first(self) -> None:
+        bot = MagicMock()
+        editor = StreamEditor(bot, chat_id=1)
+        assert editor._reply_to_mode == "first"

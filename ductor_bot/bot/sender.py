@@ -17,6 +17,7 @@ from aiogram.types import FSInputFile, InlineKeyboardMarkup, ReplyParameters
 
 from ductor_bot.bot.buttons import extract_buttons
 from ductor_bot.bot.formatting import markdown_to_telegram_html, split_html_message
+from ductor_bot.config import ReplyToMode
 from ductor_bot.files.tags import FILE_PATH_RE, extract_file_paths, guess_mime, path_from_file_tag
 from ductor_bot.security.paths import is_path_safe
 
@@ -35,6 +36,7 @@ class SendRichOpts:
     thread_id: int | None = None
     polls_enabled: bool = False
     polls_anonymous: bool = True
+    reply_to_mode: ReplyToMode = "first"
 
 
 logger = logging.getLogger(__name__)
@@ -130,14 +132,20 @@ async def _send_text_chunks(
     *,
     reply_to_message_id: int | None = None,
     thread_id: int | None = None,
+    reply_to_mode: ReplyToMode = "first",
 ) -> Message | None:
     """Send *clean_text* as HTML chunks, falling back to plain text on error."""
     last_msg: Message | None = None
     html_text = markdown_to_telegram_html(clean_text)
     chunks = split_html_message(html_text)
     for i, chunk in enumerate(chunks):
+        should_reply = (
+            reply_to_message_id is not None
+            and reply_to_mode != "off"
+            and (reply_to_mode == "all" or i == 0)
+        )
         try:
-            if reply_to_message_id and i == 0:
+            if should_reply and reply_to_message_id is not None:
                 last_msg = await bot.send_message(
                     chat_id=chat_id,
                     text=chunk,
@@ -203,7 +211,9 @@ async def send_rich(
             clean_text = strip_polls(clean_text).strip()
             for directive in polls:
                 await _send_poll(
-                    bot, chat_id, directive,
+                    bot,
+                    chat_id,
+                    directive,
                     thread_id=o.thread_id,
                     is_anonymous=o.polls_anonymous,
                 )
@@ -218,6 +228,7 @@ async def send_rich(
             clean_text,
             reply_to_message_id=o.reply_to_message_id,
             thread_id=o.thread_id,
+            reply_to_mode=o.reply_to_mode,
         )
 
     if button_markup is not None and last_msg is not None:

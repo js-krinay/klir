@@ -19,6 +19,7 @@ def _make_editor(
     edit_interval: float = 0.0,
     max_failures: int = 3,
     thread_id: int | None = None,
+    reply_to_mode: str = "first",
 ) -> tuple[MagicMock, EditStreamEditor]:
     """Create a bot mock and an EditStreamEditor with zero throttle by default."""
     from ductor_bot.bot.edit_streaming import EditStreamEditor
@@ -39,6 +40,7 @@ def _make_editor(
         reply_to=reply_to,
         cfg=cfg,
         thread_id=thread_id,
+        reply_to_mode=reply_to_mode,
     )
     return bot, editor
 
@@ -432,3 +434,39 @@ class TestEditStreamEditorThreadId:
         await editor.finalize("")
         for call in bot.send_message.call_args_list:
             assert call.kwargs["message_thread_id"] == 55
+
+
+class TestEditStreamEditorReplyToMode:
+    """Test reply_to_mode in EditStreamEditor."""
+
+    async def test_mode_off_never_uses_reply_to(self) -> None:
+        reply_msg = MagicMock(spec=Message)
+        bot, editor = _make_editor(reply_to=reply_msg, reply_to_mode="off")
+        await editor.append_text("First chunk")
+        await editor.finalize("")
+        reply_msg.answer.assert_not_called()
+        bot.send_message.assert_called_once()
+
+    async def test_mode_first_replies_only_first(self) -> None:
+        reply_msg = MagicMock(spec=Message)
+        bot, editor = _make_editor(reply_to=reply_msg, reply_to_mode="first")
+        await editor.append_text("A" * 5000)
+        await editor.finalize("")
+        reply_msg.answer.assert_called_once()
+        assert bot.send_message.call_count >= 1
+
+    async def test_mode_all_replies_every_create(self) -> None:
+        reply_msg = MagicMock(spec=Message)
+        bot, editor = _make_editor(reply_to=reply_msg, reply_to_mode="all")
+        await editor.append_text("A" * 5000)
+        await editor.finalize("")
+        assert reply_msg.answer.call_count >= 2
+        bot.send_message.assert_not_called()
+
+    async def test_mode_default_is_first(self) -> None:
+        from ductor_bot.bot.edit_streaming import EditStreamEditor
+        from ductor_bot.config import StreamingConfig
+
+        bot = MagicMock()
+        editor = EditStreamEditor(bot, chat_id=1, cfg=StreamingConfig())
+        assert editor._reply_to_mode == "first"

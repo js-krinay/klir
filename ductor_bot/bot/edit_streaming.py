@@ -22,6 +22,7 @@ from ductor_bot.bot.formatting import (
     markdown_to_telegram_html,
     split_html_message,
 )
+from ductor_bot.config import ReplyToMode
 
 if TYPE_CHECKING:
     from aiogram import Bot
@@ -110,6 +111,7 @@ class EditStreamEditor:
         reply_to: Message | None = None,
         cfg: StreamingConfig | None = None,
         thread_id: int | None = None,
+        reply_to_mode: ReplyToMode = "first",
     ) -> None:
         self._bot = bot
         self._chat_id = chat_id
@@ -117,6 +119,7 @@ class EditStreamEditor:
         self._interval = cfg.edit_interval_seconds if cfg else 2.0
         self._max_failures = cfg.max_edit_failures if cfg else 3
         self._thread_id = thread_id
+        self._reply_to_mode = reply_to_mode
         self._s = _EditorState()
 
     @property
@@ -288,12 +291,17 @@ class EditStreamEditor:
         self._s.last_edit_time = asyncio.get_event_loop().time()
 
     async def _create_message(self, text: str) -> None:
-        """Send a new message (reply for the first one)."""
+        """Send a new message, using reply_to based on reply_to_mode."""
         display = text[:TELEGRAM_MSG_LIMIT]
         if not display.strip():
             return
+        should_reply = (
+            self._reply_to is not None
+            and self._reply_to_mode != "off"
+            and (self._reply_to_mode == "all" or self._s.messages_sent == 0)
+        )
         try:
-            if self._s.messages_sent == 0 and self._reply_to is not None:
+            if should_reply and self._reply_to is not None:
                 msg = await self._reply_to.answer(display, parse_mode=ParseMode.HTML)
             else:
                 msg = await self._bot.send_message(

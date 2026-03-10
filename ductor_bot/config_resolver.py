@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.config import ChatOverrides
+from ductor_bot.config import ChatOverrides, ReplyToMode
 
 if TYPE_CHECKING:
     from ductor_bot.config import AgentConfig
@@ -66,3 +66,9 @@ class ChatConfigResolver:
         if ov and ov.enabled is not None:
             return ov.enabled
         return True
+
+    def reply_to_mode(self, chat_id: int) -> ReplyToMode:
+        ov = self._resolve(chat_id)
+        if ov and ov.reply_to_mode is not None:
+            return ov.reply_to_mode
+        return self._config.reply_to_mode

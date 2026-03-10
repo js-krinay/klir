@@ -518,3 +518,64 @@ class TestForumTopicSupport:
         await send_rich(bot, 1, "test", SendRichOpts(thread_id=88))
         for call in bot.send_message.call_args_list:
             assert call.kwargs["message_thread_id"] == 88
+
+
+class TestReplyToMode:
+    """Test reply_to_mode behavior in _send_text_chunks."""
+
+    async def test_mode_off_never_replies(self) -> None:
+        from ductor_bot.bot.sender import SendRichOpts, send_rich
+
+        bot = MagicMock()
+        bot.send_message = AsyncMock()
+
+        await send_rich(
+            bot, 1, "hello",
+            SendRichOpts(reply_to_message_id=42, reply_to_mode="off"),
+        )
+        bot.send_message.assert_called_once()
+        call_kwargs = bot.send_message.call_args.kwargs
+        assert "reply_parameters" not in call_kwargs
+
+    async def test_mode_first_replies_only_first_chunk(self) -> None:
+        from ductor_bot.bot.sender import SendRichOpts, send_rich
+
+        bot = MagicMock()
+        bot.send_message = AsyncMock()
+
+        # Send text long enough to produce 2 chunks (>4096 chars)
+        long_text = "A" * 4000 + "\n\n" + "B" * 4000
+        await send_rich(
+            bot, 1, long_text,
+            SendRichOpts(reply_to_message_id=42, reply_to_mode="first"),
+        )
+        calls = bot.send_message.call_args_list
+        assert len(calls) >= 2
+        # First chunk has reply_parameters
+        assert calls[0].kwargs.get("reply_parameters") is not None
+        assert calls[0].kwargs["reply_parameters"].message_id == 42
+        # Second chunk does not
+        assert "reply_parameters" not in calls[1].kwargs
+
+    async def test_mode_all_replies_every_chunk(self) -> None:
+        from ductor_bot.bot.sender import SendRichOpts, send_rich
+
+        bot = MagicMock()
+        bot.send_message = AsyncMock()
+
+        long_text = "A" * 4000 + "\n\n" + "B" * 4000
+        await send_rich(
+            bot, 1, long_text,
+            SendRichOpts(reply_to_message_id=42, reply_to_mode="all"),
+        )
+        calls = bot.send_message.call_args_list
+        assert len(calls) >= 2
+        for call in calls:
+            assert call.kwargs.get("reply_parameters") is not None
+            assert call.kwargs["reply_parameters"].message_id == 42
+
+    async def test_mode_default_is_first(self) -> None:
+        from ductor_bot.bot.sender import SendRichOpts
+
+        opts = SendRichOpts()
+        assert opts.reply_to_mode == "first"

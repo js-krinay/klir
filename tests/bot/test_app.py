@@ -1291,9 +1291,11 @@ class TestForumTopicPropagation:
 
         msg = _make_message(topic_thread_id=88)
 
+        from ductor_bot.session.key import SessionKey
+
         with patch("ductor_bot.bot.app.run_streaming_message", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = "Fallback"
-            await tg_bot._handle_streaming(msg, 1, "test", thread_id=88)
+            await tg_bot._handle_streaming(msg, SessionKey(chat_id=1), "test", thread_id=88)
 
         dispatch = mock_run.call_args.args[0]
         assert dispatch.thread_id == 88

@@ -22,6 +22,7 @@ from ductor_bot.bot.formatting import (
     markdown_to_telegram_html,
     split_html_message,
 )
+from ductor_bot.config import ReplyToMode
 
 if TYPE_CHECKING:
     from aiogram import Bot
@@ -62,11 +63,13 @@ class StreamEditor:
         *,
         reply_to: Message | None = None,
         thread_id: int | None = None,
+        reply_to_mode: ReplyToMode = "first",
     ) -> None:
         self._bot = bot
         self._chat_id = chat_id
         self._reply_to = reply_to
         self._thread_id = thread_id
+        self._reply_to_mode = reply_to_mode
         self._messages_sent = 0
         self._last_msg: Message | None = None
 
@@ -117,13 +120,19 @@ class StreamEditor:
         raw_fallback: str = "",
         parse_mode: ParseMode | None = ParseMode.HTML,
     ) -> None:
-        """Send a single message, using reply_to for the first one."""
+        """Send a single message, using reply_to based on reply_to_mode."""
         display = text[:TELEGRAM_MSG_LIMIT]
         if not display.strip():
             return
 
+        should_reply = (
+            self._reply_to is not None
+            and self._reply_to_mode != "off"
+            and (self._reply_to_mode == "all" or self._messages_sent == 0)
+        )
+
         try:
-            if self._messages_sent == 0 and self._reply_to:
+            if should_reply and self._reply_to is not None:
                 msg = await self._reply_to.answer(display, parse_mode=parse_mode)
             else:
                 msg = await self._bot.send_message(
@@ -150,13 +159,16 @@ def create_stream_editor(
     reply_to: Message | None = None,
     cfg: StreamingConfig | None = None,
     thread_id: int | None = None,
+    reply_to_mode: ReplyToMode = "first",
 ) -> StreamEditorProtocol:
     """Create the appropriate stream editor based on config."""
     from ductor_bot.config import StreamingConfig
 
     c = cfg or StreamingConfig()
     if c.append_mode:
-        return StreamEditor(bot, chat_id, reply_to=reply_to, thread_id=thread_id)
+        return StreamEditor(
+            bot, chat_id, reply_to=reply_to, thread_id=thread_id, reply_to_mode=reply_to_mode
+        )
     from ductor_bot.bot.edit_streaming import EditStreamEditor
 
     return EditStreamEditor(
@@ -165,4 +177,5 @@ def create_stream_editor(
         reply_to=reply_to,
         cfg=c,
         thread_id=thread_id,
+        reply_to_mode=reply_to_mode,
     )
