@@ -3,16 +3,16 @@ requires = ["hatchling>=1.28.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ductor"
-version = "0.13.0"
-description = "Control Claude Code and Codex CLI from Telegram. Live streaming, sessions, cron jobs, webhooks, Docker sandboxing."
+name = "klir"
+version = "0.1.0"
+description = "Control AI coding CLIs from Telegram. Live streaming, sessions, cron jobs, webhooks, Docker sandboxing. Originally forked from ductor by PleasePrompto."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "PleasePrompto" }]
+authors = [{ name = "Jinay Shah" }]
 keywords = [
-    "ductor", "ai", "telegram", "bot", "agent",
+    "klir", "ai", "telegram", "bot", "agent",
     "claude", "codex", "cli", "automation", "streaming",
 ]
 classifiers = [
@@ -67,14 +67,12 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://ductor.dev"
-Repository = "https://github.com/PleasePrompto/ductor"
-Documentation = "https://ductor.dev"
-Issues = "https://github.com/PleasePrompto/ductor/issues"
-Changelog = "https://github.com/PleasePrompto/ductor/releases"
+Repository = "https://github.com/js-krinay/klir"
+Issues = "https://github.com/js-krinay/klir/issues"
+Changelog = "https://github.com/js-krinay/klir/releases"
 
 [project.scripts]
-ductor = "klir.__main__:main"
+klir = "klir.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["klir"]
