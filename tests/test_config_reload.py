@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
-from ductor_bot.config import AgentConfig
-from ductor_bot.config_reload import (
+from klir.config import AgentConfig
+from klir.config_reload import (
     ConfigReloader,
     classify_changes,
     diff_configs,

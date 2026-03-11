@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from ductor_bot.config import resolve_user_timezone
+from klir.config import resolve_user_timezone
 
 
 def is_quiet_hour(now_hour: int, quiet_start: int, quiet_end: int) -> bool:

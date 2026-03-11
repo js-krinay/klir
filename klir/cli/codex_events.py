@@ -6,7 +6,7 @@ import json
 import logging
 from typing import Any
 
-from ductor_bot.cli.stream_events import (
+from klir.cli.stream_events import (
     AssistantTextDelta,
     ResultEvent,
     StreamEvent,

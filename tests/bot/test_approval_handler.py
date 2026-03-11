@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 class TestApprovalHandler:
     async def test_send_approval_request_sends_to_approvers(self) -> None:
-        from ductor_bot.bot.approval_handler import send_approval_request
+        from klir.bot.approval_handler import send_approval_request
 
         bot = AsyncMock()
         bot.send_message.return_value = MagicMock(message_id=99)
@@ -27,7 +27,7 @@ class TestApprovalHandler:
         assert call_kwargs["reply_markup"] is not None
 
     async def test_approval_message_contains_tool_info(self) -> None:
-        from ductor_bot.bot.approval_handler import send_approval_request
+        from klir.bot.approval_handler import send_approval_request
 
         bot = AsyncMock()
         bot.send_message.return_value = MagicMock(message_id=99)
@@ -47,7 +47,7 @@ class TestApprovalHandler:
         assert "apr_1" in text or "rm -rf" in text
 
     async def test_handle_approval_callback_resolves(self) -> None:
-        from ductor_bot.bot.approval_handler import handle_approval_callback
+        from klir.bot.approval_handler import handle_approval_callback
 
         svc = MagicMock()
         svc.resolve.return_value = True
@@ -65,7 +65,7 @@ class TestApprovalHandler:
         assert result is True
 
     async def test_handle_denial_callback(self) -> None:
-        from ductor_bot.bot.approval_handler import handle_approval_callback
+        from klir.bot.approval_handler import handle_approval_callback
 
         svc = MagicMock()
         svc.resolve.return_value = True
@@ -82,7 +82,7 @@ class TestApprovalHandler:
         svc.resolve.assert_called_once_with("apr_1", approved=False)
 
     async def test_parse_approval_callback(self) -> None:
-        from ductor_bot.bot.approval_handler import parse_approval_callback
+        from klir.bot.approval_handler import parse_approval_callback
 
         assert parse_approval_callback("apr:apr_1:yes") == ("apr_1", True)
         assert parse_approval_callback("apr:apr_1:no") == ("apr_1", False)

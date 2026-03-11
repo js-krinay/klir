@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from ductor_bot.orchestrator.selectors.models import ButtonGrid
+from klir.orchestrator.selectors.models import ButtonGrid
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from ductor_bot.orchestrator.core import Orchestrator
-    from ductor_bot.session.key import SessionKey
+    from klir.orchestrator.core import Orchestrator
+    from klir.session.key import SessionKey
 
 CommandHandler = Callable[
     ["Orchestrator", "SessionKey", str], Awaitable["OrchestratorResult | None"]

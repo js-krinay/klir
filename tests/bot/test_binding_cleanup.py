@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import time_machine
 
-from ductor_bot.bot.binding_cleanup import BindingCleanupObserver
-from ductor_bot.bot.topic import TopicNameCache
-from ductor_bot.config import AgentConfig, ThreadBindingConfig
+from klir.bot.binding_cleanup import BindingCleanupObserver
+from klir.bot.topic import TopicNameCache
+from klir.config import AgentConfig, ThreadBindingConfig
 
 
 class TestBindingCleanupObserver:

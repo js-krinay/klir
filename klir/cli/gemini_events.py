@@ -10,7 +10,7 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
-from ductor_bot.cli.stream_events import (
+from klir.cli.stream_events import (
     AssistantTextDelta,
     ResultEvent,
     StreamEvent,

@@ -20,17 +20,17 @@ from aiogram.types import (
     TelegramObject,
 )
 
-from ductor_bot.bot.abort import is_abort_all_message, is_abort_message
-from ductor_bot.bot.dedup import DedupeCache, build_dedup_key
-from ductor_bot.bot.handlers import is_command_for_bot
-from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
-from ductor_bot.bus.lock_pool import LockPool
-from ductor_bot.log_context import set_log_context
+from klir.bot.abort import is_abort_all_message, is_abort_message
+from klir.bot.dedup import DedupeCache, build_dedup_key
+from klir.bot.handlers import is_command_for_bot
+from klir.bot.topic import TopicNameCache, get_session_key, get_thread_id
+from klir.bus.lock_pool import LockPool
+from klir.log_context import set_log_context
 
 if TYPE_CHECKING:
     from aiogram import Bot
 
-    from ductor_bot.config_resolver import ChatConfigResolver
+    from klir.config_resolver import ChatConfigResolver
 
 logger = logging.getLogger(__name__)
 

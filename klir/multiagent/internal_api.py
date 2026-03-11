@@ -19,9 +19,9 @@ from typing import TYPE_CHECKING
 from aiohttp import web
 
 if TYPE_CHECKING:
-    from ductor_bot.multiagent.bus import InterAgentBus
-    from ductor_bot.multiagent.health import AgentHealth
-    from ductor_bot.tasks.hub import TaskHub
+    from klir.multiagent.bus import InterAgentBus
+    from klir.multiagent.health import AgentHealth
+    from klir.tasks.hub import TaskHub
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +184,7 @@ class InternalAgentAPI:
                 {"success": False, "error": f"Agent '{recipient}' not found. Available: {names}"},
             )
 
-        from ductor_bot.multiagent.bus import AsyncSendOptions
+        from klir.multiagent.bus import AsyncSendOptions
 
         opts = AsyncSendOptions(
             new_session=new_session,
@@ -255,7 +255,7 @@ class InternalAgentAPI:
                 status=400,
             )
 
-        from ductor_bot.tasks.models import TaskSubmit
+        from klir.tasks.models import TaskSubmit
 
         submit = TaskSubmit(
             chat_id=data.get("chat_id", 0),

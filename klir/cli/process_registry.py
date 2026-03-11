@@ -8,7 +8,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 
-from ductor_bot.infra.process_tree import force_kill_process_tree, terminate_process_tree
+from klir.infra.process_tree import force_kill_process_tree, terminate_process_tree
 
 logger = logging.getLogger(__name__)
 

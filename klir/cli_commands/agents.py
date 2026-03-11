@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from ductor_bot.workspace.paths import DuctorPaths, resolve_paths
+from klir.workspace.paths import DuctorPaths, resolve_paths
 
 _console = Console()
 
@@ -174,7 +174,7 @@ def agents_list() -> None:
     if pid_file.exists():
         try:
             pid = int(pid_file.read_text(encoding="utf-8").strip())
-            from ductor_bot.infra.pidlock import _is_process_alive
+            from klir.infra.pidlock import _is_process_alive
 
             bot_running = _is_process_alive(pid)
         except (ValueError, OSError):
@@ -245,7 +245,7 @@ def agents_add(rest: list[str]) -> None:
     }
     agents.append(new_agent)
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     agents_path = paths.ductor_home / "agents.json"
     atomic_json_save(agents_path, agents)
@@ -279,7 +279,7 @@ def agents_remove(rest: list[str]) -> None:
         _console.print("[dim]Cancelled.[/dim]")
         return
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     remaining = [a for a in agents if str(a.get("name", "")).lower() != name]
     agents_path = paths.ductor_home / "agents.json"

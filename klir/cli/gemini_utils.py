@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 from shutil import which
 
-from ductor_bot.infra.platform import is_windows
+from klir.infra.platform import is_windows
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ def trust_workspace(working_dir: Path) -> None:
                 logger.warning("Corrupt Gemini trust file, starting fresh")
 
         if workspace_path not in data:
-            from ductor_bot.infra.json_store import atomic_json_save
+            from klir.infra.json_store import atomic_json_save
 
             data[workspace_path] = "TRUST_FOLDER"
             gemini_home.mkdir(parents=True, exist_ok=True)

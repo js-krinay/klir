@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ductor_bot.bot.chat_tracker import ChatRecord, ChatTracker
+from klir.bot.chat_tracker import ChatRecord, ChatTracker
 
 
 class TestChatTracker:

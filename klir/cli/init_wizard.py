@@ -17,10 +17,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from ductor_bot.cli.auth import AuthStatus, check_claude_auth, check_codex_auth, check_gemini_auth
-from ductor_bot.config import DEFAULT_EMPTY_GEMINI_API_KEY, AgentConfig, deep_merge_config
-from ductor_bot.workspace.init import init_workspace
-from ductor_bot.workspace.paths import resolve_paths
+from klir.cli.auth import AuthStatus, check_claude_auth, check_codex_auth, check_gemini_auth
+from klir.config import DEFAULT_EMPTY_GEMINI_API_KEY, AgentConfig, deep_merge_config
+from klir.workspace.init import init_workspace
+from klir.workspace.paths import resolve_paths
 
 _BANNER_PATH = Path(__file__).resolve().parent.parent / "_banner.txt"
 logger = logging.getLogger(__name__)
@@ -268,7 +268,7 @@ def _build_extras_table(console: Console) -> None:
     """Print a Rich overview table of all available Docker extras."""
     from rich.table import Table
 
-    from ductor_bot.infra.docker_extras import DOCKER_EXTRAS_BY_ID, extras_for_display
+    from klir.infra.docker_extras import DOCKER_EXTRAS_BY_ID, extras_for_display
 
     table = Table(
         show_header=True,
@@ -313,7 +313,7 @@ def _build_extras_table(console: Console) -> None:
 
 def _ask_docker_extras(console: Console) -> list[str]:
     """Prompt for optional Docker sandbox packages."""
-    from ductor_bot.infra.docker_extras import (
+    from klir.infra.docker_extras import (
         DOCKER_EXTRAS_BY_ID,
         extras_for_display,
         resolve_extras,
@@ -394,7 +394,7 @@ def _ask_timezone(console: Console) -> str:
 
 def _offer_service_install(console: Console) -> bool:
     """Ask whether to install ductor as a background service."""
-    from ductor_bot.infra.service import is_service_available
+    from klir.infra.service import is_service_available
 
     if not is_service_available():
         return False
@@ -476,7 +476,7 @@ def _write_config(
     if docker_extras is not None:
         docker_section["extras"] = docker_extras
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     atomic_json_save(config_path, merged)
 
@@ -544,7 +544,7 @@ def run_onboarding() -> bool:
 
     service_installed = False
     if run_as_service:
-        from ductor_bot.infra.service import install_service
+        from klir.infra.service import install_service
 
         service_installed = install_service(console)
 
@@ -632,7 +632,7 @@ def run_smart_reset(ductor_home: Path) -> None:
     if not confirmed:
         _abort()
 
-    from ductor_bot.infra.fs import robust_rmtree
+    from klir.infra.fs import robust_rmtree
 
     robust_rmtree(ductor_home)
     if ductor_home.exists():

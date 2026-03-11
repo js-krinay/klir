@@ -9,7 +9,7 @@ import pytest
 
 class TestForwardContext:
     def test_extract_user_forward_origin(self) -> None:
-        from ductor_bot.bot.forward_context import extract_forward_context
+        from klir.bot.forward_context import extract_forward_context
 
         origin = MagicMock()
         origin.type = "user"
@@ -28,7 +28,7 @@ class TestForwardContext:
         assert "Hello world" not in result  # body is not included, only metadata header
 
     def test_extract_channel_forward_origin(self) -> None:
-        from ductor_bot.bot.forward_context import extract_forward_context
+        from klir.bot.forward_context import extract_forward_context
 
         origin = MagicMock()
         origin.type = "channel"
@@ -48,7 +48,7 @@ class TestForwardContext:
         assert "42" in result
 
     def test_extract_hidden_user_forward_origin(self) -> None:
-        from ductor_bot.bot.forward_context import extract_forward_context
+        from klir.bot.forward_context import extract_forward_context
 
         origin = MagicMock()
         origin.type = "hidden_user"
@@ -64,7 +64,7 @@ class TestForwardContext:
         assert "Hidden Name" in result
 
     def test_no_forward_origin_returns_none(self) -> None:
-        from ductor_bot.bot.forward_context import extract_forward_context
+        from klir.bot.forward_context import extract_forward_context
 
         message = MagicMock()
         message.forward_origin = None
@@ -73,7 +73,7 @@ class TestForwardContext:
         assert result is None
 
     def test_prepend_forward_context_to_text(self) -> None:
-        from ductor_bot.bot.forward_context import prepend_forward_context
+        from klir.bot.forward_context import prepend_forward_context
 
         context = "[Forwarded from Alice (user 123) at 2026-03-10T12:00:00]"
         text = "User said something"

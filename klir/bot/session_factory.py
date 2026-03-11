@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram.client.session.aiohttp import AiohttpSession
 
-from ductor_bot.config import ResilienceConfig
-from ductor_bot.infra.proxy import sanitize_proxy_url
+from klir.config import ResilienceConfig
+from klir.infra.proxy import sanitize_proxy_url
 
 if TYPE_CHECKING:
     from aiogram import Bot
@@ -40,7 +40,7 @@ class ResilientSession(AiohttpSession):
         timeout: int | None = None,  # noqa: ASYNC109
     ) -> TelegramType:
         """Wrap the parent make_request with retry logic."""
-        from ductor_bot.bot.retry import retry_async
+        from klir.bot.retry import retry_async
 
         return await retry_async(
             super().make_request,

@@ -40,7 +40,7 @@ class TestHandleAbort:
     """Test abort handling logic."""
 
     async def test_abort_kills_processes_and_replies(self) -> None:
-        from ductor_bot.bot.handlers import handle_abort
+        from klir.bot.handlers import handle_abort
 
         orchestrator = MagicMock()
         orchestrator.abort = AsyncMock(return_value=2)
@@ -53,7 +53,7 @@ class TestHandleAbort:
         orchestrator.abort.assert_called_once_with(42)
 
     async def test_abort_no_orchestrator(self) -> None:
-        from ductor_bot.bot.handlers import handle_abort
+        from klir.bot.handlers import handle_abort
 
         msg = _make_message()
         result = await handle_abort(None, MagicMock(), chat_id=1, message=msg)
@@ -64,7 +64,7 @@ class TestHandleAbortAll:
     """Test abort-all handling logic."""
 
     async def test_abort_all_kills_local_and_callback(self) -> None:
-        from ductor_bot.bot.handlers import handle_abort_all
+        from klir.bot.handlers import handle_abort_all
 
         orchestrator = MagicMock()
         orchestrator.abort = AsyncMock(return_value=2)
@@ -85,7 +85,7 @@ class TestHandleAbortAll:
         callback.assert_called_once()
 
     async def test_abort_all_no_callback(self) -> None:
-        from ductor_bot.bot.handlers import handle_abort_all
+        from klir.bot.handlers import handle_abort_all
 
         orchestrator = MagicMock()
         orchestrator.abort = AsyncMock(return_value=1)
@@ -104,14 +104,14 @@ class TestHandleAbortAll:
         orchestrator.abort.assert_called_once_with(42)
 
     async def test_abort_all_no_orchestrator(self) -> None:
-        from ductor_bot.bot.handlers import handle_abort_all
+        from klir.bot.handlers import handle_abort_all
 
         msg = _make_message()
         result = await handle_abort_all(None, MagicMock(), chat_id=1, message=msg)
         assert result is False
 
     async def test_abort_all_zero_killed(self) -> None:
-        from ductor_bot.bot.handlers import handle_abort_all
+        from klir.bot.handlers import handle_abort_all
 
         orchestrator = MagicMock()
         orchestrator.abort = AsyncMock(return_value=0)
@@ -134,8 +134,8 @@ class TestHandleCommand:
     """Test orchestrator command dispatching."""
 
     async def test_command_routes_to_orchestrator(self) -> None:
-        from ductor_bot.bot.handlers import handle_command
-        from ductor_bot.orchestrator.registry import OrchestratorResult
+        from klir.bot.handlers import handle_command
+        from klir.orchestrator.registry import OrchestratorResult
 
         orchestrator = MagicMock()
         orchestrator.handle_message = AsyncMock(return_value=OrchestratorResult(text="Status: OK"))
@@ -151,7 +151,7 @@ class TestHandleNewSession:
     """Test /new handler logic."""
 
     async def test_new_resets_session(self) -> None:
-        from ductor_bot.bot.handlers import handle_new_session
+        from klir.bot.handlers import handle_new_session
 
         orchestrator = MagicMock()
         orchestrator.reset_active_provider_session = AsyncMock(return_value="claude")
@@ -160,7 +160,7 @@ class TestHandleNewSession:
 
         msg = _make_message(chat_id=1, text="/new")
         await handle_new_session(orchestrator, bot, msg)
-        from ductor_bot.session.key import SessionKey
+        from klir.session.key import SessionKey
 
         orchestrator.reset_active_provider_session.assert_called_once_with(SessionKey(chat_id=1))
 
@@ -169,17 +169,17 @@ class TestStripMention:
     """Test @mention removal."""
 
     def test_removes_mention(self) -> None:
-        from ductor_bot.bot.handlers import strip_mention
+        from klir.bot.handlers import strip_mention
 
         assert strip_mention("@mybot hello", "mybot").strip() == "hello"
 
     def test_no_mention(self) -> None:
-        from ductor_bot.bot.handlers import strip_mention
+        from klir.bot.handlers import strip_mention
 
         assert strip_mention("just text", "mybot") == "just text"
 
     def test_none_username(self) -> None:
-        from ductor_bot.bot.handlers import strip_mention
+        from klir.bot.handlers import strip_mention
 
         assert strip_mention("@bot hi", None) == "@bot hi"
 
@@ -188,47 +188,47 @@ class TestIsCommandForBot:
     """Test is_command_for_bot filtering logic."""
 
     def test_bare_command_accepted(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model", "my_bot") is True
 
     def test_command_for_our_bot_accepted(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model@my_bot", "my_bot") is True
 
     def test_command_for_our_bot_case_insensitive(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model@My_Bot", "my_bot") is True
 
     def test_command_for_other_bot_rejected(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model@other_bot", "my_bot") is False
 
     def test_command_with_args_for_other_bot_rejected(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model@other_bot sonnet", "my_bot") is False
 
     def test_command_with_args_for_our_bot_accepted(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model@my_bot sonnet", "my_bot") is True
 
     def test_non_command_text_accepted(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("hello world", "my_bot") is True
 
     def test_no_bot_username_accepts_all(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("/model@other_bot", None) is True
 
     def test_empty_text_accepted(self) -> None:
-        from ductor_bot.bot.handlers import is_command_for_bot
+        from klir.bot.handlers import is_command_for_bot
 
         assert is_command_for_bot("", "my_bot") is True
 
@@ -236,9 +236,9 @@ class TestIsCommandForBot:
 class TestForumTopicPropagation:
     """Test that handlers extract and propagate thread_id."""
 
-    @patch("ductor_bot.bot.handlers.send_rich", new_callable=AsyncMock)
+    @patch("klir.bot.handlers.send_rich", new_callable=AsyncMock)
     async def test_handle_abort_passes_thread_id(self, mock_send: AsyncMock) -> None:
-        from ductor_bot.bot.handlers import handle_abort
+        from klir.bot.handlers import handle_abort
 
         orchestrator = MagicMock()
         orchestrator.abort = AsyncMock(return_value=1)
@@ -250,10 +250,10 @@ class TestForumTopicPropagation:
         opts = mock_send.call_args[0][3]
         assert opts.thread_id == 99
 
-    @patch("ductor_bot.bot.handlers.send_rich", new_callable=AsyncMock)
+    @patch("klir.bot.handlers.send_rich", new_callable=AsyncMock)
     async def test_handle_command_passes_thread_id(self, mock_send: AsyncMock) -> None:
-        from ductor_bot.bot.handlers import handle_command
-        from ductor_bot.orchestrator.registry import OrchestratorResult
+        from klir.bot.handlers import handle_command
+        from klir.orchestrator.registry import OrchestratorResult
 
         orchestrator = MagicMock()
         orchestrator.handle_message = AsyncMock(return_value=OrchestratorResult(text="OK"))
@@ -264,9 +264,9 @@ class TestForumTopicPropagation:
         opts = mock_send.call_args[0][3]
         assert opts.thread_id == 77
 
-    @patch("ductor_bot.bot.handlers.send_rich", new_callable=AsyncMock)
+    @patch("klir.bot.handlers.send_rich", new_callable=AsyncMock)
     async def test_handle_new_session_passes_thread_id(self, mock_send: AsyncMock) -> None:
-        from ductor_bot.bot.handlers import handle_new_session
+        from klir.bot.handlers import handle_new_session
 
         orchestrator = MagicMock()
         orchestrator.reset_active_provider_session = AsyncMock(return_value="claude")
@@ -277,9 +277,9 @@ class TestForumTopicPropagation:
         opts = mock_send.call_args[0][3]
         assert opts.thread_id == 55
 
-    @patch("ductor_bot.bot.handlers.send_rich", new_callable=AsyncMock)
+    @patch("klir.bot.handlers.send_rich", new_callable=AsyncMock)
     async def test_handle_abort_none_thread_id_for_normal_msg(self, mock_send: AsyncMock) -> None:
-        from ductor_bot.bot.handlers import handle_abort
+        from klir.bot.handlers import handle_abort
 
         orchestrator = MagicMock()
         orchestrator.abort = AsyncMock(return_value=0)

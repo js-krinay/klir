@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from ductor_bot.multiagent.models import SubAgentConfig
-from ductor_bot.multiagent.registry import AgentRegistry
+from klir.multiagent.models import SubAgentConfig
+from klir.multiagent.registry import AgentRegistry
 
 
 @pytest.fixture

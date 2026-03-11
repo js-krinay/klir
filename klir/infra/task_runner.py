@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.param_resolver import TaskExecutionConfig, TaskOverrides
-    from ductor_bot.cron.execution import OneShotExecutionResult
-    from ductor_bot.infra.base_task_observer import BaseTaskObserver
+    from klir.cli.param_resolver import TaskExecutionConfig, TaskOverrides
+    from klir.cron.execution import OneShotExecutionResult
+    from klir.infra.base_task_observer import BaseTaskObserver
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ async def run_oneshot_task(
     binary is missing.  All other execution details (timeout, stderr, status
     mapping) are delegated to ``execute_one_shot``.
     """
-    from ductor_bot.cron.execution import build_cmd, execute_one_shot
+    from klir.cron.execution import build_cmd, execute_one_shot
 
     one_shot = build_cmd(exec_config, prompt)
     if one_shot is None:
@@ -90,8 +90,8 @@ async def execute_in_task_folder(  # noqa: PLR0913
     Caller-specific concerns (result delivery, status persistence,
     quiet-hour checks) remain with the caller.
     """
-    from ductor_bot.cron.dependency_queue import get_dependency_queue
-    from ductor_bot.cron.execution import enrich_instruction
+    from klir.cron.dependency_queue import get_dependency_queue
+    from klir.cron.execution import enrich_instruction
 
     dep_queue = get_dependency_queue()
 

@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from ductor_bot.bot.file_browser import (
+from klir.bot.file_browser import (
     SF_FILE_PREFIX,
     SF_PREFIX,
     file_browser_start,
     handle_file_browser_callback,
     is_file_browser_callback,
 )
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.workspace.paths import DuctorPaths
 
 
 @pytest.fixture

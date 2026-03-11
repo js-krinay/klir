@@ -6,12 +6,12 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ductor_bot.config import AgentConfig
-from ductor_bot.workspace.init import init_workspace
-from ductor_bot.workspace.paths import DuctorPaths, resolve_paths
+from klir.config import AgentConfig
+from klir.workspace.init import init_workspace
+from klir.workspace.paths import DuctorPaths, resolve_paths
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.app import TelegramBot
+    from klir.bot.app import TelegramBot
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class AgentStack:
         paths = resolve_paths(ductor_home=config.ductor_home)
         await asyncio.to_thread(init_workspace, paths)
 
-        from ductor_bot.bot.app import TelegramBot
+        from klir.bot.app import TelegramBot
 
         bot = TelegramBot(config, agent_name=name)
         logger.info(

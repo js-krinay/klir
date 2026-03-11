@@ -1,7 +1,7 @@
 """Supervisor: watches for file changes, manages child process lifecycle.
 
 Starts the Telegram bot as a child process and restarts it on:
-- Python file changes in ductor_bot/ (hot-reload via watchfiles)
+- Python file changes in klir/ (hot-reload via watchfiles)
 - Exit code 42 (agent-requested restart)
 - Crashes (with exponential backoff)
 """
@@ -31,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger("supervisor")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-WATCH_DIR = PROJECT_ROOT / "ductor_bot"
+WATCH_DIR = PROJECT_ROOT / "klir"
 
 
 async def _terminate_child(proc: asyncio.subprocess.Process) -> int:
@@ -93,7 +93,7 @@ async def supervisor() -> None:
     """Main supervisor loop with crash recovery."""
     os.environ["DUCTOR_SUPERVISOR"] = "1"
     fast_crash_count = 0
-    cmd = [sys.executable, "-m", "ductor_bot"]
+    cmd = [sys.executable, "-m", "klir"]
 
     while True:
         logger.info("Starting bot")

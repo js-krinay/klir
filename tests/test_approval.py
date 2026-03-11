@@ -22,7 +22,7 @@ def _make_config(
 
 class TestApprovalService:
     async def test_request_creates_pending(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config())
         req_id = svc.request_approval(
@@ -36,7 +36,7 @@ class TestApprovalService:
         assert svc.has_pending(req_id)
 
     async def test_approve_resolves_future(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config())
         req_id = svc.request_approval(
@@ -48,7 +48,7 @@ class TestApprovalService:
         assert not svc.has_pending(req_id)
 
     async def test_deny_resolves_future(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config())
         req_id = svc.request_approval(
@@ -60,20 +60,20 @@ class TestApprovalService:
         assert not svc.has_pending(req_id)
 
     async def test_auto_approve_tool(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config(auto_approve=["Read", "Glob"]))
         assert svc.is_auto_approved("Read") is True
         assert svc.is_auto_approved("Write") is False
 
     async def test_disabled_service_auto_approves_all(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config(enabled=False))
         assert svc.is_auto_approved("Write") is True
 
     def test_list_pending(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config())
         svc.request_approval(tool_name="Write", tool_id="t1", chat_id=42)
@@ -83,7 +83,7 @@ class TestApprovalService:
         assert len(pending) == 2
 
     def test_resolve_unknown_id_returns_false(self) -> None:
-        from ductor_bot.approval import ApprovalService
+        from klir.approval import ApprovalService
 
         svc = ApprovalService(_make_config())
         assert svc.resolve("nonexistent", approved=True) is False

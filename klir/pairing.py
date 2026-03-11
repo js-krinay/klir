@@ -9,7 +9,7 @@ import time
 from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig
+    from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 

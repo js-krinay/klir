@@ -18,35 +18,35 @@ def _no_real_process_signals() -> object:
     """
     with (
         patch(
-            "ductor_bot.cli.process_registry.terminate_process_tree",
+            "klir.cli.process_registry.terminate_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.cli.process_registry.force_kill_process_tree",
+            "klir.cli.process_registry.force_kill_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.cli.executor.force_kill_process_tree",
+            "klir.cli.executor.force_kill_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.cli.gemini_provider.force_kill_process_tree",
+            "klir.cli.gemini_provider.force_kill_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.cron.execution.force_kill_process_tree",
+            "klir.cron.execution.force_kill_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.infra.pidlock.terminate_process_tree",
+            "klir.infra.pidlock.terminate_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.infra.pidlock.force_kill_process_tree",
+            "klir.infra.pidlock.force_kill_process_tree",
             return_value=None,
         ),
         patch(
-            "ductor_bot.infra.pidlock.list_process_descendants",
+            "klir.infra.pidlock.list_process_descendants",
             return_value=[],
         ),
     ):

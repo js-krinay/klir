@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
-from ductor_bot.bus.bus import MessageBus
-from ductor_bot.bus.envelope import DeliveryMode, Envelope, LockMode, Origin
-from ductor_bot.bus.lock_pool import LockPool
+from klir.bus.bus import MessageBus
+from klir.bus.envelope import DeliveryMode, Envelope, LockMode, Origin
+from klir.bus.lock_pool import LockPool
 
 if TYPE_CHECKING:
     import pytest
@@ -262,7 +262,7 @@ def test_default_lock_pool() -> None:
 async def test_no_transports_logs_warning(caplog: pytest.LogCaptureFixture) -> None:
     bus = MessageBus()
     env = _env()
-    with caplog.at_level("WARNING", logger="ductor_bot.bus.bus"):
+    with caplog.at_level("WARNING", logger="klir.bus.bus"):
         await bus.submit(env)
     assert "No transports registered" in caplog.text
     assert "envelope lost" in caplog.text
@@ -320,7 +320,7 @@ async def test_audit_hook_failure_does_not_prevent_delivery(
     bus.set_audit_hook(failing_hook)
 
     env = _env()
-    with caplog.at_level("ERROR", logger="ductor_bot.bus.bus"):
+    with caplog.at_level("ERROR", logger="klir.bus.bus"):
         await bus.submit(env)
 
     assert "Audit hook failed" in caplog.text

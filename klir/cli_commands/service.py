@@ -47,7 +47,7 @@ def print_service_help() -> None:
 
 def cmd_service(args: list[str]) -> None:
     """Handle 'ductor service <subcommand>'."""
-    from ductor_bot.infra.service import (
+    from klir.infra.service import (
         install_service,
         print_service_logs,
         print_service_status,

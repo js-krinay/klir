@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig
+    from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 

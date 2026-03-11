@@ -7,10 +7,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from ductor_bot.config import AgentConfig
-from ductor_bot.orchestrator.core import Orchestrator
-from ductor_bot.workspace.init import init_workspace
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.config import AgentConfig
+from klir.orchestrator.core import Orchestrator
+from klir.workspace.init import init_workspace
+from klir.workspace.paths import DuctorPaths
 
 
 def setup_framework(fw_root: Path) -> None:

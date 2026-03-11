@@ -15,7 +15,7 @@ class TestPairingPersistence:
             "allowed_user_ids": [100],
         }))
 
-        from ductor_bot.config import update_config_file
+        from klir.config import update_config_file
 
         # Simulate what the on_paired callback does
         data = json.loads(config_path.read_text())

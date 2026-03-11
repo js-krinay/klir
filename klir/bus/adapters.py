@@ -1,7 +1,7 @@
 """Convert legacy result types to Envelope.
 
 Each function maps a domain-specific result type to a unified
-:class:`~ductor_bot.bus.envelope.Envelope` with the correct delivery,
+:class:`~klir.bus.envelope.Envelope` with the correct delivery,
 lock, and injection flags.  The original result types are NOT replaced;
 observers keep producing them and these adapters convert at the boundary.
 """
@@ -10,13 +10,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ductor_bot.bus.envelope import DeliveryMode, Envelope, LockMode, Origin
+from klir.bus.envelope import DeliveryMode, Envelope, LockMode, Origin
 
 if TYPE_CHECKING:
-    from ductor_bot.background.models import BackgroundResult
-    from ductor_bot.multiagent.bus import AsyncInterAgentResult
-    from ductor_bot.tasks.models import TaskResult
-    from ductor_bot.webhook.models import WebhookResult
+    from klir.background.models import BackgroundResult
+    from klir.multiagent.bus import AsyncInterAgentResult
+    from klir.tasks.models import TaskResult
+    from klir.webhook.models import WebhookResult
 
 
 # -- Background tasks ----------------------------------------------------------

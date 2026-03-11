@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from ductor_bot.infra.atomic_io import atomic_text_save
+from klir.infra.atomic_io import atomic_text_save
 
 logger = logging.getLogger(__name__)
 

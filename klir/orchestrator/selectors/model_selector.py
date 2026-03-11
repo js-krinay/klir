@@ -7,16 +7,16 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.auth import AuthStatus, check_all_auth
-from ductor_bot.config import CLAUDE_MODELS_ORDERED, get_gemini_models, update_config_file_async
-from ductor_bot.multiagent.registry import update_agent_fields
-from ductor_bot.orchestrator.selectors.models import Button, ButtonGrid, SelectorResponse
+from klir.cli.auth import AuthStatus, check_all_auth
+from klir.config import CLAUDE_MODELS_ORDERED, get_gemini_models, update_config_file_async
+from klir.multiagent.registry import update_agent_fields
+from klir.orchestrator.selectors.models import Button, ButtonGrid, SelectorResponse
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.codex_cache import CodexModelCache
-    from ductor_bot.orchestrator.core import Orchestrator
-    from ductor_bot.session import SessionData
-    from ductor_bot.session.key import SessionKey
+    from klir.cli.codex_cache import CodexModelCache
+    from klir.orchestrator.core import Orchestrator
+    from klir.session import SessionData
+    from klir.session.key import SessionKey
 
 logger = logging.getLogger(__name__)
 

@@ -7,13 +7,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from ductor_bot.session.key import SessionKey
+from klir.session.key import SessionKey
 
 if TYPE_CHECKING:
     from aiogram.types import Message
 
-    from ductor_bot.config import ThreadBindingConfig
-    from ductor_bot.session.manager import SessionData
+    from klir.config import ThreadBindingConfig
+    from klir.session.manager import SessionData
 
 logger = logging.getLogger(__name__)
 

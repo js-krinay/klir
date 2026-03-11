@@ -12,20 +12,20 @@ from typing import TYPE_CHECKING
 
 from cronsim import CronSim, CronSimError
 
-from ductor_bot.cli.param_resolver import TaskOverrides
-from ductor_bot.config import resolve_user_timezone
-from ductor_bot.cron.manager import CronManager
-from ductor_bot.infra.base_task_observer import BaseTaskObserver
-from ductor_bot.infra.file_watcher import FileWatcher
-from ductor_bot.infra.task_runner import execute_in_task_folder
-from ductor_bot.log_context import set_log_context
-from ductor_bot.utils.quiet_hours import check_quiet_hour
+from klir.cli.param_resolver import TaskOverrides
+from klir.config import resolve_user_timezone
+from klir.cron.manager import CronManager
+from klir.infra.base_task_observer import BaseTaskObserver
+from klir.infra.file_watcher import FileWatcher
+from klir.infra.task_runner import execute_in_task_folder
+from klir.log_context import set_log_context
+from klir.utils.quiet_hours import check_quiet_hour
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.codex_cache import CodexModelCache
-    from ductor_bot.config import AgentConfig
-    from ductor_bot.cron.manager import CronJob
-    from ductor_bot.workspace.paths import DuctorPaths
+    from klir.cli.codex_cache import CodexModelCache
+    from klir.config import AgentConfig
+    from klir.cron.manager import CronJob
+    from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 

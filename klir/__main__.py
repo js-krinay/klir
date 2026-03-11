@@ -1,4 +1,4 @@
-"""Entry point: python -m ductor_bot."""
+"""Entry point: python -m klir."""
 
 from __future__ import annotations
 
@@ -13,43 +13,43 @@ from collections.abc import Callable
 from rich.console import Console
 
 # Re-exports from cli_commands — referenced by main() dispatch and by
-# tests that patch ductor_bot.__main__.<name>.
-from ductor_bot.cli_commands.agents import cmd_agents as _cmd_agents
-from ductor_bot.cli_commands.api_cmd import cmd_api as _cmd_api
-from ductor_bot.cli_commands.docker import cmd_docker as _cmd_docker
-from ductor_bot.cli_commands.lifecycle import (  # noqa: F401
+# tests that patch klir.__main__.<name>.
+from klir.cli_commands.agents import cmd_agents as _cmd_agents
+from klir.cli_commands.api_cmd import cmd_api as _cmd_api
+from klir.cli_commands.docker import cmd_docker as _cmd_docker
+from klir.cli_commands.lifecycle import (  # noqa: F401
     _re_exec_bot,
 )
-from ductor_bot.cli_commands.lifecycle import (
+from klir.cli_commands.lifecycle import (
     cmd_restart as _cmd_restart,
 )
-from ductor_bot.cli_commands.lifecycle import (
+from klir.cli_commands.lifecycle import (
     start_bot as _start_bot,
 )
-from ductor_bot.cli_commands.lifecycle import (
+from klir.cli_commands.lifecycle import (
     stop_bot as _stop_bot,
 )
-from ductor_bot.cli_commands.lifecycle import (
+from klir.cli_commands.lifecycle import (
     uninstall as _uninstall,
 )
-from ductor_bot.cli_commands.lifecycle import (
+from klir.cli_commands.lifecycle import (
     upgrade as _upgrade,
 )
-from ductor_bot.cli_commands.service import cmd_service as _cmd_service
-from ductor_bot.cli_commands.status import (
+from klir.cli_commands.service import cmd_service as _cmd_service
+from klir.cli_commands.status import (
     print_status as _print_status,
 )
-from ductor_bot.cli_commands.status import (
+from klir.cli_commands.status import (
     print_usage as _print_usage,
 )
-from ductor_bot.config import (
+from klir.config import (
     DEFAULT_EMPTY_GEMINI_API_KEY,
     AgentConfig,
     deep_merge_config,
 )
-from ductor_bot.infra.json_store import atomic_json_save
-from ductor_bot.workspace.init import init_workspace
-from ductor_bot.workspace.paths import resolve_paths
+from klir.infra.json_store import atomic_json_save
+from klir.workspace.init import init_workspace
+from klir.workspace.paths import resolve_paths
 
 logger = logging.getLogger(__name__)
 
@@ -154,9 +154,9 @@ async def run_telegram(config: AgentConfig) -> int:
         )
         sys.exit(1)
 
-    from ductor_bot.bot.sender import send_rich
-    from ductor_bot.infra.pidlock import acquire_lock, release_lock
-    from ductor_bot.multiagent.supervisor import AgentSupervisor
+    from klir.bot.sender import send_rich
+    from klir.infra.pidlock import acquire_lock, release_lock
+    from klir.multiagent.supervisor import AgentSupervisor
 
     acquire_lock(pid_file=paths.ductor_home / "bot.pid", kill_existing=True)
 
@@ -220,7 +220,7 @@ def _cmd_status() -> None:
 
 def _cmd_setup(verbose: bool) -> None:
     """Run onboarding (with smart reset if already configured), then start."""
-    from ductor_bot.cli.init_wizard import run_onboarding, run_smart_reset
+    from klir.cli.init_wizard import run_onboarding, run_smart_reset
 
     _stop_bot()
     paths = resolve_paths()
@@ -235,7 +235,7 @@ def _cmd_setup(verbose: bool) -> None:
 def _default_action(verbose: bool) -> None:
     """Auto-onboarding if unconfigured, then start bot."""
     if not _is_configured():
-        from ductor_bot.cli.init_wizard import run_onboarding
+        from klir.cli.init_wizard import run_onboarding
 
         service_installed = run_onboarding()
         if service_installed:

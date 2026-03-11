@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from ductor_bot.infra.service_base import (
+from klir.infra.service_base import (
     collect_nvm_bin_dirs,
     ensure_console,
     find_ductor_binary,
@@ -24,8 +24,8 @@ from ductor_bot.infra.service_base import (
     print_stop_failed,
     print_stopped,
 )
-from ductor_bot.infra.service_logs import print_file_service_logs
-from ductor_bot.workspace.paths import resolve_paths
+from klir.infra.service_logs import print_file_service_logs
+from klir.workspace.paths import resolve_paths
 
 if TYPE_CHECKING:
     from rich.console import Console

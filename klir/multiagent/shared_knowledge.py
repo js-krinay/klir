@@ -7,10 +7,10 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.infra.file_watcher import FileWatcher
+from klir.infra.file_watcher import FileWatcher
 
 if TYPE_CHECKING:
-    from ductor_bot.multiagent.supervisor import AgentSupervisor
+    from klir.multiagent.supervisor import AgentSupervisor
 
 logger = logging.getLogger(__name__)
 

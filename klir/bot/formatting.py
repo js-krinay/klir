@@ -10,7 +10,7 @@ from __future__ import annotations
 import html
 import re
 
-from ductor_bot.bot.buttons import strip_button_syntax
+from klir.bot.buttons import strip_button_syntax
 
 TELEGRAM_MSG_LIMIT = 4096
 """Maximum characters per Telegram message."""

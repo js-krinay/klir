@@ -13,26 +13,26 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
-from ductor_bot.background import BackgroundObserver, BackgroundResult
+from klir.background import BackgroundObserver, BackgroundResult
 
 if TYPE_CHECKING:
-    from ductor_bot.bus.bus import MessageBus
-from ductor_bot.cleanup import CleanupObserver
-from ductor_bot.cli.codex_cache import CodexModelCache
-from ductor_bot.cli.codex_cache_observer import CodexCacheObserver
-from ductor_bot.cli.gemini_cache_observer import GeminiCacheObserver
-from ductor_bot.cli.service import CLIService
-from ductor_bot.config import AgentConfig, get_gemini_models
-from ductor_bot.config_reload import ConfigReloader
-from ductor_bot.cron.manager import CronManager
-from ductor_bot.cron.observer import CronObserver
-from ductor_bot.heartbeat import HeartbeatObserver
-from ductor_bot.webhook.manager import WebhookManager
-from ductor_bot.webhook.models import WebhookResult
-from ductor_bot.webhook.observer import WebhookObserver
-from ductor_bot.workspace.init import watch_rule_files
-from ductor_bot.workspace.paths import DuctorPaths
-from ductor_bot.workspace.skill_sync import watch_skill_sync
+    from klir.bus.bus import MessageBus
+from klir.cleanup import CleanupObserver
+from klir.cli.codex_cache import CodexModelCache
+from klir.cli.codex_cache_observer import CodexCacheObserver
+from klir.cli.gemini_cache_observer import GeminiCacheObserver
+from klir.cli.service import CLIService
+from klir.config import AgentConfig, get_gemini_models
+from klir.config_reload import ConfigReloader
+from klir.cron.manager import CronManager
+from klir.cron.observer import CronObserver
+from klir.heartbeat import HeartbeatObserver
+from klir.webhook.manager import WebhookManager
+from klir.webhook.models import WebhookResult
+from klir.webhook.observer import WebhookObserver
+from klir.workspace.init import watch_rule_files
+from klir.workspace.paths import DuctorPaths
+from klir.workspace.skill_sync import watch_skill_sync
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +177,7 @@ class ObserverManager:
 
         Replaces the five individual setter methods with a single call.
         """
-        from ductor_bot.bus.adapters import (
+        from klir.bus.adapters import (
             from_background_result,
             from_cron_result,
             from_heartbeat,

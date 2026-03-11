@@ -5,10 +5,10 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.config import ChatOverrides, ReplyToMode
+from klir.config import ChatOverrides, ReplyToMode
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig
+    from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 

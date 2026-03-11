@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from ductor_bot.text.response_format import SEP
+from klir.text.response_format import SEP
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.auth import AuthResult
-    from ductor_bot.config import AgentConfig
+    from klir.cli.auth import AuthResult
+    from klir.config import AgentConfig
 
 _WELCOME_PREFIX = "w:"
 

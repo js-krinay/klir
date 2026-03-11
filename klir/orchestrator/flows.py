@@ -10,20 +10,20 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.timeout_controller import TimeoutConfig as TCConfig
-from ductor_bot.cli.timeout_controller import TimeoutController
-from ductor_bot.cli.types import AgentRequest, AgentResponse
-from ductor_bot.config import NULLISH_TEXT_VALUES, resolve_timeout
-from ductor_bot.infra.inflight import InflightTurn
-from ductor_bot.log_context import set_log_context
-from ductor_bot.orchestrator.hooks import HookContext
-from ductor_bot.orchestrator.registry import OrchestratorResult
-from ductor_bot.session import SessionData, SessionKey
-from ductor_bot.text.response_format import session_error_text, timeout_error_text
-from ductor_bot.workspace.loader import read_mainmemory
+from klir.cli.timeout_controller import TimeoutConfig as TCConfig
+from klir.cli.timeout_controller import TimeoutController
+from klir.cli.types import AgentRequest, AgentResponse
+from klir.config import NULLISH_TEXT_VALUES, resolve_timeout
+from klir.infra.inflight import InflightTurn
+from klir.log_context import set_log_context
+from klir.orchestrator.hooks import HookContext
+from klir.orchestrator.registry import OrchestratorResult
+from klir.session import SessionData, SessionKey
+from klir.text.response_format import session_error_text, timeout_error_text
+from klir.workspace.loader import read_mainmemory
 
 if TYPE_CHECKING:
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
 

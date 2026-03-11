@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from aiogram import Bot
 
-    from ductor_bot.config import AgentConfig, ReactionConfig
+    from klir.config import AgentConfig, ReactionConfig
 
 logger = logging.getLogger(__name__)
 

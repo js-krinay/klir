@@ -9,7 +9,7 @@ import pytest
 
 class TestForwardInSendRich:
     async def test_forward_directive_extracted_and_sent(self) -> None:
-        from ductor_bot.bot.sender import SendRichOpts, send_rich
+        from klir.bot.sender import SendRichOpts, send_rich
 
         bot = AsyncMock()
         bot.send_message.return_value = MagicMock(message_id=1)
@@ -27,7 +27,7 @@ class TestForwardInSendRich:
         )
 
     async def test_forward_stripped_from_text(self) -> None:
-        from ductor_bot.bot.sender import SendRichOpts, send_rich
+        from klir.bot.sender import SendRichOpts, send_rich
 
         bot = AsyncMock()
         bot.send_message.return_value = MagicMock(message_id=1)
@@ -45,7 +45,7 @@ class TestForwardInSendRich:
         assert "[forward:" not in call_args.kwargs.get("text", call_args[1] if len(call_args) > 1 else "")
 
     async def test_forwarding_disabled_ignores_directives(self) -> None:
-        from ductor_bot.bot.sender import SendRichOpts, send_rich
+        from klir.bot.sender import SendRichOpts, send_rich
 
         bot = AsyncMock()
         bot.send_message.return_value = MagicMock(message_id=1)

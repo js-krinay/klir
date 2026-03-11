@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 class TestOrchestratorResolverWiring:
     def test_orchestrator_has_resolver(self) -> None:
         """Orchestrator should expose a ChatConfigResolver instance."""
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         # Check that the class exists and is importable
         resolver = ChatConfigResolver.__new__(ChatConfigResolver)

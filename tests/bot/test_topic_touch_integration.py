@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import time_machine
 
-from ductor_bot.bot.topic import TopicNameCache
+from klir.bot.topic import TopicNameCache
 
 
 class TestTouchIntegration:

@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ductor_bot.infra.atomic_io import atomic_bytes_save
+from klir.infra.atomic_io import atomic_bytes_save
 
 logger = logging.getLogger(__name__)
 

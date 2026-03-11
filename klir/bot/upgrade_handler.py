@@ -9,14 +9,14 @@ from typing import TYPE_CHECKING
 
 from aiogram.exceptions import TelegramBadRequest
 
-from ductor_bot.bot.sender import SendRichOpts, send_rich
-from ductor_bot.infra.restart import EXIT_RESTART
-from ductor_bot.infra.updater import perform_upgrade_pipeline, write_upgrade_sentinel
-from ductor_bot.infra.version import VersionInfo, get_current_version
-from ductor_bot.text.response_format import SEP, fmt
+from klir.bot.sender import SendRichOpts, send_rich
+from klir.infra.restart import EXIT_RESTART
+from klir.infra.updater import perform_upgrade_pipeline, write_upgrade_sentinel
+from klir.infra.version import VersionInfo, get_current_version
+from klir.text.response_format import SEP, fmt
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.app import TelegramBot
+    from klir.bot.app import TelegramBot
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +153,7 @@ async def handle_changelog_callback(
     """Fetch and display changelog for ``upg:cl:<version>``."""
     from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-    from ductor_bot.infra.version import _parse_version, fetch_changelog
+    from klir.infra.version import _parse_version, fetch_changelog
 
     version = data.split(":", 2)[2] if data.count(":") >= 2 else ""
     if not version:

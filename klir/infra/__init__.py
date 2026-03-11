@@ -1,8 +1,8 @@
 """Infrastructure: PID lock, restart sentinels, Docker management."""
 
-from ductor_bot.infra.docker import DockerManager
-from ductor_bot.infra.pidlock import acquire_lock, release_lock
-from ductor_bot.infra.restart import (
+from klir.infra.docker import DockerManager
+from klir.infra.pidlock import acquire_lock, release_lock
+from klir.infra.restart import (
     EXIT_RESTART,
     consume_restart_marker,
     consume_restart_sentinel,

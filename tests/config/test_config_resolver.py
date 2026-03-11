@@ -6,7 +6,7 @@ import pytest
 
 
 def _make_config(**kwargs: object):
-    from ductor_bot.config import AgentConfig
+    from klir.config import AgentConfig
 
     defaults = {"telegram_token": "test:token", "provider": "claude", "model": "opus"}
     defaults.update(kwargs)
@@ -15,7 +15,7 @@ def _make_config(**kwargs: object):
 
 class TestChatConfigResolver:
     def test_no_overrides_returns_global(self) -> None:
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         cfg = _make_config()
         resolver = ChatConfigResolver(cfg)
@@ -24,7 +24,7 @@ class TestChatConfigResolver:
         assert resolver.model(chat_id=123) == "opus"
 
     def test_wildcard_override(self) -> None:
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         cfg = _make_config(chat_overrides={"*": {"model": "sonnet"}})
         resolver = ChatConfigResolver(cfg)
@@ -33,7 +33,7 @@ class TestChatConfigResolver:
         assert resolver.provider(chat_id=999) == "claude"  # not overridden
 
     def test_specific_chat_overrides_wildcard(self) -> None:
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         cfg = _make_config(
             chat_overrides={
@@ -52,7 +52,7 @@ class TestChatConfigResolver:
         assert resolver.provider(chat_id=999) == "claude"
 
     def test_enabled_false_disables_chat(self) -> None:
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         cfg = _make_config(
             chat_overrides={"-100666": {"enabled": False}},
@@ -63,7 +63,7 @@ class TestChatConfigResolver:
         assert resolver.is_enabled(chat_id=123) is True
 
     def test_group_mention_only_override(self) -> None:
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         cfg = _make_config(
             group_mention_only=False,
@@ -75,7 +75,7 @@ class TestChatConfigResolver:
         assert resolver.group_mention_only(chat_id=123) is False
 
     def test_reload_updates_overrides(self) -> None:
-        from ductor_bot.config_resolver import ChatConfigResolver
+        from klir.config_resolver import ChatConfigResolver
 
         cfg = _make_config()
         resolver = ChatConfigResolver(cfg)

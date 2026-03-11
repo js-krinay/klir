@@ -19,7 +19,7 @@ def _make_message(user_id: int = 100, chat_type: str = "private") -> MagicMock:
 
 class TestPairHandler:
     async def test_pair_generates_code(self) -> None:
-        from ductor_bot.bot.pair_handler import handle_pair
+        from klir.bot.pair_handler import handle_pair
 
         pairing_svc = MagicMock()
         pairing_svc.generate_code.return_value = "ABC123"
@@ -34,7 +34,7 @@ class TestPairHandler:
         assert "ABC123" in reply_text
 
     async def test_pair_only_in_private(self) -> None:
-        from ductor_bot.bot.pair_handler import handle_pair
+        from klir.bot.pair_handler import handle_pair
 
         pairing_svc = MagicMock()
         msg = _make_message(user_id=100, chat_type="supergroup")
@@ -47,7 +47,7 @@ class TestPairHandler:
         assert "private" in reply_text.lower() or "DM" in reply_text
 
     async def test_pair_max_codes_reached(self) -> None:
-        from ductor_bot.bot.pair_handler import handle_pair
+        from klir.bot.pair_handler import handle_pair
 
         pairing_svc = MagicMock()
         pairing_svc.generate_code.return_value = None
@@ -60,7 +60,7 @@ class TestPairHandler:
         assert "Maximum" in reply_text
 
     async def test_pair_shows_custom_ttl(self) -> None:
-        from ductor_bot.bot.pair_handler import handle_pair
+        from klir.bot.pair_handler import handle_pair
 
         pairing_svc = MagicMock()
         pairing_svc.generate_code.return_value = "XYZ789"

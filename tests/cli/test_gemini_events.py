@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 
-from ductor_bot.cli.gemini_events import parse_gemini_json, parse_gemini_stream_line
-from ductor_bot.cli.stream_events import (
+from klir.cli.gemini_events import parse_gemini_json, parse_gemini_stream_line
+from klir.cli.stream_events import (
     AssistantTextDelta,
     ResultEvent,
     SystemInitEvent,

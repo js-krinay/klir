@@ -8,9 +8,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from ductor_bot.tasks.hub import TaskHub
-from ductor_bot.tasks.models import TaskResult, TaskSubmit
-from ductor_bot.tasks.registry import TaskRegistry
+from klir.tasks.hub import TaskHub
+from klir.tasks.models import TaskResult, TaskSubmit
+from klir.tasks.registry import TaskRegistry
 
 
 @pytest.fixture
@@ -482,7 +482,7 @@ class TestPerAgentTasksDir:
         self, registry: TaskRegistry, tmp_path: Path
     ) -> None:
         """Task folders land in the submitting agent's workspace."""
-        from ductor_bot.workspace.paths import DuctorPaths
+        from klir.workspace.paths import DuctorPaths
 
         agent_home = tmp_path / "agents" / "test"
         agent_paths = DuctorPaths(ductor_home=agent_home)

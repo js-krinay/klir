@@ -6,18 +6,18 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
-from ductor_bot.bot.callbacks import button_grid_to_markup
-from ductor_bot.bot.sender import SendRichOpts, send_rich
-from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
-from ductor_bot.bot.typing import TypingContext
-from ductor_bot.session.key import SessionKey
-from ductor_bot.text.response_format import new_session_text, stop_text
+from klir.bot.callbacks import button_grid_to_markup
+from klir.bot.sender import SendRichOpts, send_rich
+from klir.bot.topic import TopicNameCache, get_session_key, get_thread_id
+from klir.bot.typing import TypingContext
+from klir.session.key import SessionKey
+from klir.text.response_format import new_session_text, stop_text
 
 if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
 

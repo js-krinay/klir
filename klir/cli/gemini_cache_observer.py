@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from ductor_bot.cli.gemini_cache import GeminiModelCache
-from ductor_bot.cli.model_cache import BaseModelCacheObserver
+from klir.cli.gemini_cache import GeminiModelCache
+from klir.cli.model_cache import BaseModelCacheObserver
 
 
 class GeminiCacheObserver(BaseModelCacheObserver):

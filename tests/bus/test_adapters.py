@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ductor_bot.bus.adapters import (
+from klir.bus.adapters import (
     from_background_result,
     from_cron_result,
     from_heartbeat,
@@ -15,7 +15,7 @@ from ductor_bot.bus.adapters import (
     from_webhook_cron_result,
     from_webhook_wake,
 )
-from ductor_bot.bus.envelope import DeliveryMode, LockMode, Origin
+from klir.bus.envelope import DeliveryMode, LockMode, Origin
 
 # -- Fake result types (avoid importing real models with heavy deps) -----------
 

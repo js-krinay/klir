@@ -8,16 +8,16 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ductor_bot.background import (
+from klir.background import (
     BackgroundSubmit,
     BackgroundTask,
 )
-from ductor_bot.cli.process_registry import ProcessRegistry
-from ductor_bot.cli.service import CLIService, CLIServiceConfig
-from ductor_bot.config import AgentConfig
-from ductor_bot.config_resolver import ChatConfigResolver
-from ductor_bot.cron.manager import CronManager
-from ductor_bot.errors import (
+from klir.cli.process_registry import ProcessRegistry
+from klir.cli.service import CLIService, CLIServiceConfig
+from klir.config import AgentConfig
+from klir.config_resolver import ChatConfigResolver
+from klir.cron.manager import CronManager
+from klir.errors import (
     CLIError,
     CronError,
     SessionError,
@@ -25,9 +25,9 @@ from ductor_bot.errors import (
     WebhookError,
     WorkspaceError,
 )
-from ductor_bot.infra.docker import DockerManager
-from ductor_bot.infra.inflight import InflightTracker
-from ductor_bot.orchestrator.commands import (
+from klir.infra.docker import DockerManager
+from klir.infra.inflight import InflightTracker
+from klir.orchestrator.commands import (
     cmd_cron,
     cmd_diagnose,
     cmd_memory,
@@ -38,8 +38,8 @@ from ductor_bot.orchestrator.commands import (
     cmd_tasks,
     cmd_upgrade,
 )
-from ductor_bot.orchestrator.directives import parse_directives
-from ductor_bot.orchestrator.flows import (
+from klir.orchestrator.directives import parse_directives
+from klir.orchestrator.flows import (
     StreamingCallbacks,
     heartbeat_flow,
     named_session_flow,
@@ -47,30 +47,30 @@ from ductor_bot.orchestrator.flows import (
     normal,
     normal_streaming,
 )
-from ductor_bot.orchestrator.hooks import (
+from klir.orchestrator.hooks import (
     DELEGATION_BRIEF,
     DELEGATION_REMINDER,
     MAINMEMORY_REMINDER,
     MessageHookRegistry,
 )
-from ductor_bot.orchestrator.observers import ObserverManager
-from ductor_bot.orchestrator.providers import ProviderManager
-from ductor_bot.orchestrator.registry import CommandRegistry, OrchestratorResult
-from ductor_bot.security import detect_suspicious_patterns
-from ductor_bot.session import SessionKey, SessionManager
-from ductor_bot.session.manager import SessionData
-from ductor_bot.session.named import NamedSessionRegistry
-from ductor_bot.webhook.manager import WebhookManager
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.orchestrator.observers import ObserverManager
+from klir.orchestrator.providers import ProviderManager
+from klir.orchestrator.registry import CommandRegistry, OrchestratorResult
+from klir.security import detect_suspicious_patterns
+from klir.session import SessionKey, SessionManager
+from klir.session.manager import SessionData
+from klir.session.named import NamedSessionRegistry
+from klir.webhook.manager import WebhookManager
+from klir.workspace.paths import DuctorPaths
 
 if TYPE_CHECKING:
-    from ductor_bot.background import BackgroundObserver
-    from ductor_bot.bus.bus import MessageBus
-    from ductor_bot.config import ModelRegistry
-    from ductor_bot.multiagent.bus import AsyncInterAgentResult
-    from ductor_bot.multiagent.supervisor import AgentSupervisor
-    from ductor_bot.session.named import NamedSession
-    from ductor_bot.tasks.hub import TaskHub
+    from klir.background import BackgroundObserver
+    from klir.bus.bus import MessageBus
+    from klir.config import ModelRegistry
+    from klir.multiagent.bus import AsyncInterAgentResult
+    from klir.multiagent.supervisor import AgentSupervisor
+    from klir.session.named import NamedSession
+    from klir.tasks.hub import TaskHub
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +248,7 @@ class Orchestrator:
 
         Workspace must already be initialized by the caller (``__main__.load_config``).
         """
-        from ductor_bot.orchestrator.lifecycle import create_orchestrator
+        from klir.orchestrator.lifecycle import create_orchestrator
 
         return await create_orchestrator(config, agent_name=agent_name)
 
@@ -390,7 +390,7 @@ class Orchestrator:
 
         Called by the AgentSupervisor after setting ``_supervisor``.
         """
-        from ductor_bot.multiagent.commands import (
+        from klir.multiagent.commands import (
             cmd_agent_restart,
             cmd_agent_start,
             cmd_agent_stop,
@@ -464,7 +464,7 @@ class Orchestrator:
         thread_id: int | None,
     ) -> str:
         """Submit a background task using the current provider/model. Returns task_id."""
-        from ductor_bot.cli.param_resolver import resolve_cli_config
+        from klir.cli.param_resolver import resolve_cli_config
 
         if self._observers.background is None:
             msg = "Background observer not initialized"
@@ -482,7 +482,7 @@ class Orchestrator:
         request: NamedSessionRequest,
     ) -> tuple[str, str]:
         """Submit a new named background session. Returns (task_id, session_name)."""
-        from ductor_bot.cli.param_resolver import resolve_cli_config
+        from klir.cli.param_resolver import resolve_cli_config
 
         if self._observers.background is None:
             msg = "Background observer not initialized"
@@ -518,7 +518,7 @@ class Orchestrator:
         thread_id: int | None,
     ) -> str:
         """Submit a background follow-up to an existing named session. Returns task_id."""
-        from ductor_bot.cli.param_resolver import resolve_cli_config
+        from klir.cli.param_resolver import resolve_cli_config
 
         if self._observers.background is None:
             msg = "Background observer not initialized"
@@ -595,7 +595,7 @@ class Orchestrator:
 
     async def _ensure_docker(self) -> None:
         """Health-check Docker before CLI calls; auto-recover or fall back."""
-        from ductor_bot.orchestrator.lifecycle import ensure_docker
+        from klir.orchestrator.lifecycle import ensure_docker
 
         await ensure_docker(self)
 
@@ -605,7 +605,7 @@ class Orchestrator:
         paths: DuctorPaths,
     ) -> None:
         """Initialize and start the direct WebSocket API server."""
-        from ductor_bot.orchestrator.lifecycle import start_api_server
+        from klir.orchestrator.lifecycle import start_api_server
 
         await start_api_server(self, config, paths)
 
@@ -669,7 +669,7 @@ class Orchestrator:
         new_session: bool = False,
     ) -> tuple[str, str, str]:
         """Process a message from another agent via the InterAgentBus."""
-        from ductor_bot.orchestrator.injection import (
+        from klir.orchestrator.injection import (
             handle_interagent_message as _handle_ia,
         )
 
@@ -682,7 +682,7 @@ class Orchestrator:
         chat_id: int = 0,
     ) -> str:
         """Inject an async inter-agent result into the current active session."""
-        from ductor_bot.orchestrator.injection import (
+        from klir.orchestrator.injection import (
             handle_async_interagent_result as _handle_async_ia,
         )
 
@@ -696,7 +696,7 @@ class Orchestrator:
         key: SessionKey,
     ) -> str:
         """Inject a task worker's question into the main agent's session."""
-        from ductor_bot.orchestrator.injection import (
+        from klir.orchestrator.injection import (
             handle_task_question as _handle_question,
         )
 
@@ -711,12 +711,12 @@ class Orchestrator:
         topic_id: int | None = None,
     ) -> str:
         """Execute *prompt* in the active session (fulfils ``SessionInjector`` protocol)."""
-        from ductor_bot.orchestrator.injection import _inject_prompt
+        from klir.orchestrator.injection import _inject_prompt
 
         return await _inject_prompt(self, prompt, chat_id, label, topic_id=topic_id)
 
     async def shutdown(self) -> None:
         """Cleanup on bot shutdown."""
-        from ductor_bot.orchestrator.lifecycle import shutdown
+        from klir.orchestrator.lifecycle import shutdown
 
         await shutdown(self)

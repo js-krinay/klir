@@ -22,9 +22,9 @@ from aiohttp import WSMsgType, web
 from aiohttp.test_utils import TestClient, TestServer
 from nacl.exceptions import CryptoError
 
-from ductor_bot.api.crypto import E2ESession
-from ductor_bot.api.server import ApiServer
-from ductor_bot.config import ApiConfig
+from klir.api.crypto import E2ESession
+from klir.api.server import ApiServer
+from klir.config import ApiConfig
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -229,7 +229,7 @@ class TestE2EHandshake:
         srv = TestServer(app)
         tc = TestClient(srv)
         await tc.start_server()
-        with patch("ductor_bot.api.server.asyncio.wait_for", side_effect=_patched_wait_for):
+        with patch("klir.api.server.asyncio.wait_for", side_effect=_patched_wait_for):
             ws = await tc.ws_connect("/ws")
             resp = await ws.receive_json()
             assert resp["type"] == "error"

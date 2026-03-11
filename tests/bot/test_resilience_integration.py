@@ -12,8 +12,8 @@ class TestResilienceIntegration:
     @pytest.mark.asyncio
     async def test_resilient_session_retries_server_error(self) -> None:
         """ResilientSession.make_request retries on 5xx then succeeds."""
-        from ductor_bot.bot.session_factory import ResilientSession
-        from ductor_bot.config import ResilienceConfig
+        from klir.bot.session_factory import ResilientSession
+        from klir.config import ResilienceConfig
 
         cfg = ResilienceConfig(
             max_retries=2, base_backoff_seconds=0.01, max_backoff_seconds=0.1
@@ -40,8 +40,8 @@ class TestResilienceIntegration:
     @pytest.mark.asyncio
     async def test_resilient_session_raises_after_max_retries(self) -> None:
         """ResilientSession.make_request raises after exhausting retries."""
-        from ductor_bot.bot.session_factory import ResilientSession
-        from ductor_bot.config import ResilienceConfig
+        from klir.bot.session_factory import ResilientSession
+        from klir.config import ResilienceConfig
 
         cfg = ResilienceConfig(
             max_retries=1, base_backoff_seconds=0.01, max_backoff_seconds=0.1
@@ -64,8 +64,8 @@ class TestResilienceIntegration:
 
     def test_full_config_round_trip(self) -> None:
         """Config -> ResilienceConfig -> ResilientSession pipeline."""
-        from ductor_bot.bot.session_factory import ResilientSession, create_bot_session
-        from ductor_bot.config import AgentConfig
+        from klir.bot.session_factory import ResilientSession, create_bot_session
+        from klir.config import AgentConfig
 
         cfg = AgentConfig(
             telegram_token="test:token",

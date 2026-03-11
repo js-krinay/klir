@@ -10,14 +10,14 @@ from aiogram.exceptions import TelegramConflictError
 
 class TestConflictDetector:
     def test_initial_state(self) -> None:
-        from ductor_bot.bot.conflict_detector import ConflictDetector
+        from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
         assert detector.conflict_detected is False
         assert detector.conflict_count == 0
 
     def test_record_conflict(self) -> None:
-        from ductor_bot.bot.conflict_detector import ConflictDetector
+        from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
         err = TelegramConflictError(method=None, message="Conflict")
@@ -26,7 +26,7 @@ class TestConflictDetector:
         assert detector.conflict_count == 1
 
     def test_multiple_conflicts(self) -> None:
-        from ductor_bot.bot.conflict_detector import ConflictDetector
+        from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
         err = TelegramConflictError(method=None, message="Conflict")
@@ -35,7 +35,7 @@ class TestConflictDetector:
         assert detector.conflict_count == 2
 
     def test_reset(self) -> None:
-        from ductor_bot.bot.conflict_detector import ConflictDetector
+        from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
         err = TelegramConflictError(method=None, message="Conflict")
@@ -46,7 +46,7 @@ class TestConflictDetector:
 
     @pytest.mark.asyncio
     async def test_on_conflict_callback_called(self) -> None:
-        from ductor_bot.bot.conflict_detector import ConflictDetector
+        from klir.bot.conflict_detector import ConflictDetector
 
         callback = AsyncMock()
         detector = ConflictDetector(on_conflict=callback)
@@ -56,7 +56,7 @@ class TestConflictDetector:
 
     @pytest.mark.asyncio
     async def test_on_conflict_callback_not_called_for_other_errors(self) -> None:
-        from ductor_bot.bot.conflict_detector import ConflictDetector
+        from klir.bot.conflict_detector import ConflictDetector
 
         callback = AsyncMock()
         detector = ConflictDetector(on_conflict=callback)

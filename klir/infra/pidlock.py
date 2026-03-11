@@ -8,8 +8,8 @@ import os
 import time
 from pathlib import Path
 
-from ductor_bot.infra.atomic_io import atomic_bytes_save
-from ductor_bot.infra.process_tree import (
+from klir.infra.atomic_io import atomic_bytes_save
+from klir.infra.process_tree import (
     force_kill_process_tree,
     list_process_descendants,
     terminate_process_tree,

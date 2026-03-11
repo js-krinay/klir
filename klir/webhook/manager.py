@@ -11,8 +11,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ductor_bot.infra.json_store import atomic_json_save, load_json
-from ductor_bot.webhook.models import WebhookEntry
+from klir.infra.json_store import atomic_json_save, load_json
+from klir.webhook.models import WebhookEntry
 
 logger = logging.getLogger(__name__)
 

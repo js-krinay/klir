@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from ductor_bot.bot.message_dispatch import (
+from klir.bot.message_dispatch import (
     NonStreamingDispatch,
     StreamingDispatch,
     run_non_streaming_message,
     run_streaming_message,
 )
-from ductor_bot.session.key import SessionKey
+from klir.session.key import SessionKey
 
 
 def _make_key() -> SessionKey:
@@ -48,7 +48,7 @@ class TestNonStreamingDispatchReplyToMode:
             reply_to_mode="off",
         )
 
-        with patch("ductor_bot.bot.message_dispatch.send_rich", new_callable=AsyncMock) as mock_sr:
+        with patch("klir.bot.message_dispatch.send_rich", new_callable=AsyncMock) as mock_sr:
             await run_non_streaming_message(d)
             opts = mock_sr.call_args.args[3]
             assert opts.reply_to_mode == "off"
@@ -56,7 +56,7 @@ class TestNonStreamingDispatchReplyToMode:
 
 class TestStreamingDispatchReplyToMode:
     async def test_default_reply_to_mode_is_first(self) -> None:
-        from ductor_bot.config import StreamingConfig
+        from klir.config import StreamingConfig
 
         d = StreamingDispatch(
             bot=MagicMock(),
@@ -70,7 +70,7 @@ class TestStreamingDispatchReplyToMode:
         assert d.reply_to_mode == "first"
 
     async def test_mode_all_passed_to_stream_editor(self) -> None:
-        from ductor_bot.config import StreamingConfig
+        from klir.config import StreamingConfig
 
         bot = MagicMock()
         bot.send_chat_action = AsyncMock()
@@ -94,7 +94,7 @@ class TestStreamingDispatchReplyToMode:
             reply_to_mode="all",
         )
 
-        with patch("ductor_bot.bot.message_dispatch.create_stream_editor") as mock_cse:
+        with patch("klir.bot.message_dispatch.create_stream_editor") as mock_cse:
             mock_editor = MagicMock()
             mock_editor.has_content = True
             mock_editor.append_text = AsyncMock()

@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ductor_bot.config import AgentConfig, reset_gemini_models, set_gemini_models
-from ductor_bot.orchestrator.providers import ProviderManager
+from klir.config import AgentConfig, reset_gemini_models, set_gemini_models
+from klir.orchestrator.providers import ProviderManager
 
 
 @pytest.fixture(autouse=True)

@@ -8,12 +8,12 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
-from ductor_bot.infra.base_observer import BaseObserver
-from ductor_bot.log_context import set_log_context
-from ductor_bot.utils.quiet_hours import check_quiet_hour
+from klir.infra.base_observer import BaseObserver
+from klir.log_context import set_log_context
+from klir.utils.quiet_hours import check_quiet_hour
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig, HeartbeatConfig
+    from klir.config import AgentConfig, HeartbeatConfig
 
 logger = logging.getLogger(__name__)
 

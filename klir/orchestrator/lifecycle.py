@@ -8,15 +8,15 @@ import os
 import secrets
 from typing import TYPE_CHECKING
 
-from ductor_bot.files.allowed_roots import resolve_allowed_roots
-from ductor_bot.infra.docker import DockerManager
-from ductor_bot.workspace.init import inject_runtime_environment
-from ductor_bot.workspace.paths import DuctorPaths, resolve_paths
-from ductor_bot.workspace.skill_sync import cleanup_ductor_links, sync_bundled_skills, sync_skills
+from klir.files.allowed_roots import resolve_allowed_roots
+from klir.infra.docker import DockerManager
+from klir.workspace.init import inject_runtime_environment
+from klir.workspace.paths import DuctorPaths, resolve_paths
+from klir.workspace.skill_sync import cleanup_ductor_links, sync_bundled_skills, sync_skills
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.config import AgentConfig
+    from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ async def create_orchestrator(
 
     Workspace must already be initialized by the caller (``__main__.load_config``).
     """
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.orchestrator.core import Orchestrator
 
     paths = resolve_paths(ductor_home=config.ductor_home)
 
@@ -68,7 +68,7 @@ async def create_orchestrator(
     orch = Orchestrator(config, paths, docker_container=docker_container, agent_name=agent_name)
     orch._docker = docker_mgr
 
-    from ductor_bot.cli.auth import AuthStatus, check_all_auth
+    from klir.cli.auth import AuthStatus, check_all_auth
 
     auth_results = await asyncio.to_thread(check_all_auth)
     orch._providers.apply_auth_results(
@@ -120,7 +120,7 @@ async def start_api_server(
 ) -> None:
     """Initialize and start the direct WebSocket API server."""
     try:
-        from ductor_bot.api.server import ApiServer
+        from klir.api.server import ApiServer
     except ImportError:
         logger.warning(
             "API server enabled but PyNaCl is not installed. Install with: pip install ductor[api]"
@@ -128,7 +128,7 @@ async def start_api_server(
         return
 
     if not config.api.token:
-        from ductor_bot.config import update_config_file_async
+        from klir.config import update_config_file_async
 
         token = secrets.token_urlsafe(32)
         config.api.token = token

@@ -6,13 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ductor_bot.config import AgentConfig, ForwardingConfig
+from klir.config import AgentConfig, ForwardingConfig
 
 
 class TestForwardAppWiring:
     def test_streaming_dispatch_receives_forwarding_config(self) -> None:
         """Verify StreamingDispatch dataclass accepts forwarding fields."""
-        from ductor_bot.bot.message_dispatch import StreamingDispatch
+        from klir.bot.message_dispatch import StreamingDispatch
 
         cfg = AgentConfig(
             forwarding=ForwardingConfig(enabled=True),
@@ -35,7 +35,7 @@ class TestForwardAppWiring:
 
     def test_non_streaming_dispatch_receives_forwarding_config(self) -> None:
         """Verify NonStreamingDispatch dataclass accepts forwarding fields."""
-        from ductor_bot.bot.message_dispatch import NonStreamingDispatch
+        from klir.bot.message_dispatch import NonStreamingDispatch
 
         cfg = AgentConfig(
             forwarding=ForwardingConfig(enabled=True),

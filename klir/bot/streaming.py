@@ -16,19 +16,19 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
 
-from ductor_bot.bot.buttons import extract_buttons
-from ductor_bot.bot.formatting import (
+from klir.bot.buttons import extract_buttons
+from klir.bot.formatting import (
     TELEGRAM_MSG_LIMIT,
     markdown_to_telegram_html,
     split_html_message,
 )
-from ductor_bot.config import ReplyToMode
+from klir.config import ReplyToMode
 
 if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
-    from ductor_bot.config import StreamingConfig
+    from klir.config import StreamingConfig
 
 logger = logging.getLogger(__name__)
 
@@ -162,14 +162,14 @@ def create_stream_editor(
     reply_to_mode: ReplyToMode = "first",
 ) -> StreamEditorProtocol:
     """Create the appropriate stream editor based on config."""
-    from ductor_bot.config import StreamingConfig
+    from klir.config import StreamingConfig
 
     c = cfg or StreamingConfig()
     if c.append_mode:
         return StreamEditor(
             bot, chat_id, reply_to=reply_to, thread_id=thread_id, reply_to_mode=reply_to_mode
         )
-    from ductor_bot.bot.edit_streaming import EditStreamEditor
+    from klir.bot.edit_streaming import EditStreamEditor
 
     return EditStreamEditor(
         bot,

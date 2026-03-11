@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ductor_bot.webhook.models import WebhookEntry
+from klir.webhook.models import WebhookEntry
 
 
 def test_webhook_entry_new_fields_defaults() -> None:

@@ -10,12 +10,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import which
 
-from ductor_bot.cli.codex_events import parse_codex_jsonl
-from ductor_bot.cli.gemini_events import parse_gemini_json
-from ductor_bot.cli.gemini_utils import find_gemini_cli
-from ductor_bot.cli.param_resolver import TaskExecutionConfig
-from ductor_bot.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
-from ductor_bot.infra.process_tree import force_kill_process_tree
+from klir.cli.codex_events import parse_codex_jsonl
+from klir.cli.gemini_events import parse_gemini_json
+from klir.cli.gemini_utils import find_gemini_cli
+from klir.cli.param_resolver import TaskExecutionConfig
+from klir.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
+from klir.infra.process_tree import force_kill_process_tree
 
 logger = logging.getLogger(__name__)
 

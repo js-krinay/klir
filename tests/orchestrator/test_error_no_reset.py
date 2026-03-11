@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import AsyncMock
 
-from ductor_bot.cli.types import AgentResponse
-from ductor_bot.orchestrator.core import Orchestrator
-from ductor_bot.orchestrator.flows import normal, normal_streaming
-from ductor_bot.session.key import SessionKey
+from klir.cli.types import AgentResponse
+from klir.orchestrator.core import Orchestrator
+from klir.orchestrator.flows import normal, normal_streaming
+from klir.session.key import SessionKey
 
 
 def _mock_response(**kwargs: Any) -> AgentResponse:

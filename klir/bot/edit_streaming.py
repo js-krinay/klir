@@ -16,19 +16,19 @@ from typing import TYPE_CHECKING
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 
-from ductor_bot.bot.buttons import extract_buttons
-from ductor_bot.bot.formatting import (
+from klir.bot.buttons import extract_buttons
+from klir.bot.formatting import (
     TELEGRAM_MSG_LIMIT,
     markdown_to_telegram_html,
     split_html_message,
 )
-from ductor_bot.config import ReplyToMode
+from klir.config import ReplyToMode
 
 if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
-    from ductor_bot.config import StreamingConfig
+    from klir.config import StreamingConfig
 
 logger = logging.getLogger(__name__)
 

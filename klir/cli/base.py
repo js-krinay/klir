@@ -13,12 +13,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.stream_events import StreamEvent
-from ductor_bot.cli.types import CLIResponse
+from klir.cli.stream_events import StreamEvent
+from klir.cli.types import CLIResponse
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.process_registry import ProcessRegistry
-    from ductor_bot.cli.timeout_controller import TimeoutController
+    from klir.cli.process_registry import ProcessRegistry
+    from klir.cli.timeout_controller import TimeoutController
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +150,7 @@ def docker_wrap(
         # Merge user secrets from .env (low priority — never override).
         import os
 
-        from ductor_bot.infra.env_secrets import load_env_secrets
+        from klir.infra.env_secrets import load_env_secrets
 
         merged_extra = dict(load_env_secrets(main_home / ".env"))
         # Remove keys already in host env (subprocess inherits docker binary env).

@@ -7,20 +7,20 @@ import contextlib
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.config import AgentConfig, update_config_file_async
-from ductor_bot.infra.file_watcher import FileWatcher
-from ductor_bot.infra.restart import EXIT_RESTART
-from ductor_bot.multiagent.health import AgentHealth
-from ductor_bot.multiagent.models import SubAgentConfig, merge_sub_agent_config
-from ductor_bot.multiagent.registry import AgentRegistry
-from ductor_bot.multiagent.stack import AgentStack
-from ductor_bot.workspace.paths import resolve_paths
+from klir.config import AgentConfig, update_config_file_async
+from klir.infra.file_watcher import FileWatcher
+from klir.infra.restart import EXIT_RESTART
+from klir.multiagent.health import AgentHealth
+from klir.multiagent.models import SubAgentConfig, merge_sub_agent_config
+from klir.multiagent.registry import AgentRegistry
+from klir.multiagent.stack import AgentStack
+from klir.workspace.paths import resolve_paths
 
 if TYPE_CHECKING:
-    from ductor_bot.multiagent.bus import InterAgentBus, NotifyCallback
-    from ductor_bot.multiagent.internal_api import InternalAgentAPI
-    from ductor_bot.multiagent.shared_knowledge import SharedKnowledgeSync
-    from ductor_bot.tasks.hub import TaskHub
+    from klir.multiagent.bus import InterAgentBus, NotifyCallback
+    from klir.multiagent.internal_api import InternalAgentAPI
+    from klir.multiagent.shared_knowledge import SharedKnowledgeSync
+    from klir.tasks.hub import TaskHub
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +80,8 @@ class AgentSupervisor:
         self._running = True
 
         # Initialize inter-agent bus
-        from ductor_bot.multiagent.bus import InterAgentBus
-        from ductor_bot.multiagent.internal_api import InternalAgentAPI
+        from klir.multiagent.bus import InterAgentBus
+        from klir.multiagent.internal_api import InternalAgentAPI
 
         self._bus = InterAgentBus()
         if self._notify_sender is not None:
@@ -98,8 +98,8 @@ class AgentSupervisor:
 
         # Initialize task hub (background task delegation)
         if self._main_config.tasks.enabled:
-            from ductor_bot.tasks.hub import TaskHub
-            from ductor_bot.tasks.registry import TaskRegistry
+            from klir.tasks.hub import TaskHub
+            from klir.tasks.registry import TaskRegistry
 
             registry = TaskRegistry(
                 registry_path=self._main_paths.tasks_registry_path,
@@ -139,7 +139,7 @@ class AgentSupervisor:
         #    first image build can take several minutes.
         startup_timeout = 120
         if self._main_config.docker.enabled and self._main_config.docker.extras:
-            from ductor_bot.infra.docker_extras import calculate_build_timeout, resolve_extras
+            from klir.infra.docker_extras import calculate_build_timeout, resolve_extras
 
             startup_timeout = max(
                 startup_timeout,
@@ -157,7 +157,7 @@ class AgentSupervisor:
         await self._sync_sub_agents()
 
         # 4. Start shared knowledge sync (SHAREDMEMORY.md → all agents)
-        from ductor_bot.multiagent.shared_knowledge import SharedKnowledgeSync
+        from klir.multiagent.shared_knowledge import SharedKnowledgeSync
 
         shared_path = self._main_paths.ductor_home / "SHAREDMEMORY.md"
         self._shared_knowledge = SharedKnowledgeSync(shared_path, self)
@@ -267,7 +267,7 @@ class AgentSupervisor:
           - Main agent: propagate EXIT_RESTART to trigger full service restart.
           - Sub-agents: rebuild stack in-process (hot-reload).
         """
-        from ductor_bot.log_context import set_log_context
+        from klir.log_context import set_log_context
 
         set_log_context(agent_name=name)
         health = self._health[name]

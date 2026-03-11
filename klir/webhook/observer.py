@@ -8,19 +8,19 @@ import secrets
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
-from ductor_bot.cli.param_resolver import TaskOverrides
-from ductor_bot.infra.base_task_observer import BaseTaskObserver
-from ductor_bot.infra.file_watcher import FileWatcher
-from ductor_bot.infra.task_runner import execute_in_task_folder
-from ductor_bot.utils.quiet_hours import check_quiet_hour
-from ductor_bot.webhook.models import WebhookResult, render_template
-from ductor_bot.webhook.server import WebhookServer
+from klir.cli.param_resolver import TaskOverrides
+from klir.infra.base_task_observer import BaseTaskObserver
+from klir.infra.file_watcher import FileWatcher
+from klir.infra.task_runner import execute_in_task_folder
+from klir.utils.quiet_hours import check_quiet_hour
+from klir.webhook.models import WebhookResult, render_template
+from klir.webhook.server import WebhookServer
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.codex_cache import CodexModelCache
-    from ductor_bot.config import AgentConfig
-    from ductor_bot.webhook.manager import WebhookManager
-    from ductor_bot.workspace.paths import DuctorPaths
+    from klir.cli.codex_cache import CodexModelCache
+    from klir.config import AgentConfig
+    from klir.webhook.manager import WebhookManager
+    from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class WebhookObserver(BaseTaskObserver):
 
         # Auto-generate token if empty
         if not self._config.webhooks.token:
-            from ductor_bot.config import update_config_file_async
+            from klir.config import update_config_file_async
 
             token = secrets.token_urlsafe(32)
             self._config.webhooks.token = token

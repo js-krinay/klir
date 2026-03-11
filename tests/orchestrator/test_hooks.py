@@ -6,17 +6,17 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from ductor_bot.cli.types import AgentResponse
-from ductor_bot.orchestrator.core import Orchestrator
-from ductor_bot.orchestrator.flows import normal
-from ductor_bot.orchestrator.hooks import (
+from klir.cli.types import AgentResponse
+from klir.orchestrator.core import Orchestrator
+from klir.orchestrator.flows import normal
+from klir.orchestrator.hooks import (
     MAINMEMORY_REMINDER,
     HookContext,
     MessageHook,
     MessageHookRegistry,
     every_n_messages,
 )
-from ductor_bot.session.key import SessionKey
+from klir.session.key import SessionKey
 
 # ---------------------------------------------------------------------------
 # Unit tests: HookContext, conditions, registry

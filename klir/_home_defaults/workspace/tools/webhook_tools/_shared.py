@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from ductor_bot._home_defaults.workspace.tools._tool_shared import (
+from klir._home_defaults.workspace.tools._tool_shared import (
     available_ids,
     find_by_id,
     load_collection_or_default,

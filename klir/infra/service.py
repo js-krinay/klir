@@ -10,11 +10,11 @@ import sys
 from typing import TYPE_CHECKING
 
 if sys.platform == "win32":
-    from ductor_bot.infra import service_windows as _backend
+    from klir.infra import service_windows as _backend
 elif sys.platform == "darwin":
-    from ductor_bot.infra import service_macos as _backend
+    from klir.infra import service_macos as _backend
 else:
-    from ductor_bot.infra import service_linux as _backend
+    from klir.infra import service_linux as _backend
 
 if TYPE_CHECKING:
     from rich.console import Console

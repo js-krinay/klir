@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.timeout_controller import TimeoutController
+    from klir.cli.timeout_controller import TimeoutController
 
 
 class CLIResponse(BaseModel):

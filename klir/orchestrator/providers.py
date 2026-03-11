@@ -6,7 +6,7 @@ import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from ductor_bot.config import (
+from klir.config import (
     _GEMINI_ALIASES,
     CLAUDE_MODELS,
     ModelRegistry,
@@ -15,11 +15,11 @@ from ductor_bot.config import (
 )
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.auth import AuthResult, AuthStatus
-    from ductor_bot.cli.codex_cache import CodexModelCache
-    from ductor_bot.cli.codex_cache_observer import CodexCacheObserver
-    from ductor_bot.cli.service import CLIService
-    from ductor_bot.config import AgentConfig
+    from klir.cli.auth import AuthResult, AuthStatus
+    from klir.cli.codex_cache import CodexModelCache
+    from klir.cli.codex_cache_observer import CodexCacheObserver
+    from klir.cli.service import CLIService
+    from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class ProviderManager:
     def gemini_api_key_mode(self) -> bool:
         """Return cached Gemini API-key mode status."""
         if self._gemini_api_key_mode is None:
-            from ductor_bot.cli.auth import gemini_uses_api_key_mode
+            from klir.cli.auth import gemini_uses_api_key_mode
 
             self._gemini_api_key_mode = gemini_uses_api_key_mode()
         return self._gemini_api_key_mode
@@ -103,11 +103,11 @@ class ProviderManager:
 
     def init_gemini_state(self, paths_workspace: object) -> None:
         """Cache Gemini API-key mode and trust workspace once at startup."""
-        from ductor_bot.cli.auth import gemini_uses_api_key_mode
+        from klir.cli.auth import gemini_uses_api_key_mode
 
         self._gemini_api_key_mode = gemini_uses_api_key_mode()
         if "gemini" in self._available_providers:
-            from ductor_bot.cli.gemini_utils import trust_workspace
+            from klir.cli.gemini_utils import trust_workspace
 
             trust_workspace(paths_workspace)  # type: ignore[arg-type]
 

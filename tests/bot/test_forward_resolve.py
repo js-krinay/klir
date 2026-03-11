@@ -10,7 +10,7 @@ import pytest
 class TestForwardResolve:
     def test_prepend_context_modifies_text(self) -> None:
         """Verify the prepend function composes correctly."""
-        from ductor_bot.bot.forward_context import prepend_forward_context
+        from klir.bot.forward_context import prepend_forward_context
 
         ctx = "[Forwarded from Alice (user 100) at 2026-03-10T12:00:00]"
         text = "My reply about this"
@@ -22,7 +22,7 @@ class TestForwardResolve:
         assert "\n\n" in result
 
     def test_forward_context_with_empty_text(self) -> None:
-        from ductor_bot.bot.forward_context import extract_forward_context
+        from klir.bot.forward_context import extract_forward_context
 
         origin = MagicMock()
         origin.type = "user"

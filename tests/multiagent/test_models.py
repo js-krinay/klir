@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ductor_bot.config import AgentConfig, ApiConfig
-from ductor_bot.multiagent.models import SubAgentConfig, merge_sub_agent_config
+from klir.config import AgentConfig, ApiConfig
+from klir.multiagent.models import SubAgentConfig, merge_sub_agent_config
 
 
 class TestSubAgentConfig:

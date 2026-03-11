@@ -12,7 +12,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 from rich.panel import Panel
 
-from ductor_bot.infra.service_base import (
+from klir.infra.service_base import (
     ensure_console,
     find_ductor_binary,
     print_binary_not_found,
@@ -26,8 +26,8 @@ from ductor_bot.infra.service_base import (
     print_stop_failed,
     print_stopped,
 )
-from ductor_bot.infra.service_logs import print_file_service_logs
-from ductor_bot.workspace.paths import resolve_paths
+from klir.infra.service_logs import print_file_service_logs
+from klir.workspace.paths import resolve_paths
 
 if TYPE_CHECKING:
     from rich.console import Console
@@ -181,7 +181,7 @@ def install_service(console: Console | None = None) -> bool:
     pythonw = _find_pythonw()
     if pythonw:
         command = pythonw
-        arguments = "-m ductor_bot"
+        arguments = "-m klir"
     else:
         binary = find_ductor_binary()
         if not binary:

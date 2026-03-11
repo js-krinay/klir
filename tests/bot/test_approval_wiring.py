@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ductor_bot.bot.approval_handler import APR_PREFIX
+from klir.bot.approval_handler import APR_PREFIX
 
 
 class TestApprovalCallbackRouting:

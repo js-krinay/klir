@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.auth import (
+from klir.cli.auth import (
     AuthStatus,
     check_all_auth,
     check_codex_auth,

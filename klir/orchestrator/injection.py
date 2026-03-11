@@ -12,14 +12,14 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.types import AgentRequest
-from ductor_bot.orchestrator.flows import _update_session
-from ductor_bot.session.key import SessionKey
-from ductor_bot.session.named import NamedSession
+from klir.cli.types import AgentRequest
+from klir.orchestrator.flows import _update_session
+from klir.session.key import SessionKey
+from klir.session.named import NamedSession
 
 if TYPE_CHECKING:
-    from ductor_bot.multiagent.bus import AsyncInterAgentResult
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.multiagent.bus import AsyncInterAgentResult
+    from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ import logging
 from dataclasses import dataclass
 from shutil import which
 
-from ductor_bot.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
+from klir.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
 
 logger = logging.getLogger(__name__)
 

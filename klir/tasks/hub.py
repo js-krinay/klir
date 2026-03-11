@@ -9,15 +9,15 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
-from ductor_bot.tasks.models import TaskEntry, TaskInFlight, TaskResult, TaskSubmit
+from klir.tasks.models import TaskEntry, TaskInFlight, TaskResult, TaskSubmit
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ductor_bot.cli.service import CLIService
-    from ductor_bot.config import TasksConfig
-    from ductor_bot.tasks.registry import TaskRegistry
-    from ductor_bot.workspace.paths import DuctorPaths
+    from klir.cli.service import CLIService
+    from klir.config import TasksConfig
+    from klir.tasks.registry import TaskRegistry
+    from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 
@@ -368,7 +368,7 @@ class TaskHub:
         resume_session: str | None = None,
     ) -> None:
         """Execute task as CLI subprocess."""
-        from ductor_bot.cli.types import AgentRequest
+        from klir.cli.types import AgentRequest
 
         cli = self._cli_services.get(entry.parent_agent) or self._cli_service
         assert cli is not None

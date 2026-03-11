@@ -6,8 +6,8 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any, Self
 
-from ductor_bot.cli.gemini_utils import discover_gemini_models
-from ductor_bot.cli.model_cache import BaseModelCache
+from klir.cli.gemini_utils import discover_gemini_models
+from klir.cli.model_cache import BaseModelCache
 
 # Hardcoded fallback when discovery and disk cache both fail.
 _FALLBACK_GEMINI_MODELS: tuple[str, ...] = (

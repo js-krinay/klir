@@ -8,7 +8,7 @@ from pathlib import Path
 def test_agent_tools_rules_escape_botfather_handle() -> None:
     rules_path = (
         Path(__file__).resolve().parents[2]
-        / "ductor_bot"
+        / "klir"
         / "_home_defaults"
         / "workspace"
         / "tools"

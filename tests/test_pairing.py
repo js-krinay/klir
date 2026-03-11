@@ -19,7 +19,7 @@ def _make_config(enabled: bool = True, ttl: int = 60, length: int = 6) -> MagicM
 
 class TestPairingService:
     def test_generate_code_returns_alphanumeric(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
@@ -29,7 +29,7 @@ class TestPairingService:
         assert code.isalnum()
 
     def test_generate_code_unique(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         cfg = _make_config()
         cfg.pairing.max_active_codes = 20
@@ -40,7 +40,7 @@ class TestPairingService:
         assert len(set(codes)) == 20
 
     def test_validate_correct_code(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
@@ -49,7 +49,7 @@ class TestPairingService:
         assert result is True
 
     def test_validate_wrong_code(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config())
         svc.generate_code(admin_user_id=100)
@@ -58,7 +58,7 @@ class TestPairingService:
         assert result is False
 
     def test_code_is_single_use(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
@@ -67,7 +67,7 @@ class TestPairingService:
         assert svc.validate(code, user_id=300) is False  # already consumed
 
     def test_expired_code_rejected(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config(ttl=0))  # 0 minute TTL = immediate expiry
         code = svc.generate_code(admin_user_id=100)
@@ -80,7 +80,7 @@ class TestPairingService:
         assert result is False
 
     def test_list_active_codes(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config())
         code1 = svc.generate_code(admin_user_id=100)
@@ -90,7 +90,7 @@ class TestPairingService:
         assert len(active) == 2
 
     def test_revoke_code(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
@@ -99,7 +99,7 @@ class TestPairingService:
         assert svc.validate(code, user_id=200) is False
 
     def test_disabled_service_rejects(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         svc = PairingService(_make_config(enabled=False))
         code = svc.generate_code(admin_user_id=100)
@@ -109,7 +109,7 @@ class TestPairingService:
         assert result is False
 
     def test_max_active_codes_enforced(self) -> None:
-        from ductor_bot.pairing import PairingService
+        from klir.pairing import PairingService
 
         cfg = _make_config()
         cfg.pairing.max_active_codes = 3

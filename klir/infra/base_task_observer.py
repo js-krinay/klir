@@ -5,14 +5,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.param_resolver import TaskOverrides, resolve_cli_config
+from klir.cli.param_resolver import TaskOverrides, resolve_cli_config
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.codex_cache import CodexModelCache
-    from ductor_bot.cli.param_resolver import TaskExecutionConfig
-    from ductor_bot.config import AgentConfig
-    from ductor_bot.infra.task_runner import TaskResult
-    from ductor_bot.workspace.paths import DuctorPaths
+    from klir.cli.codex_cache import CodexModelCache
+    from klir.cli.param_resolver import TaskExecutionConfig
+    from klir.config import AgentConfig
+    from klir.infra.task_runner import TaskResult
+    from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 

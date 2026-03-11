@@ -41,23 +41,23 @@ from typing import TYPE_CHECKING, Any
 import aiohttp
 from aiohttp import BodyPartReader, WSMsgType, web
 
-from ductor_bot.api.crypto import E2ESession
-from ductor_bot.bus.lock_pool import LockPool
-from ductor_bot.files.prompt import MediaInfo, build_media_prompt
-from ductor_bot.files.storage import prepare_destination, sanitize_filename
-from ductor_bot.files.tags import (
+from klir.api.crypto import E2ESession
+from klir.bus.lock_pool import LockPool
+from klir.files.prompt import MediaInfo, build_media_prompt
+from klir.files.storage import prepare_destination, sanitize_filename
+from klir.files.tags import (
     classify_mime,
     extract_file_paths,
     guess_mime,
     is_image_path,
     path_from_file_tag,
 )
-from ductor_bot.log_context import set_log_context
-from ductor_bot.security.paths import is_path_safe
-from ductor_bot.session.key import SessionKey
+from klir.log_context import set_log_context
+from klir.security.paths import is_path_safe
+from klir.session.key import SessionKey
 
 if TYPE_CHECKING:
-    from ductor_bot.config import ApiConfig
+    from klir.config import ApiConfig
 
 logger = logging.getLogger(__name__)
 

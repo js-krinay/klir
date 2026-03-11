@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message, MessageId
 
-    from ductor_bot.bot.forward_parser import ForwardDirective
+    from klir.bot.forward_parser import ForwardDirective
 
 logger = logging.getLogger(__name__)
 

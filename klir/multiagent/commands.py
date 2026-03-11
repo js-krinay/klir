@@ -8,12 +8,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.orchestrator.registry import OrchestratorResult
-from ductor_bot.text.response_format import SEP, fmt
+from klir.orchestrator.registry import OrchestratorResult
+from klir.text.response_format import SEP, fmt
 
 if TYPE_CHECKING:
-    from ductor_bot.orchestrator.core import Orchestrator
-    from ductor_bot.session.key import SessionKey
+    from klir.orchestrator.core import Orchestrator
+    from klir.session.key import SessionKey
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ import pytest
 
 class TestProxyResolution:
     def test_config_url_takes_priority(self) -> None:
-        from ductor_bot.infra.proxy import resolve_proxy_url
+        from klir.infra.proxy import resolve_proxy_url
 
         cfg = MagicMock()
         cfg.proxy.url = "http://config-proxy:8080"
@@ -20,7 +20,7 @@ class TestProxyResolution:
         assert result == "http://config-proxy:8080"
 
     def test_env_https_proxy_fallback(self) -> None:
-        from ductor_bot.infra.proxy import resolve_proxy_url
+        from klir.infra.proxy import resolve_proxy_url
 
         cfg = MagicMock()
         cfg.proxy.url = ""
@@ -31,7 +31,7 @@ class TestProxyResolution:
             assert result == "http://env-proxy:3128"
 
     def test_env_http_proxy_fallback(self) -> None:
-        from ductor_bot.infra.proxy import resolve_proxy_url
+        from klir.infra.proxy import resolve_proxy_url
 
         cfg = MagicMock()
         cfg.proxy.url = ""
@@ -44,7 +44,7 @@ class TestProxyResolution:
                 assert result == "http://env-proxy:3128"
 
     def test_no_proxy_returns_none(self) -> None:
-        from ductor_bot.infra.proxy import resolve_proxy_url
+        from klir.infra.proxy import resolve_proxy_url
 
         cfg = MagicMock()
         cfg.proxy.url = ""
@@ -55,17 +55,17 @@ class TestProxyResolution:
             assert result is None
 
     def test_sanitize_strips_credentials(self) -> None:
-        from ductor_bot.infra.proxy import sanitize_proxy_url
+        from klir.infra.proxy import sanitize_proxy_url
 
         assert sanitize_proxy_url("http://user:pass@proxy:8080") == "http://***@proxy:8080"
 
     def test_sanitize_preserves_url_without_credentials(self) -> None:
-        from ductor_bot.infra.proxy import sanitize_proxy_url
+        from klir.infra.proxy import sanitize_proxy_url
 
         assert sanitize_proxy_url("http://proxy:8080") == "http://proxy:8080"
 
     def test_lowercase_env_vars(self) -> None:
-        from ductor_bot.infra.proxy import resolve_proxy_url
+        from klir.infra.proxy import resolve_proxy_url
 
         cfg = MagicMock()
         cfg.proxy.url = ""

@@ -8,7 +8,7 @@ from urllib.parse import urlparse, urlunparse
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig
+    from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 

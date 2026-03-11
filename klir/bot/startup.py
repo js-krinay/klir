@@ -7,13 +7,13 @@ import contextlib
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.bot.sender import SendRichOpts, send_rich
-from ductor_bot.infra.restart import consume_restart_sentinel
-from ductor_bot.infra.updater import UpdateObserver, consume_upgrade_sentinel
-from ductor_bot.infra.version import get_current_version
+from klir.bot.sender import SendRichOpts, send_rich
+from klir.infra.restart import consume_restart_sentinel
+from klir.infra.updater import UpdateObserver, consume_upgrade_sentinel
+from klir.infra.version import get_current_version
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.app import TelegramBot
+    from klir.bot.app import TelegramBot
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +37,14 @@ async def _handle_restart_sentinel(bot: TelegramBot) -> dict[str, object] | None
 
 async def run_startup(bot: TelegramBot) -> None:
     """Execute full startup sequence: orchestrator, sentinels, recovery, update observer."""
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.orchestrator.core import Orchestrator
 
     bot._orchestrator = await Orchestrator.create(
         bot.config,
         agent_name=bot._agent_name,
     )
 
-    from ductor_bot.bot.chat_tracker import ChatTracker
+    from klir.bot.chat_tracker import ChatTracker
 
     bot._chat_tracker = ChatTracker(bot._orch.paths.chat_activity_path)
 
@@ -62,7 +62,7 @@ async def run_startup(bot: TelegramBot) -> None:
     logger.info("Bot online: @%s (id=%d)", me.username, me.id)
 
     if bot._proxy_url:
-        from ductor_bot.infra.proxy import sanitize_proxy_url
+        from klir.infra.proxy import sanitize_proxy_url
 
         logger.info("Telegram API connected via proxy: %s", sanitize_proxy_url(bot._proxy_url))
 
@@ -88,8 +88,8 @@ async def run_startup(bot: TelegramBot) -> None:
             )
 
     # -- Startup lifecycle detection --
-    from ductor_bot.infra.startup_state import detect_startup_kind, save_startup_state
-    from ductor_bot.text.response_format import startup_notification_text
+    from klir.infra.startup_state import detect_startup_kind, save_startup_state
+    from klir.text.response_format import startup_notification_text
 
     startup_info = await asyncio.to_thread(detect_startup_kind, bot._orch.paths.startup_state_path)
     await asyncio.to_thread(save_startup_state, bot._orch.paths.startup_state_path, startup_info)
@@ -99,8 +99,8 @@ async def run_startup(bot: TelegramBot) -> None:
             await bot.broadcast(note, SendRichOpts(allowed_roots=bot.file_roots(bot._orch.paths)))
 
     # -- Auto-recovery of interrupted work --
-    from ductor_bot.infra.recovery import RecoveryPlanner
-    from ductor_bot.text.response_format import recovery_notification_text
+    from klir.infra.recovery import RecoveryPlanner
+    from klir.text.response_format import recovery_notification_text
 
     planner = RecoveryPlanner(
         inflight=bot._orch.inflight_tracker,
@@ -127,7 +127,7 @@ async def run_startup(bot: TelegramBot) -> None:
     bot._orch.inflight_tracker.clear()
 
     # Start background version checker (skip for dev/source installs)
-    from ductor_bot.infra.install import is_upgradeable
+    from klir.infra.install import is_upgradeable
 
     if is_upgradeable():
         bot._update_observer = UpdateObserver(notify=bot._on_update_available)

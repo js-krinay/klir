@@ -16,7 +16,7 @@ from aiogram.exceptions import (
     TelegramServerError,
 )
 
-from ductor_bot.config import ResilienceConfig
+from klir.config import ResilienceConfig
 
 logger = logging.getLogger(__name__)
 

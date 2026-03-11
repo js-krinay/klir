@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ductor_bot.cli.codex_cache import CodexModelCache
-from ductor_bot.cli.model_cache import BaseModelCacheObserver
+from klir.cli.codex_cache import CodexModelCache
+from klir.cli.model_cache import BaseModelCacheObserver
 
 
 class CodexCacheObserver(BaseModelCacheObserver):

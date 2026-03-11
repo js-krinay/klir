@@ -6,13 +6,13 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
-from ductor_bot.orchestrator.selectors.models import Button, ButtonGrid, SelectorResponse
-from ductor_bot.orchestrator.selectors.utils import format_age
-from ductor_bot.text.response_format import SEP, fmt
+from klir.orchestrator.selectors.models import Button, ButtonGrid, SelectorResponse
+from klir.orchestrator.selectors.utils import format_age
+from klir.text.response_format import SEP, fmt
 
 if TYPE_CHECKING:
-    from ductor_bot.orchestrator.core import Orchestrator
-    from ductor_bot.session.manager import SessionData
+    from klir.orchestrator.core import Orchestrator
+    from klir.session.manager import SessionData
 
 logger = logging.getLogger(__name__)
 

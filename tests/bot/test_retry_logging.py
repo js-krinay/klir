@@ -13,8 +13,8 @@ class TestRetryLogging:
     async def test_recoverable_error_logs_context(self, caplog: pytest.LogCaptureFixture) -> None:
         from unittest.mock import AsyncMock
 
-        from ductor_bot.bot.retry import retry_async
-        from ductor_bot.config import ResilienceConfig
+        from klir.bot.retry import retry_async
+        from klir.config import ResilienceConfig
 
         fn = AsyncMock(
             side_effect=[
@@ -24,7 +24,7 @@ class TestRetryLogging:
         )
         cfg = ResilienceConfig(base_backoff_seconds=0.01, max_backoff_seconds=0.1)
 
-        with caplog.at_level(logging.WARNING, logger="ductor_bot.bot.retry"):
+        with caplog.at_level(logging.WARNING, logger="klir.bot.retry"):
             await retry_async(fn, config=cfg, context="sendMessage")
 
         assert any("sendMessage" in r.message for r in caplog.records)
@@ -34,8 +34,8 @@ class TestRetryLogging:
     async def test_exhausted_retries_logs_error(self, caplog: pytest.LogCaptureFixture) -> None:
         from unittest.mock import AsyncMock
 
-        from ductor_bot.bot.retry import retry_async
-        from ductor_bot.config import ResilienceConfig
+        from klir.bot.retry import retry_async
+        from klir.config import ResilienceConfig
 
         fn = AsyncMock(
             side_effect=TelegramNetworkError(method=None, message="timeout")
@@ -45,7 +45,7 @@ class TestRetryLogging:
         )
 
         with (
-            caplog.at_level(logging.ERROR, logger="ductor_bot.bot.retry"),
+            caplog.at_level(logging.ERROR, logger="klir.bot.retry"),
             pytest.raises(TelegramNetworkError),
         ):
             await retry_async(fn, config=cfg, context="getUpdates")
@@ -60,8 +60,8 @@ class TestRetryLogging:
         from unittest.mock import AsyncMock
 
         from aiogram.exceptions import TelegramConflictError
-        from ductor_bot.bot.retry import retry_async
-        from ductor_bot.config import ResilienceConfig
+        from klir.bot.retry import retry_async
+        from klir.config import ResilienceConfig
 
         fn = AsyncMock(
             side_effect=TelegramConflictError(method=None, message="Conflict")
@@ -69,7 +69,7 @@ class TestRetryLogging:
         cfg = ResilienceConfig()
 
         with (
-            caplog.at_level(logging.ERROR, logger="ductor_bot.bot.retry"),
+            caplog.at_level(logging.ERROR, logger="klir.bot.retry"),
             pytest.raises(TelegramConflictError),
         ):
             await retry_async(fn, config=cfg, context="getUpdates")

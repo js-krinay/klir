@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from ductor_bot.cli.types import AgentResponse
-from ductor_bot.orchestrator.core import Orchestrator
-from ductor_bot.orchestrator.flows import (
+from klir.cli.types import AgentResponse
+from klir.orchestrator.core import Orchestrator
+from klir.orchestrator.flows import (
     StreamingCallbacks,
     _finish_normal,
     _strip_ack_token,
@@ -16,9 +16,9 @@ from ductor_bot.orchestrator.flows import (
     normal,
     normal_streaming,
 )
-from ductor_bot.orchestrator.registry import OrchestratorResult
-from ductor_bot.session import SessionData
-from ductor_bot.session.key import SessionKey
+from klir.orchestrator.registry import OrchestratorResult
+from klir.session import SessionData
+from klir.session.key import SessionKey
 
 
 @pytest.fixture

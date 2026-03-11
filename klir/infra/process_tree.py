@@ -109,7 +109,7 @@ def kill_all_ductor_processes() -> int:
     On Windows this uses two strategies:
     1. ``tasklist`` scan for ``ductor.exe`` processes
     2. PowerShell scan for ``python.exe``/``pythonw.exe`` running from the
-       pipx venv directory (covers ``pythonw.exe -m ductor_bot``)
+       pipx venv directory (covers ``pythonw.exe -m klir``)
 
     On POSIX this is a no-op because the PID-file mechanism is sufficient and
     broad ``pgrep`` patterns would unsafely match unrelated processes.
@@ -161,7 +161,7 @@ def _kill_venv_python_windows(current_pid: int) -> int:
     r"""Kill ``python.exe``/``pythonw.exe`` processes running from the pipx venv.
 
     When ductor is installed via ``pipx``, the bot runs as
-    ``pythonw.exe -m ductor_bot`` inside ``~\pipx\venvs\ductor\``.
+    ``pythonw.exe -m klir`` inside ``~\pipx\venvs\ductor\``.
     These processes lock the venv executables and prevent ``pipx install --force``.
     """
     try:

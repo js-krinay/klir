@@ -10,9 +10,9 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from ductor_bot.config import AgentConfig, resolve_user_timezone
-from ductor_bot.infra.json_store import atomic_json_save, load_json
-from ductor_bot.session.key import SessionKey
+from klir.config import AgentConfig, resolve_user_timezone
+from klir.infra.json_store import atomic_json_save, load_json
+from klir.session.key import SessionKey
 
 logger = logging.getLogger(__name__)
 

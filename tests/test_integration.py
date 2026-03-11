@@ -8,15 +8,15 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from ductor_bot.cli.types import AgentResponse, CLIResponse
-from ductor_bot.config import AgentConfig
-from ductor_bot.orchestrator.core import Orchestrator
-from ductor_bot.orchestrator.hooks import MessageHook
-from ductor_bot.orchestrator.registry import OrchestratorResult
-from ductor_bot.session import SessionManager
-from ductor_bot.session.key import SessionKey
-from ductor_bot.workspace.init import init_workspace
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.cli.types import AgentResponse, CLIResponse
+from klir.config import AgentConfig
+from klir.orchestrator.core import Orchestrator
+from klir.orchestrator.hooks import MessageHook
+from klir.orchestrator.registry import OrchestratorResult
+from klir.session import SessionManager
+from klir.session.key import SessionKey
+from klir.workspace.init import init_workspace
+from klir.workspace.paths import DuctorPaths
 
 CHAT_ID = 12345
 KEY = SessionKey(chat_id=CHAT_ID)
@@ -194,7 +194,7 @@ class TestCommandRouting:
     async def test_status_command(self, orch_with_mock_cli: tuple[Orchestrator, AsyncMock]) -> None:
         orch, mock_execute = orch_with_mock_cli
 
-        with patch("ductor_bot.orchestrator.commands.check_all_auth", return_value={}):
+        with patch("klir.orchestrator.commands.check_all_auth", return_value={}):
             result = await orch.handle_message(KEY, "/status")
 
         assert "**Status**" in result.text
@@ -224,11 +224,11 @@ class TestCommandRouting:
     ) -> None:
         orch, mock_execute = orch_with_mock_cli
 
-        from ductor_bot.orchestrator.selectors.models import SelectorResponse
+        from klir.orchestrator.selectors.models import SelectorResponse
 
         resp = SelectorResponse(text="Select a provider:")
         with patch(
-            "ductor_bot.orchestrator.commands.model_selector_start",
+            "klir.orchestrator.commands.model_selector_start",
             new_callable=AsyncMock,
             return_value=resp,
         ):

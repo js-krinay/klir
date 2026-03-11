@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from aiogram.types import Message
 
-    from ductor_bot.pairing import PairingService
+    from klir.pairing import PairingService
 
 logger = logging.getLogger(__name__)
 

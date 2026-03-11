@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ductor_bot.webhook.models import WebhookEntry
+    from klir.webhook.models import WebhookEntry
 
 logger = logging.getLogger(__name__)
 

@@ -6,11 +6,11 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.infra.base_observer import BaseObserver
+from klir.infra.base_observer import BaseObserver
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.topic import TopicNameCache
-    from ductor_bot.config import AgentConfig
+    from klir.bot.topic import TopicNameCache
+    from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 

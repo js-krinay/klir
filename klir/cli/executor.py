@@ -13,16 +13,16 @@ import logging
 from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass
 
-from ductor_bot.cli.base import (
+from klir.cli.base import (
     _IS_WINDOWS,
     CLIConfig,
     _win_feed_stdin,
 )
-from ductor_bot.cli.stream_events import ResultEvent, StreamEvent
-from ductor_bot.cli.timeout_controller import TimeoutController
-from ductor_bot.cli.types import CLIResponse
-from ductor_bot.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
-from ductor_bot.infra.process_tree import force_kill_process_tree
+from klir.cli.stream_events import ResultEvent, StreamEvent
+from klir.cli.timeout_controller import TimeoutController
+from klir.cli.types import CLIResponse
+from klir.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
+from klir.infra.process_tree import force_kill_process_tree
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def _build_subprocess_env(config: CLIConfig) -> dict[str, str] | None:
     import os
     from pathlib import Path
 
-    from ductor_bot.infra.env_secrets import load_env_secrets
+    from klir.infra.env_secrets import load_env_secrets
 
     env = os.environ.copy()
 

@@ -12,9 +12,9 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.base import CLIConfig
-from ductor_bot.cli.factory import create_cli
-from ductor_bot.cli.stream_events import (
+from klir.cli.base import CLIConfig
+from klir.cli.factory import create_cli
+from klir.cli.stream_events import (
     AssistantTextDelta,
     CompactBoundaryEvent,
     ResultEvent,
@@ -24,12 +24,12 @@ from ductor_bot.cli.stream_events import (
     ThinkingEvent,
     ToolUseEvent,
 )
-from ductor_bot.cli.types import AgentRequest, AgentResponse, CLIResponse
+from klir.cli.types import AgentRequest, AgentResponse, CLIResponse
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.base import BaseCLI
-    from ductor_bot.cli.process_registry import ProcessRegistry
-    from ductor_bot.config import ModelRegistry
+    from klir.cli.base import BaseCLI
+    from klir.cli.process_registry import ProcessRegistry
+    from klir.config import ModelRegistry
 
 logger = logging.getLogger(__name__)
 

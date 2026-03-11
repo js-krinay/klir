@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from ductor_bot.bus.envelope import Envelope, Origin
-from ductor_bot.bus.telegram_transport import (
+from klir.bus.envelope import Envelope, Origin
+from klir.bus.telegram_transport import (
     TelegramTransport,
     _is_cron_transport_ack_line,
     _sanitize_cron_result_text,
@@ -84,7 +84,7 @@ class TestCronBroadcast:
             metadata={"title": "Backup"},
         )
 
-        with patch("ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock):
+        with patch("klir.bus.telegram_transport.send_rich", new_callable=AsyncMock):
             await transport.deliver_broadcast(env)
 
         bot.broadcast.assert_awaited_once()
@@ -136,7 +136,7 @@ class TestHeartbeatDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -200,7 +200,7 @@ class TestBackgroundDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -223,7 +223,7 @@ class TestBackgroundDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -242,7 +242,7 @@ class TestBackgroundDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -260,7 +260,7 @@ class TestBackgroundDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -281,7 +281,7 @@ class TestBackgroundDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -299,7 +299,7 @@ class TestBackgroundDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -324,7 +324,7 @@ class TestInteragentDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -343,7 +343,7 @@ class TestInteragentDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -374,7 +374,7 @@ class TestTaskResultDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -394,7 +394,7 @@ class TestTaskResultDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -411,7 +411,7 @@ class TestTaskResultDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -435,7 +435,7 @@ class TestTaskQuestionDelivery:
         )
 
         with patch(
-            "ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock
+            "klir.bus.telegram_transport.send_rich", new_callable=AsyncMock
         ) as mock_send:
             await transport.deliver(env)
 
@@ -458,7 +458,7 @@ class TestDispatchFallback:
         # Use an origin that's not in _HANDLERS for unicast
         env = _env(origin=Origin.CRON)  # CRON is broadcast-only
 
-        with patch("ductor_bot.bus.telegram_transport.send_rich", new_callable=AsyncMock):
+        with patch("klir.bus.telegram_transport.send_rich", new_callable=AsyncMock):
             await transport.deliver(env)
 
         assert "No handler for origin=cron" in caplog.text

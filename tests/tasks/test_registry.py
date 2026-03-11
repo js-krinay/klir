@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from ductor_bot.tasks.models import TaskSubmit
-from ductor_bot.tasks.registry import TaskRegistry
+from klir.tasks.models import TaskSubmit
+from klir.tasks.registry import TaskRegistry
 
 
 @pytest.fixture

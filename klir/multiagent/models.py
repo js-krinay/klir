@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from ductor_bot.config import (
+from klir.config import (
     AgentConfig,
     ApiConfig,
     CleanupConfig,

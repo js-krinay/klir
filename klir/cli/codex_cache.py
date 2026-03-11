@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Self
 
-from ductor_bot.cli.codex_discovery import CodexModelInfo, discover_codex_models
-from ductor_bot.cli.model_cache import BaseModelCache
+from klir.cli.codex_discovery import CodexModelInfo, discover_codex_models
+from klir.cli.model_cache import BaseModelCache
 
 # Hardcoded fallback when discovery and disk cache both fail.
 _FALLBACK_CODEX_MODELS: tuple[CodexModelInfo, ...] = (

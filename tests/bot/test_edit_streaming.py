@@ -10,7 +10,7 @@ from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.types import Message
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.edit_streaming import EditStreamEditor
+    from klir.bot.edit_streaming import EditStreamEditor
 
 
 def _make_editor(
@@ -22,8 +22,8 @@ def _make_editor(
     reply_to_mode: str = "first",
 ) -> tuple[MagicMock, EditStreamEditor]:
     """Create a bot mock and an EditStreamEditor with zero throttle by default."""
-    from ductor_bot.bot.edit_streaming import EditStreamEditor
-    from ductor_bot.config import StreamingConfig
+    from klir.bot.edit_streaming import EditStreamEditor
+    from klir.config import StreamingConfig
 
     bot = MagicMock()
     sent_msg = MagicMock(spec=Message)
@@ -274,7 +274,7 @@ class TestToolTracker:
     """Test the internal _ToolTracker collapsing logic."""
 
     def test_single_tool(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         tracker.add("Bash")
@@ -283,7 +283,7 @@ class TestToolTracker:
         assert "x" not in result
 
     def test_consecutive_same(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         for _ in range(4):
@@ -292,7 +292,7 @@ class TestToolTracker:
         assert "[TOOL: Bash] x4</b>" in result
 
     def test_mixed_tools(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         tracker.add("Bash")
@@ -307,14 +307,14 @@ class TestToolTracker:
         assert "[TOOL: Read] x3" in result
 
     def test_empty_tracker(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         assert not tracker.has_entries
         assert tracker.render_html() == ""
 
     def test_html_escaping(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         tracker.add("<script>")
@@ -323,7 +323,7 @@ class TestToolTracker:
         assert "<script>" not in result
 
     def test_system_style_collapsing(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         tracker.add("THINKING", style="system")
@@ -334,7 +334,7 @@ class TestToolTracker:
         assert "<i>" in result
 
     def test_mixed_tool_and_system(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         tracker.add("THINKING", style="system")
@@ -347,7 +347,7 @@ class TestToolTracker:
         assert "x" not in result
 
     def test_system_not_collapsed_with_tool(self) -> None:
-        from ductor_bot.bot.edit_streaming import _ToolTracker
+        from klir.bot.edit_streaming import _ToolTracker
 
         tracker = _ToolTracker()
         tracker.add("THINKING", style="system")
@@ -464,8 +464,8 @@ class TestEditStreamEditorReplyToMode:
         bot.send_message.assert_not_called()
 
     async def test_mode_default_is_first(self) -> None:
-        from ductor_bot.bot.edit_streaming import EditStreamEditor
-        from ductor_bot.config import StreamingConfig
+        from klir.bot.edit_streaming import EditStreamEditor
+        from klir.config import StreamingConfig
 
         bot = MagicMock()
         editor = EditStreamEditor(bot, chat_id=1, cfg=StreamingConfig())

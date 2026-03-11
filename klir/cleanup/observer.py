@@ -10,12 +10,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.config import resolve_user_timezone
-from ductor_bot.infra.base_observer import BaseObserver
+from klir.config import resolve_user_timezone
+from klir.infra.base_observer import BaseObserver
 
 if TYPE_CHECKING:
-    from ductor_bot.config import AgentConfig, CleanupConfig
-    from ductor_bot.workspace.paths import DuctorPaths
+    from klir.config import AgentConfig, CleanupConfig
+    from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 

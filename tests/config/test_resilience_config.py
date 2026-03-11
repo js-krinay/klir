@@ -5,7 +5,7 @@ from __future__ import annotations
 
 class TestResilienceConfig:
     def test_defaults(self) -> None:
-        from ductor_bot.config import ResilienceConfig
+        from klir.config import ResilienceConfig
 
         cfg = ResilienceConfig()
         assert cfg.max_retries == 3
@@ -14,7 +14,7 @@ class TestResilienceConfig:
         assert cfg.jitter is True
 
     def test_custom_values(self) -> None:
-        from ductor_bot.config import ResilienceConfig
+        from klir.config import ResilienceConfig
 
         cfg = ResilienceConfig(
             max_retries=5,
@@ -28,13 +28,13 @@ class TestResilienceConfig:
         assert cfg.jitter is False
 
     def test_agent_config_includes_resilience(self) -> None:
-        from ductor_bot.config import AgentConfig
+        from klir.config import AgentConfig
 
         cfg = AgentConfig(telegram_token="test:token")
         assert cfg.resilience.max_retries == 3
 
     def test_agent_config_custom_resilience(self) -> None:
-        from ductor_bot.config import AgentConfig
+        from klir.config import AgentConfig
 
         cfg = AgentConfig(
             telegram_token="test:token",

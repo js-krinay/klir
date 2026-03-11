@@ -10,13 +10,13 @@ from typing import TYPE_CHECKING, Any
 
 from aiohttp import web
 
-from ductor_bot.log_context import set_log_context
-from ductor_bot.webhook.auth import RateLimiter, validate_hook_auth
+from klir.log_context import set_log_context
+from klir.webhook.auth import RateLimiter, validate_hook_auth
 
 if TYPE_CHECKING:
-    from ductor_bot.config import WebhookConfig
-    from ductor_bot.webhook.manager import WebhookManager
-    from ductor_bot.webhook.models import WebhookEntry, WebhookResult
+    from klir.config import WebhookConfig
+    from klir.webhook.manager import WebhookManager
+    from klir.webhook.models import WebhookEntry, WebhookResult
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ductor_bot.infra.startup_state import StartupInfo, StartupKind
-from ductor_bot.text.response_format import (
+from klir.infra.startup_state import StartupInfo, StartupKind
+from klir.text.response_format import (
     recovery_notification_text,
     startup_notification_text,
 )

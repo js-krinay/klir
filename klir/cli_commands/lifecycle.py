@@ -14,10 +14,10 @@ from typing import NoReturn
 from rich.console import Console
 from rich.panel import Panel
 
-from ductor_bot.infra.fs import robust_rmtree
-from ductor_bot.infra.platform import is_windows
-from ductor_bot.infra.restart import EXIT_RESTART
-from ductor_bot.workspace.paths import resolve_paths
+from klir.infra.fs import robust_rmtree
+from klir.infra.platform import is_windows
+from klir.infra.restart import EXIT_RESTART
+from klir.workspace.paths import resolve_paths
 
 _console = Console()
 
@@ -25,10 +25,10 @@ _console = Console()
 def _re_exec_bot() -> NoReturn:
     """Re-exec the bot process (cross-platform).
 
-    Spawns a new Python process running ``ductor_bot`` and exits the current one.
+    Spawns a new Python process running ``klir`` and exits the current one.
     Under a service manager the caller should ``sys.exit(EXIT_RESTART)`` instead.
     """
-    subprocess.Popen([sys.executable, "-m", "ductor_bot"])
+    subprocess.Popen([sys.executable, "-m", "klir"])
     sys.exit(0)
 
 
@@ -37,7 +37,7 @@ def _stop_service_if_running() -> None:
     import contextlib
 
     with contextlib.suppress(Exception):
-        from ductor_bot.infra.service import is_service_installed, is_service_running, stop_service
+        from klir.infra.service import is_service_installed, is_service_running, stop_service
 
         if is_service_installed() and is_service_running():
             stop_service(_console)
@@ -70,7 +70,7 @@ def stop_bot() -> None:
     4. Wait for file locks to release (Windows only)
     5. Stop Docker container if enabled
     """
-    from ductor_bot.infra.pidlock import _is_process_alive, _kill_and_wait
+    from klir.infra.pidlock import _is_process_alive, _kill_and_wait
 
     # 1. Stop service to prevent respawn
     _stop_service_if_running()
@@ -95,7 +95,7 @@ def stop_bot() -> None:
             pid_file.unlink(missing_ok=True)
 
     # 3. Kill all remaining ductor processes system-wide
-    from ductor_bot.infra.process_tree import kill_all_ductor_processes
+    from klir.infra.process_tree import kill_all_ductor_processes
 
     extra = kill_all_ductor_processes()
     if extra:
@@ -126,8 +126,8 @@ def start_bot(verbose: bool = False) -> None:
     """Load config and start the Telegram bot."""
     import logging
 
-    from ductor_bot.__main__ import load_config, run_telegram
-    from ductor_bot.logging_config import setup_logging
+    from klir.__main__ import load_config, run_telegram
+    from klir.logging_config import setup_logging
 
     paths = resolve_paths()
     setup_logging(verbose=verbose, log_dir=paths.logs_dir)
@@ -242,9 +242,9 @@ def uninstall() -> None:
 
 def upgrade() -> None:
     """Stop bot, upgrade package, restart."""
-    from ductor_bot.infra.install import detect_install_mode
-    from ductor_bot.infra.updater import perform_upgrade_pipeline
-    from ductor_bot.infra.version import get_current_version
+    from klir.infra.install import detect_install_mode
+    from klir.infra.updater import perform_upgrade_pipeline
+    from klir.infra.version import get_current_version
 
     mode = detect_install_mode()
     if mode == "dev":

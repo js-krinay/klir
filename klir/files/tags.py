@@ -9,7 +9,7 @@ from urllib.parse import unquote, urlparse
 
 import filetype as _filetype
 
-from ductor_bot.infra.platform import is_windows
+from klir.infra.platform import is_windows
 
 FILE_PATH_RE = re.compile(r"<file:([^>]+)>")
 

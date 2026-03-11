@@ -12,8 +12,8 @@ from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 
-from ductor_bot.infra.boot_id import get_boot_id
-from ductor_bot.infra.json_store import atomic_json_save, load_json
+from klir.infra.boot_id import get_boot_id
+from klir.infra.json_store import atomic_json_save, load_json
 
 logger = logging.getLogger(__name__)
 

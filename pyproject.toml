@@ -74,18 +74,18 @@ Issues = "https://github.com/PleasePrompto/ductor/issues"
 Changelog = "https://github.com/PleasePrompto/ductor/releases"
 
 [project.scripts]
-ductor = "ductor_bot.__main__:main"
+ductor = "klir.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["ductor_bot"]
+packages = ["klir"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"config.example.json" = "ductor_bot/_config_example.json"
-"Dockerfile.sandbox" = "ductor_bot/_Dockerfile.sandbox"
+"config.example.json" = "klir/_config_example.json"
+"Dockerfile.sandbox" = "klir/_Dockerfile.sandbox"
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "ductor_bot/",
+    "klir/",
     "config.example.json",
     "Dockerfile.sandbox",
     "LICENSE",
@@ -96,7 +96,7 @@ include = [
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-extend-exclude = ["ductor_bot/_home_defaults", ".claude"]
+extend-exclude = ["klir/_home_defaults", ".claude"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -131,7 +131,7 @@ fixable = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"ductor_bot/_home_defaults/**" = ["ALL"]
+"klir/_home_defaults/**" = ["ALL"]
 "**/tests/*" = [
     "S101", "ANN", "D",
     "S105", "S106", "S107", "S108", "S603",  # test tokens/paths/subprocess are not secrets
@@ -141,7 +141,7 @@ fixable = ["ALL"]
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["ductor_bot"]
+known-first-party = ["klir"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -195,7 +195,7 @@ module = ["nacl.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["ductor_bot._home_defaults.*"]
+module = ["klir._home_defaults.*"]
 ignore_errors = true
 
 [tool.pytest.ini_options]

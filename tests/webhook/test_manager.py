@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
-from ductor_bot.webhook.manager import WebhookManager
-from ductor_bot.webhook.models import WebhookEntry
+from klir.webhook.manager import WebhookManager
+from klir.webhook.models import WebhookEntry
 
 
 def _make_manager(tmp_path: Path) -> WebhookManager:

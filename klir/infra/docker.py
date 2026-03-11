@@ -12,8 +12,8 @@ from pathlib import Path
 from shutil import which
 from typing import TYPE_CHECKING, ClassVar
 
-from ductor_bot.config import DockerConfig
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.config import DockerConfig
+from klir.workspace.paths import DuctorPaths
 
 if TYPE_CHECKING:
     from rich.console import Console
@@ -163,7 +163,7 @@ class DockerManager:
                 return None
             extras_msg = ""
             if self._config.extras:
-                from ductor_bot.infra.docker_extras import DOCKER_EXTRAS_BY_ID
+                from klir.infra.docker_extras import DOCKER_EXTRAS_BY_ID
 
                 names = [
                     DOCKER_EXTRAS_BY_ID[e].name
@@ -249,7 +249,7 @@ class DockerManager:
 
         base_content = dockerfile.read_text(encoding="utf-8")
 
-        from ductor_bot.infra.docker_extras import (
+        from klir.infra.docker_extras import (
             calculate_build_timeout,
             generate_dockerfile_extras,
             resolve_extras,
@@ -383,7 +383,7 @@ class DockerManager:
 
     def _env_secret_flags(self) -> list[str]:
         """Return ``-e`` flags for user secrets from ``~/.ductor/.env``."""
-        from ductor_bot.infra.env_secrets import load_env_secrets
+        from klir.infra.env_secrets import load_env_secrets
 
         flags: list[str] = []
         for key, value in load_env_secrets(self._paths.env_file).items():

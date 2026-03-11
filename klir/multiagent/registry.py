@@ -6,7 +6,7 @@ import json
 import logging
 from pathlib import Path
 
-from ductor_bot.multiagent.models import SubAgentConfig
+from klir.multiagent.models import SubAgentConfig
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class AgentRegistry:
 
     def save(self, agents: list[SubAgentConfig]) -> None:
         """Write sub-agent definitions to agents.json."""
-        from ductor_bot.infra.json_store import atomic_json_save
+        from klir.infra.json_store import atomic_json_save
 
         data = [a.model_dump(exclude_none=True) for a in agents]
         atomic_json_save(self._path, data)
@@ -103,7 +103,7 @@ def update_agent_fields(agents_path: Path, agent_name: str, **fields: object) ->
     else:
         return
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     atomic_json_save(agents_path, raw)
     logger.info("Updated agent '%s' in agents.json: %s", agent_name, list(fields))

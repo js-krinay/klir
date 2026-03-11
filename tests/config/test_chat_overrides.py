@@ -7,7 +7,7 @@ import pytest
 
 class TestChatOverrides:
     def test_empty_overrides_all_none(self) -> None:
-        from ductor_bot.config import ChatOverrides
+        from klir.config import ChatOverrides
 
         ov = ChatOverrides()
         assert ov.provider is None
@@ -18,7 +18,7 @@ class TestChatOverrides:
         assert ov.enabled is None
 
     def test_partial_overrides(self) -> None:
-        from ductor_bot.config import ChatOverrides
+        from klir.config import ChatOverrides
 
         ov = ChatOverrides(provider="gemini", model="flash")
         assert ov.provider == "gemini"
@@ -26,13 +26,13 @@ class TestChatOverrides:
         assert ov.streaming is None
 
     def test_enabled_field(self) -> None:
-        from ductor_bot.config import ChatOverrides
+        from klir.config import ChatOverrides
 
         ov = ChatOverrides(enabled=False)
         assert ov.enabled is False
 
     def test_from_dict(self) -> None:
-        from ductor_bot.config import ChatOverrides
+        from klir.config import ChatOverrides
 
         raw = {"provider": "codex", "model": "o4-mini"}
         ov = ChatOverrides(**raw)
@@ -40,7 +40,7 @@ class TestChatOverrides:
         assert ov.model == "o4-mini"
 
     def test_agent_config_chat_overrides_field(self) -> None:
-        from ductor_bot.config import AgentConfig
+        from klir.config import AgentConfig
 
         cfg = AgentConfig(
             telegram_token="test:token",
@@ -53,7 +53,7 @@ class TestChatOverrides:
         assert "*" in cfg.chat_overrides
 
     def test_agent_config_default_empty_overrides(self) -> None:
-        from ductor_bot.config import AgentConfig
+        from klir.config import AgentConfig
 
         cfg = AgentConfig(telegram_token="test:token")
         assert cfg.chat_overrides == {}

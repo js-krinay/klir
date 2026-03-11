@@ -17,21 +17,21 @@ from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.filters import Command, CommandStart
 from aiogram.types import BotCommand, ChatMemberUpdated, FSInputFile, ReplyParameters
 
-from ductor_bot.bot.binding_cleanup import BindingCleanupObserver
-from ductor_bot.bot.callbacks import (
+from klir.bot.binding_cleanup import BindingCleanupObserver
+from klir.bot.callbacks import (
     edit_selector_response,
     mark_button_choice,
     parse_ns_callback,
 )
-from ductor_bot.bot.chat_tracker import ChatRecord, ChatTracker
-from ductor_bot.bot.conflict_detector import ConflictDetector
-from ductor_bot.bot.file_browser import (
+from klir.bot.chat_tracker import ChatRecord, ChatTracker
+from klir.bot.conflict_detector import ConflictDetector
+from klir.bot.file_browser import (
     file_browser_start,
     handle_file_browser_callback,
     is_file_browser_callback,
 )
-from ductor_bot.bot.formatting import markdown_to_telegram_html
-from ductor_bot.bot.handlers import (
+from klir.bot.formatting import markdown_to_telegram_html
+from klir.bot.handlers import (
     handle_abort,
     handle_abort_all,
     handle_command,
@@ -39,55 +39,55 @@ from ductor_bot.bot.handlers import (
     is_command_for_bot,
     strip_mention,
 )
-from ductor_bot.bot.media import (
+from klir.bot.media import (
     has_media,
     is_media_addressed,
     is_message_addressed,
     resolve_media_text,
 )
-from ductor_bot.bot.message_dispatch import (
+from klir.bot.message_dispatch import (
     NonStreamingDispatch,
     StreamingDispatch,
     run_non_streaming_message,
     run_streaming_message,
 )
-from ductor_bot.bot.middleware import MQ_PREFIX, AuthMiddleware, SequentialMiddleware
-from ductor_bot.bot.reactions import ReactionService
-from ductor_bot.bot.sender import SendRichOpts, send_rich
-from ductor_bot.bot.sender import send_files_from_text as _send_files_from_text
-from ductor_bot.bot.session_factory import create_bot_session
-from ductor_bot.bot.topic import TopicNameCache, get_session_key, get_thread_id
-from ductor_bot.bot.typing import TypingContext as _TypingContext
-from ductor_bot.bot.welcome import (
+from klir.bot.middleware import MQ_PREFIX, AuthMiddleware, SequentialMiddleware
+from klir.bot.reactions import ReactionService
+from klir.bot.sender import SendRichOpts, send_rich
+from klir.bot.sender import send_files_from_text as _send_files_from_text
+from klir.bot.session_factory import create_bot_session
+from klir.bot.topic import TopicNameCache, get_session_key, get_thread_id
+from klir.bot.typing import TypingContext as _TypingContext
+from klir.bot.welcome import (
     build_welcome_keyboard,
     build_welcome_text,
     get_welcome_button_label,
     is_welcome_callback,
     resolve_welcome_callback,
 )
-from ductor_bot.bus.bus import MessageBus
-from ductor_bot.bus.lock_pool import LockPool
-from ductor_bot.commands import BOT_COMMANDS as _COMMAND_DEFS
-from ductor_bot.commands import MULTIAGENT_SUB_COMMANDS as _MA_SUB_DEFS
-from ductor_bot.config import AgentConfig, update_config_file_async
-from ductor_bot.files.allowed_roots import resolve_allowed_roots
-from ductor_bot.infra.proxy import resolve_proxy_url
-from ductor_bot.infra.restart import EXIT_RESTART, consume_restart_marker
-from ductor_bot.infra.updater import UpdateObserver
-from ductor_bot.infra.version import VersionInfo, get_current_version
-from ductor_bot.log_context import set_log_context
-from ductor_bot.multiagent.bus import AsyncInterAgentResult
-from ductor_bot.session.key import SessionKey
-from ductor_bot.tasks.models import TaskResult
-from ductor_bot.text.response_format import SEP, fmt
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.bus.bus import MessageBus
+from klir.bus.lock_pool import LockPool
+from klir.commands import BOT_COMMANDS as _COMMAND_DEFS
+from klir.commands import MULTIAGENT_SUB_COMMANDS as _MA_SUB_DEFS
+from klir.config import AgentConfig, update_config_file_async
+from klir.files.allowed_roots import resolve_allowed_roots
+from klir.infra.proxy import resolve_proxy_url
+from klir.infra.restart import EXIT_RESTART, consume_restart_marker
+from klir.infra.updater import UpdateObserver
+from klir.infra.version import VersionInfo, get_current_version
+from klir.log_context import set_log_context
+from klir.multiagent.bus import AsyncInterAgentResult
+from klir.session.key import SessionKey
+from klir.tasks.models import TaskResult
+from klir.text.response_format import SEP, fmt
+from klir.workspace.paths import DuctorPaths
 
 if TYPE_CHECKING:
     from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
-    from ductor_bot.approval import ApprovalService
-    from ductor_bot.orchestrator.core import Orchestrator
-    from ductor_bot.pairing import PairingService
+    from klir.approval import ApprovalService
+    from klir.orchestrator.core import Orchestrator
+    from klir.pairing import PairingService
 
 logger = logging.getLogger(__name__)
 
@@ -188,12 +188,12 @@ class TelegramBot:
         self._allowed_channels = allowed_channels
         self._pairing_svc: PairingService | None = None
         if config.pairing.enabled:
-            from ductor_bot.pairing import PairingService
+            from klir.pairing import PairingService
 
             self._pairing_svc = PairingService(config)
         self._approval_svc: ApprovalService | None = None
         if config.approval.enabled:
-            from ductor_bot.approval import ApprovalService
+            from klir.approval import ApprovalService
 
             self._approval_svc = ApprovalService(config)
         self._chat_tracker: ChatTracker | None = None  # set in _on_startup
@@ -205,7 +205,7 @@ class TelegramBot:
         self._lock_pool = LockPool()
         self._bus = MessageBus(lock_pool=self._lock_pool)
 
-        from ductor_bot.bus.telegram_transport import TelegramTransport
+        from klir.bus.telegram_transport import TelegramTransport
 
         self._bus.register_transport(TelegramTransport(self))
         self._sequential = SequentialMiddleware(
@@ -302,7 +302,7 @@ class TelegramBot:
             await send_rich(self._bot, uid, text, opts)
 
     async def _on_startup(self) -> None:
-        from ductor_bot.bot.startup import run_startup
+        from klir.bot.startup import run_startup
 
         await run_startup(self)
 
@@ -563,7 +563,7 @@ class TelegramBot:
 
     async def _show_welcome(self, message: Message) -> None:
         """Send the welcome screen with auth status and quick-start buttons."""
-        from ductor_bot.cli.auth import check_all_auth
+        from klir.cli.auth import check_all_auth
 
         chat_id = message.chat.id
         thread_id = get_thread_id(message)
@@ -739,7 +739,7 @@ class TelegramBot:
                 "Pairing is not enabled. Set <code>pairing.enabled: true</code> in config."
             )
             return
-        from ductor_bot.bot.pair_handler import handle_pair
+        from klir.bot.pair_handler import handle_pair
 
         await handle_pair(message, self._pairing_svc)
 
@@ -848,7 +848,7 @@ class TelegramBot:
 
     async def _on_forum_topic_created(self, message: Message) -> None:
         """Cache the name when a forum topic is created."""
-        from ductor_bot.bot.topic import get_topic_name_from_message
+        from klir.bot.topic import get_topic_name_from_message
 
         name = get_topic_name_from_message(message)
         if name and message.message_thread_id is not None:
@@ -859,7 +859,7 @@ class TelegramBot:
 
     async def _on_forum_topic_edited(self, message: Message) -> None:
         """Update the cache when a forum topic is renamed."""
-        from ductor_bot.bot.topic import get_topic_name_from_message
+        from klir.bot.topic import get_topic_name_from_message
 
         name = get_topic_name_from_message(message)
         if name and message.message_thread_id is not None:
@@ -976,7 +976,7 @@ class TelegramBot:
                     SendRichOpts(reply_to_message_id=message.message_id, thread_id=thread_id),
                 )
             else:
-                from ductor_bot.orchestrator.core import NamedSessionRequest
+                from klir.orchestrator.core import NamedSessionRequest
 
                 ns_request = NamedSessionRequest(
                     message_id=message.message_id,
@@ -1027,7 +1027,7 @@ class TelegramBot:
 
     @_for_this_bot
     async def _on_restart(self, message: Message) -> None:
-        from ductor_bot.infra.restart import write_restart_sentinel
+        from klir.infra.restart import write_restart_sentinel
 
         chat_id = message.chat.id
         paths = self._orch.paths
@@ -1097,13 +1097,13 @@ class TelegramBot:
         if await self._route_prefix_callback(key, message_id, data, thread_id=thread_id):
             return True
 
-        from ductor_bot.orchestrator.selectors.model_selector import is_model_selector_callback
+        from klir.orchestrator.selectors.model_selector import is_model_selector_callback
 
         if is_model_selector_callback(data):
             await self._handle_model_selector(key, message_id, data)
             return True
 
-        from ductor_bot.orchestrator.selectors.cron_selector import is_cron_selector_callback
+        from klir.orchestrator.selectors.cron_selector import is_cron_selector_callback
 
         if is_cron_selector_callback(data):
             await self._handle_cron_selector(key.chat_id, message_id, data)
@@ -1126,7 +1126,7 @@ class TelegramBot:
 
         if data.startswith("apr:"):
             if self._approval_svc:
-                from ductor_bot.bot.approval_handler import handle_approval_callback
+                from klir.bot.approval_handler import handle_approval_callback
 
                 await handle_approval_callback(
                     self._bot, self._approval_svc, data, chat_id, message_id
@@ -1137,8 +1137,8 @@ class TelegramBot:
             await self._handle_upgrade_callback(chat_id, message_id, data, thread_id=thread_id)
             return True
 
-        from ductor_bot.orchestrator.selectors.session_selector import is_session_selector_callback
-        from ductor_bot.orchestrator.selectors.task_selector import is_task_selector_callback
+        from klir.orchestrator.selectors.session_selector import is_session_selector_callback
+        from klir.orchestrator.selectors.task_selector import is_task_selector_callback
 
         if is_session_selector_callback(data):
             await self._handle_session_selector(chat_id, message_id, data)
@@ -1156,7 +1156,7 @@ class TelegramBot:
 
     async def _handle_model_selector(self, key: SessionKey, message_id: int, data: str) -> None:
         """Handle model selector wizard by editing the message in-place."""
-        from ductor_bot.orchestrator.selectors.model_selector import handle_model_callback
+        from klir.orchestrator.selectors.model_selector import handle_model_callback
 
         async with self._sequential.get_lock(key.lock_key):
             resp = await handle_model_callback(self._orch, key, data)
@@ -1164,7 +1164,7 @@ class TelegramBot:
 
     async def _handle_cron_selector(self, chat_id: int, message_id: int, data: str) -> None:
         """Handle cron selector wizard by editing the message in-place."""
-        from ductor_bot.orchestrator.selectors.cron_selector import handle_cron_callback
+        from klir.orchestrator.selectors.cron_selector import handle_cron_callback
 
         async with self._sequential.get_lock(chat_id):
             resp = await handle_cron_callback(self._orch, data)
@@ -1172,7 +1172,7 @@ class TelegramBot:
 
     async def _handle_session_selector(self, chat_id: int, message_id: int, data: str) -> None:
         """Handle session selector wizard by editing the message in-place."""
-        from ductor_bot.orchestrator.selectors.session_selector import handle_session_callback
+        from klir.orchestrator.selectors.session_selector import handle_session_callback
 
         async with self._sequential.get_lock(chat_id):
             resp = await handle_session_callback(self._orch, chat_id, data)
@@ -1180,7 +1180,7 @@ class TelegramBot:
 
     async def _handle_task_selector(self, chat_id: int, message_id: int, data: str) -> None:
         """Handle task selector wizard by editing the message in-place."""
-        from ductor_bot.orchestrator.selectors.task_selector import handle_task_callback
+        from klir.orchestrator.selectors.task_selector import handle_task_callback
 
         hub = self._orch.task_hub
         if hub is None:
@@ -1199,11 +1199,11 @@ class TelegramBot:
 
         async with self._sequential.get_lock(key.lock_key):
             if self._config.streaming.enabled:
-                from ductor_bot.orchestrator.flows import named_session_streaming
+                from klir.orchestrator.flows import named_session_streaming
 
                 result = await named_session_streaming(self._orch, key, session_name, label)
             else:
-                from ductor_bot.orchestrator.flows import named_session_flow
+                from klir.orchestrator.flows import named_session_flow
 
                 result = await named_session_flow(self._orch, key, session_name, label)
 
@@ -1276,7 +1276,7 @@ class TelegramBot:
 
         # Prepend forward origin context for forwarded messages
         if self._config.forwarding.enabled and message.forward_origin:
-            from ductor_bot.bot.forward_context import (
+            from klir.bot.forward_context import (
                 extract_forward_context,
                 prepend_forward_context,
             )
@@ -1395,7 +1395,7 @@ class TelegramBot:
 
     async def on_async_interagent_result(self, result: AsyncInterAgentResult) -> None:
         """Handle async inter-agent result via the message bus."""
-        from ductor_bot.bus.adapters import from_interagent_result
+        from klir.bus.adapters import from_interagent_result
 
         # Prefer the originating chat context carried by the result;
         # fall back to the sender agent's default DM.
@@ -1410,7 +1410,7 @@ class TelegramBot:
 
     async def on_task_result(self, result: TaskResult) -> None:
         """Handle background task result via the message bus."""
-        from ductor_bot.bus.adapters import from_task_result
+        from klir.bus.adapters import from_task_result
 
         chat_id = result.chat_id
         if not chat_id:
@@ -1430,7 +1430,7 @@ class TelegramBot:
         thread_id: int | None = None,
     ) -> None:
         """Deliver a background task question via the message bus."""
-        from ductor_bot.bus.adapters import from_task_question
+        from klir.bus.adapters import from_task_question
 
         if not chat_id:
             chat_id = self._config.allowed_user_ids[0] if self._config.allowed_user_ids else 0
@@ -1444,7 +1444,7 @@ class TelegramBot:
 
     async def _handle_webhook_wake(self, chat_id: int, prompt: str) -> str | None:
         """Process webhook wake prompt via the message bus."""
-        from ductor_bot.bus.envelope import LockMode
+        from klir.bus.envelope import LockMode
 
         set_log_context(operation="wh", chat_id=chat_id)
         key = SessionKey(chat_id=chat_id)
@@ -1453,7 +1453,7 @@ class TelegramBot:
             result = await self._orch.handle_message(key, prompt)
 
         # Deliver result — lock already released, skip bus lock
-        from ductor_bot.bus.adapters import from_webhook_wake
+        from klir.bus.adapters import from_webhook_wake
 
         env = from_webhook_wake(chat_id, prompt)
         env.result_text = result.text
@@ -1465,7 +1465,7 @@ class TelegramBot:
 
     async def _on_update_available(self, info: VersionInfo) -> None:
         """Notify all users about a new version via Telegram."""
-        from ductor_bot.bot.upgrade_handler import on_update_available
+        from klir.bot.upgrade_handler import on_update_available
 
         await on_update_available(self, info)
 
@@ -1473,7 +1473,7 @@ class TelegramBot:
         self, chat_id: int, message_id: int, data: str, *, thread_id: int | None = None
     ) -> None:
         """Handle ``upg:yes:<version>``, ``upg:no``, and ``upg:cl:<version>`` callbacks."""
-        from ductor_bot.bot.upgrade_handler import handle_upgrade_callback
+        from klir.bot.upgrade_handler import handle_upgrade_callback
 
         await handle_upgrade_callback(self, chat_id, message_id, data, thread_id=thread_id)
 
@@ -1481,14 +1481,14 @@ class TelegramBot:
         self, chat_id: int, message_id: int, data: str, *, thread_id: int | None = None
     ) -> None:
         """Fetch and display changelog for ``upg:cl:<version>``."""
-        from ductor_bot.bot.upgrade_handler import handle_changelog_callback
+        from klir.bot.upgrade_handler import handle_changelog_callback
 
         await handle_changelog_callback(self, chat_id, message_id, data, thread_id=thread_id)
 
     async def _sync_commands(self) -> None:
         from aiogram.types import BotCommandScopeAllGroupChats, BotCommandScopeAllPrivateChats
 
-        from ductor_bot.commands import GROUP_COMMANDS
+        from klir.commands import GROUP_COMMANDS
 
         private_cmds = _BOT_COMMANDS
         group_cmds = [BotCommand(command=c, description=d) for c, d in GROUP_COMMANDS]

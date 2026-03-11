@@ -9,8 +9,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from ductor_bot.infra.inflight import InflightTracker
-from ductor_bot.session.named import NamedSession
+from klir.infra.inflight import InflightTracker
+from klir.session.named import NamedSession
 
 logger = logging.getLogger(__name__)
 

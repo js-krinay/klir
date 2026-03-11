@@ -7,8 +7,8 @@ import secrets
 from collections.abc import Awaitable, Callable
 from typing import Protocol, runtime_checkable
 
-from ductor_bot.bus.envelope import DeliveryMode, Envelope, LockMode
-from ductor_bot.bus.lock_pool import LockPool
+from klir.bus.envelope import DeliveryMode, Envelope, LockMode
+from klir.bus.lock_pool import LockPool
 
 logger = logging.getLogger(__name__)
 

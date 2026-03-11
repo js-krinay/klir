@@ -9,8 +9,8 @@ import pytest
 
 class TestPollSender:
     async def test_send_poll(self) -> None:
-        from ductor_bot.bot.poll_parser import PollDirective
-        from ductor_bot.bot.poll_sender import send_poll
+        from klir.bot.poll_parser import PollDirective
+        from klir.bot.poll_sender import send_poll
 
         bot = AsyncMock()
         bot.send_poll.return_value = MagicMock(poll=MagicMock(id="poll_123"))
@@ -28,8 +28,8 @@ class TestPollSender:
         assert call_kwargs["options"] == ["Red", "Blue", "Green"]
 
     async def test_send_poll_with_thread(self) -> None:
-        from ductor_bot.bot.poll_parser import PollDirective
-        from ductor_bot.bot.poll_sender import send_poll
+        from klir.bot.poll_parser import PollDirective
+        from klir.bot.poll_sender import send_poll
 
         bot = AsyncMock()
         bot.send_poll.return_value = MagicMock(poll=MagicMock(id="poll_123"))
@@ -41,8 +41,8 @@ class TestPollSender:
         assert call_kwargs["message_thread_id"] == 99
 
     async def test_send_poll_anonymous_config(self) -> None:
-        from ductor_bot.bot.poll_parser import PollDirective
-        from ductor_bot.bot.poll_sender import send_poll
+        from klir.bot.poll_parser import PollDirective
+        from klir.bot.poll_sender import send_poll
 
         bot = AsyncMock()
         bot.send_poll.return_value = MagicMock(poll=MagicMock(id="poll_123"))
@@ -54,8 +54,8 @@ class TestPollSender:
         assert call_kwargs["is_anonymous"] is False
 
     async def test_send_poll_failure_swallowed(self) -> None:
-        from ductor_bot.bot.poll_parser import PollDirective
-        from ductor_bot.bot.poll_sender import send_poll
+        from klir.bot.poll_parser import PollDirective
+        from klir.bot.poll_sender import send_poll
 
         bot = AsyncMock()
         bot.send_poll.side_effect = Exception("API error")

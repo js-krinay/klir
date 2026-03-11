@@ -10,13 +10,13 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
-from ductor_bot.background.models import BackgroundResult, BackgroundSubmit, BackgroundTask
-from ductor_bot.infra.task_runner import run_oneshot_task
+from klir.background.models import BackgroundResult, BackgroundSubmit, BackgroundTask
+from klir.infra.task_runner import run_oneshot_task
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.param_resolver import TaskExecutionConfig
-    from ductor_bot.cli.service import CLIService
-    from ductor_bot.workspace.paths import DuctorPaths
+    from klir.cli.param_resolver import TaskExecutionConfig
+    from klir.cli.service import CLIService
+    from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +186,7 @@ class BackgroundObserver:
 
     async def _run_with_session(self, bg_task: BackgroundTask) -> None:
         """Named session execution via CLIService with resume support."""
-        from ductor_bot.cli.types import AgentRequest
+        from klir.cli.types import AgentRequest
 
         assert self._cli_service is not None
 

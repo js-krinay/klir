@@ -10,7 +10,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# ductor_bot/workspace/paths.py -> ductor_bot/workspace -> ductor_bot
+# klir/workspace/paths.py -> klir/workspace -> klir
 _PKG_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -169,7 +169,7 @@ def resolve_paths(
     Args:
         ductor_home: User data directory. Falls back to ``$DUCTOR_HOME`` or ``~/.ductor``.
         framework_root: Repository root. Falls back to ``$DUCTOR_FRAMEWORK_ROOT``.
-        home_defaults: Template directory. Falls back to ``ductor_bot/_home_defaults/``.
+        home_defaults: Template directory. Falls back to ``klir/_home_defaults/``.
     """
     if ductor_home is not None:
         home = Path(ductor_home).expanduser().resolve()

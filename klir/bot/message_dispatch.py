@@ -7,19 +7,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.bot.sender import SendRichOpts, send_files_from_text, send_rich
-from ductor_bot.bot.streaming import create_stream_editor
-from ductor_bot.bot.typing import TypingContext
-from ductor_bot.cli.coalescer import CoalesceConfig, StreamCoalescer
-from ductor_bot.config import ReplyToMode
-from ductor_bot.session.key import SessionKey
+from klir.bot.sender import SendRichOpts, send_files_from_text, send_rich
+from klir.bot.streaming import create_stream_editor
+from klir.bot.typing import TypingContext
+from klir.cli.coalescer import CoalesceConfig, StreamCoalescer
+from klir.config import ReplyToMode
+from klir.session.key import SessionKey
 
 if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
-    from ductor_bot.config import StreamingConfig
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.config import StreamingConfig
+    from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
 

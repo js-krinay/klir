@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from ductor_bot.cli.stream_events import (
+from klir.cli.stream_events import (
     AssistantTextDelta,
     ResultEvent,
     StreamEvent,

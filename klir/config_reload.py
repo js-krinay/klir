@@ -25,7 +25,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from ductor_bot.config import AgentConfig
+from klir.config import AgentConfig
 
 logger = logging.getLogger(__name__)
 

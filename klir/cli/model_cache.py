@@ -11,8 +11,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Self
 
-from ductor_bot.infra.atomic_io import atomic_text_save
-from ductor_bot.infra.base_observer import BaseObserver
+from klir.infra.atomic_io import atomic_text_save
+from klir.infra.base_observer import BaseObserver
 
 logger = logging.getLogger(__name__)
 

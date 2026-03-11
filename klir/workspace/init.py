@@ -8,11 +8,11 @@ import logging
 import shutil
 from pathlib import Path
 
-from ductor_bot.infra.atomic_io import atomic_text_save
-from ductor_bot.workspace.cron_tasks import ensure_task_rule_files
-from ductor_bot.workspace.paths import DuctorPaths
-from ductor_bot.workspace.rules_selector import RulesSelector
-from ductor_bot.workspace.skill_sync import sync_bundled_skills, sync_skills
+from klir.infra.atomic_io import atomic_text_save
+from klir.workspace.cron_tasks import ensure_task_rule_files
+from klir.workspace.paths import DuctorPaths
+from klir.workspace.rules_selector import RulesSelector
+from klir.workspace.skill_sync import sync_bundled_skills, sync_skills
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ def _smart_merge_config(paths: DuctorPaths) -> None:
         return
 
     if not paths.config_path.exists():
-        from ductor_bot.infra.json_store import atomic_json_save
+        from klir.infra.json_store import atomic_json_save
 
         atomic_json_save(paths.config_path, defaults)
         return
@@ -225,7 +225,7 @@ def _smart_merge_config(paths: DuctorPaths) -> None:
     merged = {**defaults, **existing}
 
     if merged != existing:
-        from ductor_bot.infra.json_store import atomic_json_save
+        from klir.infra.json_store import atomic_json_save
 
         atomic_json_save(paths.config_path, merged)
 

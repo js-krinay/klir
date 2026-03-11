@@ -12,8 +12,8 @@ from enum import StrEnum, unique
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.gemini_utils import find_gemini_cli
-from ductor_bot.config import NULLISH_TEXT_VALUES
+from klir.cli.gemini_utils import find_gemini_cli
+from klir.config import NULLISH_TEXT_VALUES
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -372,7 +372,7 @@ def gemini_uses_api_key_mode() -> bool:
 
 
 def _ductor_config_path() -> Path:
-    from ductor_bot.workspace.paths import resolve_paths
+    from klir.workspace.paths import resolve_paths
 
     return resolve_paths().config_path
 

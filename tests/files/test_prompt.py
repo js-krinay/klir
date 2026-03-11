@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ductor_bot.files.prompt import MediaInfo, build_media_prompt
+from klir.files.prompt import MediaInfo, build_media_prompt
 
 
 class TestBuildMediaPrompt:

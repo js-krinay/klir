@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from ductor_bot.orchestrator.registry import CommandRegistry, OrchestratorResult
+from klir.orchestrator.registry import CommandRegistry, OrchestratorResult
 
 
 @pytest.fixture

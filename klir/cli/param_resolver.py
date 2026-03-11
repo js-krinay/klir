@@ -5,13 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from ductor_bot.errors import DuctorError
+from klir.errors import DuctorError
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.codex_cache import CodexModelCache
-    from ductor_bot.config import AgentConfig
+    from klir.cli.codex_cache import CodexModelCache
+    from klir.config import AgentConfig
 
-from ductor_bot.config import _GEMINI_ALIASES, CLAUDE_MODELS, get_gemini_models
+from klir.config import _GEMINI_ALIASES, CLAUDE_MODELS, get_gemini_models
 
 
 def _looks_like_gemini_model(model: str) -> bool:

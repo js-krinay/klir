@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
 
-from ductor_bot.bot.formatting import markdown_to_telegram_html
-from ductor_bot.orchestrator.selectors.models import ButtonGrid, SelectorResponse
+from klir.bot.formatting import markdown_to_telegram_html
+from klir.orchestrator.selectors.models import ButtonGrid, SelectorResponse
 
 if TYPE_CHECKING:
     from aiogram import Bot

@@ -8,33 +8,33 @@ from pathlib import Path
 from shutil import which
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.base import (
+from klir.cli.base import (
     _IS_WINDOWS,
     BaseCLI,
     CLIConfig,
     docker_wrap,
 )
-from ductor_bot.cli.codex_events import (
+from klir.cli.codex_events import (
     CodexThinkingFilter,
     parse_codex_jsonl,
     parse_codex_stream_event,
 )
-from ductor_bot.cli.executor import (
+from klir.cli.executor import (
     SubprocessResult,
     SubprocessSpec,
     run_oneshot_subprocess,
     run_streaming_subprocess,
 )
-from ductor_bot.cli.stream_events import (
+from klir.cli.stream_events import (
     AssistantTextDelta,
     ResultEvent,
     StreamEvent,
     SystemInitEvent,
 )
-from ductor_bot.cli.types import CLIResponse
+from klir.cli.types import CLIResponse
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.timeout_controller import TimeoutController
+    from klir.cli.timeout_controller import TimeoutController
 
 logger = logging.getLogger(__name__)
 

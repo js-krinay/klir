@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING
 from aiogram import Bot
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.sender import SendRichOpts
-    from ductor_bot.multiagent.stack import AgentStack
+    from klir.bot.sender import SendRichOpts
+    from klir.multiagent.stack import AgentStack
 
 logger = logging.getLogger(__name__)
 

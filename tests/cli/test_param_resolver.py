@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from ductor_bot.cli.codex_cache import CodexModelCache
-from ductor_bot.cli.codex_discovery import CodexModelInfo
-from ductor_bot.cli.param_resolver import (
+from klir.cli.codex_cache import CodexModelCache
+from klir.cli.codex_discovery import CodexModelInfo
+from klir.cli.param_resolver import (
     TaskOverrides,
     resolve_cli_config,
 )
-from ductor_bot.config import AgentConfig, reset_gemini_models, set_gemini_models
-from ductor_bot.errors import DuctorError
+from klir.config import AgentConfig, reset_gemini_models, set_gemini_models
+from klir.errors import DuctorError
 
 
 @pytest.fixture

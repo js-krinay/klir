@@ -11,7 +11,7 @@ import sys
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 
-from ductor_bot.infra.version import VersionInfo, _parse_version, check_pypi
+from klir.infra.version import VersionInfo, _parse_version, check_pypi
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +130,7 @@ async def _perform_upgrade_impl(
     Refuses to upgrade dev/editable installs -- those should use ``git pull``.
     Sets ``PIP_NO_CACHE_DIR=1`` to avoid stale local wheel cache.
     """
-    from ductor_bot.infra.install import detect_install_mode
+    from klir.infra.install import detect_install_mode
 
     mode = detect_install_mode()
     if mode == "dev":
@@ -275,7 +275,7 @@ def write_upgrade_sentinel(
     new_version: str,
 ) -> None:
     """Write sentinel so the bot can notify the user after upgrade restart."""
-    from ductor_bot.infra.atomic_io import atomic_bytes_save
+    from klir.infra.atomic_io import atomic_bytes_save
 
     path = sentinel_dir / _UPGRADE_SENTINEL_NAME
     content = json.dumps(

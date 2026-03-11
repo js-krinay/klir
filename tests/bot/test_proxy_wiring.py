@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 
 class TestProxyWiring:
     def test_bot_created_with_proxy_session(self) -> None:
-        from ductor_bot.config import AgentConfig, ProxyConfig
-        from ductor_bot.bot.session_factory import ResilientSession
+        from klir.config import AgentConfig, ProxyConfig
+        from klir.bot.session_factory import ResilientSession
 
         config = AgentConfig(
             telegram_token="test:token",
@@ -16,10 +16,10 @@ class TestProxyWiring:
         )
 
         with (
-            patch("ductor_bot.bot.app.Bot") as MockBot,
-            patch("ductor_bot.bot.session_factory.AiohttpSession.__init__", return_value=None),
+            patch("klir.bot.app.Bot") as MockBot,
+            patch("klir.bot.session_factory.AiohttpSession.__init__", return_value=None),
         ):
-            from ductor_bot.bot.app import TelegramBot
+            from klir.bot.app import TelegramBot
 
             bot = TelegramBot(config)
 
@@ -28,13 +28,13 @@ class TestProxyWiring:
             assert isinstance(call_kwargs.get("session"), ResilientSession)
 
     def test_bot_created_without_proxy(self) -> None:
-        from ductor_bot.config import AgentConfig
-        from ductor_bot.bot.session_factory import ResilientSession
+        from klir.config import AgentConfig
+        from klir.bot.session_factory import ResilientSession
 
         config = AgentConfig(telegram_token="test:token")
 
-        with patch("ductor_bot.bot.app.Bot") as MockBot:
-            from ductor_bot.bot.app import TelegramBot
+        with patch("klir.bot.app.Bot") as MockBot:
+            from klir.bot.app import TelegramBot
 
             bot = TelegramBot(config)
 

@@ -13,7 +13,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 if TYPE_CHECKING:
     from aiogram import Bot
 
-    from ductor_bot.approval import ApprovalService
+    from klir.approval import ApprovalService
 
 logger = logging.getLogger(__name__)
 

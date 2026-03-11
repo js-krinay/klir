@@ -85,7 +85,7 @@ def setup_logging(
 
     _stop_queue_listener()
 
-    from ductor_bot.log_context import ContextFilter
+    from klir.log_context import ContextFilter
 
     ctx_filter = ContextFilter()
 

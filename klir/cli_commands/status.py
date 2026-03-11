@@ -13,8 +13,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from ductor_bot.infra.platform import is_windows
-from ductor_bot.workspace.paths import DuctorPaths, resolve_paths
+from klir.infra.platform import is_windows
+from klir.workspace.paths import DuctorPaths, resolve_paths
 
 _console = Console()
 
@@ -80,7 +80,7 @@ def count_log_errors(log_dir: Path) -> int:
 
 def print_status() -> None:
     """Print bot status, paths, and runtime info including sub-agents."""
-    from ductor_bot.cli_commands.agents import load_agents_registry, print_agents_status
+    from klir.cli_commands.agents import load_agents_registry, print_agents_status
 
     paths = resolve_paths()
     try:
@@ -109,7 +109,7 @@ def print_status() -> None:
         except (ValueError, OSError):
             bot_pid = None
         if bot_pid is not None:
-            from ductor_bot.infra.pidlock import _is_process_alive
+            from klir.infra.pidlock import _is_process_alive
 
             bot_running = _is_process_alive(bot_pid)
             if bot_running:
@@ -152,7 +152,7 @@ def print_status() -> None:
 
 def print_usage() -> None:
     """Print commands and smart status information."""
-    from ductor_bot.__main__ import _is_configured
+    from klir.__main__ import _is_configured
 
     _console.print()
     banner_path = Path(__file__).resolve().parent.parent / "_banner.txt"

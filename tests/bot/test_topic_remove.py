@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ductor_bot.bot.topic import TopicNameCache
+from klir.bot.topic import TopicNameCache
 
 
 class TestRemoveBindings:

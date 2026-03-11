@@ -12,12 +12,12 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.bot.sender import SendRichOpts, send_rich
-from ductor_bot.bus.envelope import Envelope, Origin
-from ductor_bot.text.response_format import SEP, fmt
+from klir.bot.sender import SendRichOpts, send_rich
+from klir.bus.envelope import Envelope, Origin
+from klir.text.response_format import SEP, fmt
 
 if TYPE_CHECKING:
-    from ductor_bot.bot.app import TelegramBot
+    from klir.bot.app import TelegramBot
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class TelegramTransport:
                 env.chat_id, env.session_name, env.session_id
             )
             text = self._format_named_session(env, elapsed)
-            from ductor_bot.bot.buttons import extract_buttons_for_session
+            from klir.bot.buttons import extract_buttons_for_session
 
             cleaned, markup = extract_buttons_for_session(text, env.session_name)
             opts = self._opts(env)

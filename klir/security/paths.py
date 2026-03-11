@@ -6,7 +6,7 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from ductor_bot.errors import PathValidationError
+from klir.errors import PathValidationError
 
 logger = logging.getLogger(__name__)
 

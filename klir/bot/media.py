@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, Any
 import yaml
 from aiogram.exceptions import TelegramAPIError
 
-from ductor_bot.files.prompt import MediaInfo
-from ductor_bot.files.prompt import build_media_prompt as _build_media_prompt_generic
-from ductor_bot.files.storage import prepare_destination as _prepare_destination
-from ductor_bot.files.storage import sanitize_filename as _sanitize_filename
-from ductor_bot.files.tags import guess_mime
+from klir.files.prompt import MediaInfo
+from klir.files.prompt import build_media_prompt as _build_media_prompt_generic
+from klir.files.storage import prepare_destination as _prepare_destination
+from klir.files.storage import sanitize_filename as _sanitize_filename
+from klir.files.tags import guess_mime
 
 if TYPE_CHECKING:
     from aiogram import Bot

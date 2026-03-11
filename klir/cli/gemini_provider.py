@@ -12,35 +12,35 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from ductor_bot.cli.auth import gemini_api_key_mode_selected
-from ductor_bot.cli.base import (
+from klir.cli.auth import gemini_api_key_mode_selected
+from klir.cli.base import (
     BaseCLI,
     CLIConfig,
     _feed_stdin_and_close,
     docker_wrap,
 )
-from ductor_bot.cli.gemini_events import extract_result_text, extract_text, parse_gemini_stream_line
-from ductor_bot.cli.gemini_utils import (
+from klir.cli.gemini_events import extract_result_text, extract_text, parse_gemini_stream_line
+from klir.cli.gemini_utils import (
     create_system_prompt_file,
     find_gemini_cli,
     find_gemini_cli_js,
 )
-from ductor_bot.cli.stream_events import ResultEvent, StreamEvent, SystemInitEvent
-from ductor_bot.cli.types import CLIResponse
-from ductor_bot.config import NULLISH_TEXT_VALUES
-from ductor_bot.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
-from ductor_bot.infra.process_tree import force_kill_process_tree
-from ductor_bot.workspace.paths import resolve_paths
+from klir.cli.stream_events import ResultEvent, StreamEvent, SystemInitEvent
+from klir.cli.types import CLIResponse
+from klir.config import NULLISH_TEXT_VALUES
+from klir.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
+from klir.infra.process_tree import force_kill_process_tree
+from klir.workspace.paths import resolve_paths
 
 if TYPE_CHECKING:
-    from ductor_bot.cli.process_registry import ProcessRegistry, TrackedProcess
-    from ductor_bot.cli.timeout_controller import TimeoutController
+    from klir.cli.process_registry import ProcessRegistry, TrackedProcess
+    from klir.cli.timeout_controller import TimeoutController
 
 logger = logging.getLogger(__name__)
 
 _DEFAULT_TIMEOUT = 300.0
 
-# Must match ``_DUCTOR_MOUNT`` in ``ductor_bot.infra.docker``.
+# Must match ``_DUCTOR_MOUNT`` in ``klir.infra.docker``.
 _CONTAINER_DUCTOR = "/ductor"
 
 

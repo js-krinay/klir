@@ -6,12 +6,12 @@ import hashlib
 import logging
 from typing import TYPE_CHECKING
 
-from ductor_bot.orchestrator.selectors.models import Button, ButtonGrid, SelectorResponse
-from ductor_bot.text.response_format import SEP, fmt
+from klir.orchestrator.selectors.models import Button, ButtonGrid, SelectorResponse
+from klir.text.response_format import SEP, fmt
 
 if TYPE_CHECKING:
-    from ductor_bot.cron.manager import CronJob
-    from ductor_bot.orchestrator.core import Orchestrator
+    from klir.cron.manager import CronJob
+    from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
 

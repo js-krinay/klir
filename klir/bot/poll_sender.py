@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
-    from ductor_bot.bot.poll_parser import PollDirective
+    from klir.bot.poll_parser import PollDirective
 
 logger = logging.getLogger(__name__)
 

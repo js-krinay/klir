@@ -6,9 +6,9 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from ductor_bot.cli.auth import AuthResult, AuthStatus
-from ductor_bot.workspace.init import init_workspace, inject_runtime_environment
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.cli.auth import AuthResult, AuthStatus
+from klir.workspace.init import init_workspace, inject_runtime_environment
+from klir.workspace.paths import DuctorPaths
 
 
 def _mock_all_authenticated() -> dict[str, AuthResult]:
@@ -120,7 +120,7 @@ def test_copies_claude_md(tmp_path: Path) -> None:
     assert target.read_text() == "# Framework CLAUDE.md"
 
 
-@patch("ductor_bot.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
+@patch("klir.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
 def test_copies_agents_md_mirrors_claude_md(_mock_auth: object, tmp_path: Path) -> None:
     """AGENTS.md (Codex rule file) is a copy of CLAUDE.md, not a separate file."""
     paths = _make_paths(tmp_path)
@@ -162,7 +162,7 @@ def test_subdirectory_claude_md_updated_on_reinit(tmp_path: Path) -> None:
     assert mem_claude.read_text() == "# Updated memory_system CLAUDE.md"
 
 
-@patch("ductor_bot.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
+@patch("klir.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
 def test_subdirectory_agents_md_created_from_claude_md(
     _mock_auth: object, tmp_path: Path
 ) -> None:
@@ -211,7 +211,7 @@ def test_seeds_tools_claude_md(tmp_path: Path) -> None:
     assert tools_claude.read_text() == "# Tools CLAUDE.md"
 
 
-@patch("ductor_bot.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
+@patch("klir.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
 def test_seeds_tools_agents_md_mirrors_claude_md(_mock_auth: object, tmp_path: Path) -> None:
     """tools/AGENTS.md is mirrored from tools/CLAUDE.md, not a separate file."""
     paths = _make_paths(tmp_path)
@@ -334,7 +334,7 @@ def test_cleans_orphan_symlinks(tmp_path: Path) -> None:
 # -- runtime environment injection --
 
 
-@patch("ductor_bot.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
+@patch("klir.cli.auth.check_all_auth", return_value=_mock_all_authenticated())
 def test_inject_docker_notice(_mock_auth: object, tmp_path: Path) -> None:
     paths = _make_paths(tmp_path)
     init_workspace(paths)

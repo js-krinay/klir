@@ -23,7 +23,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ductor_bot.workspace.paths import DuctorPaths
+from klir.workspace.paths import DuctorPaths
 
 logger = logging.getLogger(__name__)
 

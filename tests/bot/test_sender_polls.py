@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ductor_bot.bot.poll_parser import parse_polls, strip_polls
+from klir.bot.poll_parser import parse_polls, strip_polls
 
 
 class TestSenderPollIntegration:

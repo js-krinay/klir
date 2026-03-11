@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from ductor_bot.workspace.paths import resolve_paths
+from klir.workspace.paths import resolve_paths
 
 _console = Console()
 
@@ -122,7 +122,7 @@ def docker_set_enabled(*, enabled: bool) -> None:
     docker = data.setdefault("docker", {})
     if not isinstance(docker, dict):
         data["docker"] = docker = {}
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     docker["enabled"] = enabled
     atomic_json_save(config_path, data)
@@ -138,7 +138,7 @@ def docker_set_enabled(*, enabled: bool) -> None:
 
 def docker_rebuild() -> None:
     """Stop bot, remove container and image, so they get rebuilt on restart."""
-    from ductor_bot.cli_commands.lifecycle import stop_bot
+    from klir.cli_commands.lifecycle import stop_bot
 
     if not shutil.which("docker"):
         _console.print("[bold red]Docker not found.[/bold red]")
@@ -227,12 +227,12 @@ def docker_mount(args: list[str]) -> None:
         _console.print(f"[dim]Already mounted: {resolved}[/dim]")
         return
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     mounts.append(resolved_str)
     atomic_json_save(config_path, data)
 
-    from ductor_bot.infra.docker import resolve_mount_target
+    from klir.infra.docker import resolve_mount_target
 
     pair = resolve_mount_target(resolved_str, set())
     target_info = f" -> [cyan]{pair[1]}[/cyan]" if pair else ""
@@ -287,7 +287,7 @@ def docker_unmount(args: list[str]) -> None:
         _console.print(f"[bold red]Mount not found: {raw_path}[/bold red]")
         return
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     mounts.remove(to_remove)
     atomic_json_save(config_path, data)
@@ -309,7 +309,7 @@ def docker_list_mounts() -> None:
         _console.print("[dim]Use 'ductor docker mount <path>' to add one.[/dim]")
         return
 
-    from ductor_bot.infra.docker import resolve_mount_target
+    from klir.infra.docker import resolve_mount_target
 
     table = Table(show_header=True, box=None, padding=(0, 2))
     table.add_column("Host Path", style="bold")
@@ -359,7 +359,7 @@ def _docker_get_extras(data: dict[str, object]) -> list[object]:
 
 def docker_extras_list() -> None:
     """List available and selected Docker extras."""
-    from ductor_bot.infra.docker_extras import extras_for_display
+    from klir.infra.docker_extras import extras_for_display
 
     result = docker_read_config()
     selected: set[str] = set()
@@ -399,7 +399,7 @@ def docker_extras_list() -> None:
 
 def docker_extras_add(args: list[str]) -> None:
     """Add an extra to the Docker config."""
-    from ductor_bot.infra.docker_extras import DOCKER_EXTRAS_BY_ID
+    from klir.infra.docker_extras import DOCKER_EXTRAS_BY_ID
 
     positionals = [a for a in args if not a.startswith("-")]
     extra_id = positionals[2] if len(positionals) >= 3 else None
@@ -440,7 +440,7 @@ def docker_extras_add(args: list[str]) -> None:
 
     _collect(extra_id)
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     extras.extend(new_ids)
     atomic_json_save(config_path, data)
@@ -456,7 +456,7 @@ def docker_extras_add(args: list[str]) -> None:
 
 def docker_extras_remove(args: list[str]) -> None:
     """Remove an extra from the Docker config."""
-    from ductor_bot.infra.docker_extras import DOCKER_EXTRAS, DOCKER_EXTRAS_BY_ID
+    from klir.infra.docker_extras import DOCKER_EXTRAS, DOCKER_EXTRAS_BY_ID
 
     positionals = [a for a in args if not a.startswith("-")]
     extra_id = positionals[2] if len(positionals) >= 3 else None
@@ -489,7 +489,7 @@ def docker_extras_remove(args: list[str]) -> None:
             f"{DOCKER_EXTRAS_BY_ID[extra_id].name}.[/yellow]"
         )
 
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     extras.remove(extra_id)
     atomic_json_save(config_path, data)

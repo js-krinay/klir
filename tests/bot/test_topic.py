@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 from aiogram.types import ForumTopicCreated, ForumTopicEdited, Message
 
-from ductor_bot.bot.topic import TopicNameCache, get_thread_id, get_topic_name_from_message
-from ductor_bot.session.manager import SessionData
+from klir.bot.topic import TopicNameCache, get_thread_id, get_topic_name_from_message
+from klir.session.manager import SessionData
 
 
 class TestGetThreadId:

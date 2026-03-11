@@ -7,20 +7,20 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ductor_bot.cli.auth import check_all_auth
-from ductor_bot.infra.version import check_pypi, get_current_version
-from ductor_bot.orchestrator.registry import OrchestratorResult
-from ductor_bot.orchestrator.selectors.cron_selector import cron_selector_start
-from ductor_bot.orchestrator.selectors.model_selector import model_selector_start, switch_model
-from ductor_bot.orchestrator.selectors.models import Button, ButtonGrid
-from ductor_bot.orchestrator.selectors.session_selector import session_selector_start
-from ductor_bot.orchestrator.selectors.task_selector import task_selector_start
-from ductor_bot.text.response_format import SEP, fmt, new_session_text
-from ductor_bot.workspace.loader import read_mainmemory
+from klir.cli.auth import check_all_auth
+from klir.infra.version import check_pypi, get_current_version
+from klir.orchestrator.registry import OrchestratorResult
+from klir.orchestrator.selectors.cron_selector import cron_selector_start
+from klir.orchestrator.selectors.model_selector import model_selector_start, switch_model
+from klir.orchestrator.selectors.models import Button, ButtonGrid
+from klir.orchestrator.selectors.session_selector import session_selector_start
+from klir.orchestrator.selectors.task_selector import task_selector_start
+from klir.text.response_format import SEP, fmt, new_session_text
+from klir.workspace.loader import read_mainmemory
 
 if TYPE_CHECKING:
-    from ductor_bot.orchestrator.core import Orchestrator
-    from ductor_bot.session.key import SessionKey
+    from klir.orchestrator.core import Orchestrator
+    from klir.session.key import SessionKey
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +109,7 @@ async def cmd_upgrade(_orch: Orchestrator, _key: SessionKey, _text: str) -> Orch
     """Handle /upgrade: check for updates and offer upgrade."""
     logger.info("Upgrade check requested")
 
-    from ductor_bot.infra.install import detect_install_mode
+    from klir.infra.install import detect_install_mode
 
     if detect_install_mode() == "dev":
         return OrchestratorResult(

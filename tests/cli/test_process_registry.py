@@ -6,7 +6,7 @@ import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from ductor_bot.cli.process_registry import ProcessRegistry, TrackedProcess
+from klir.cli.process_registry import ProcessRegistry, TrackedProcess
 
 
 def _mock_process(*, pid: int = 1, returncode: int | None = None) -> MagicMock:
@@ -47,7 +47,7 @@ async def test_kill_all() -> None:
     reg = ProcessRegistry()
     proc = _mock_process(pid=10)
     reg.register(chat_id=1, process=proc, label="main")
-    with patch("ductor_bot.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
+    with patch("klir.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
         count = await reg.kill_all(chat_id=1)
     assert count == 1
 
@@ -57,7 +57,7 @@ async def test_kill_all_sets_aborted() -> None:
     proc = _mock_process()
     reg.register(chat_id=1, process=proc, label="main")
     assert reg.was_aborted(1) is False
-    with patch("ductor_bot.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
+    with patch("klir.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
         await reg.kill_all(chat_id=1)
     assert reg.was_aborted(1) is True
 
@@ -83,7 +83,7 @@ async def test_kill_all_active_across_chats() -> None:
     reg.register(chat_id=1, process=proc1, label="main")
     reg.register(chat_id=2, process=proc2, label="main")
 
-    with patch("ductor_bot.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
+    with patch("klir.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
         count = await reg.kill_all_active()
 
     assert count == 2
@@ -133,7 +133,7 @@ async def test_kill_stale_kills_and_unregisters_old_entries() -> None:
     old.registered_at = time.time() - 1000
     fresh.registered_at = time.time()
 
-    with patch("ductor_bot.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
+    with patch("klir.cli.process_registry.asyncio.sleep", new_callable=AsyncMock):
         killed = await reg.kill_stale(max_age_seconds=60)
 
     assert killed == 1

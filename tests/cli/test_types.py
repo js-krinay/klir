@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ductor_bot.cli.types import AgentRequest, AgentResponse, CLIResponse
+from klir.cli.types import AgentRequest, AgentResponse, CLIResponse
 
 # -- CLIResponse --
 

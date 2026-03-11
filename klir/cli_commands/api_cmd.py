@@ -9,8 +9,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from ductor_bot.config import _BIND_ALL_INTERFACES
-from ductor_bot.workspace.paths import resolve_paths
+from klir.config import _BIND_ALL_INTERFACES
+from klir.workspace.paths import resolve_paths
 
 _console = Console()
 
@@ -76,7 +76,7 @@ def nacl_available() -> bool:
 
 def api_install_hint() -> str:
     """Return the install command for PyNaCl based on install mode."""
-    from ductor_bot.infra.install import detect_install_mode
+    from klir.infra.install import detect_install_mode
 
     mode = detect_install_mode()
     if mode == "pipx":
@@ -86,7 +86,7 @@ def api_install_hint() -> str:
 
 def api_enable() -> None:
     """Enable the API server: check deps, write config, generate token."""
-    from ductor_bot.cli_commands.docker import docker_read_config
+    from klir.cli_commands.docker import docker_read_config
 
     if not nacl_available():
         hint = api_install_hint()
@@ -119,7 +119,7 @@ def api_enable() -> None:
     api.setdefault("port", 8741)
     api.setdefault("chat_id", 0)
     api.setdefault("allow_public", False)
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     data["api"] = api
     atomic_json_save(config_path, data)
@@ -141,7 +141,7 @@ def api_enable() -> None:
 
 def api_disable() -> None:
     """Disable the API server in config."""
-    from ductor_bot.cli_commands.docker import docker_read_config
+    from klir.cli_commands.docker import docker_read_config
 
     result = docker_read_config()
     if result is None:
@@ -151,7 +151,7 @@ def api_disable() -> None:
     api = data.get("api", {})
     if not isinstance(api, dict):
         api = {}
-    from ductor_bot.infra.json_store import atomic_json_save
+    from klir.infra.json_store import atomic_json_save
 
     api["enabled"] = False
     data["api"] = api

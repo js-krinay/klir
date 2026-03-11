@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
-from ductor_bot.multiagent.bus import AsyncSendOptions, InterAgentBus
+from klir.multiagent.bus import AsyncSendOptions, InterAgentBus
 
 
 def _make_stack(
@@ -333,7 +333,7 @@ class TestBusNotifyRecipient:
         mock_send = AsyncMock()
         bus.set_notification_sender(mock_send)
 
-        from ductor_bot.multiagent.bus import AsyncInterAgentTask
+        from klir.multiagent.bus import AsyncInterAgentTask
 
         task = AsyncInterAgentTask(
             task_id="abc123",
@@ -359,7 +359,7 @@ class TestBusNotifyRecipient:
         mock_send = AsyncMock()
         bus.set_notification_sender(mock_send)
 
-        from ductor_bot.multiagent.bus import AsyncInterAgentTask
+        from klir.multiagent.bus import AsyncInterAgentTask
 
         task = AsyncInterAgentTask(
             task_id="abc123",
@@ -378,7 +378,7 @@ class TestBusNotifyRecipient:
         stack.config.allowed_user_ids = [12345]
         bus.register("target", stack)
 
-        from ductor_bot.multiagent.bus import AsyncInterAgentTask
+        from klir.multiagent.bus import AsyncInterAgentTask
 
         task = AsyncInterAgentTask(
             task_id="abc123",
@@ -399,7 +399,7 @@ class TestBusNotifyRecipient:
 
         bus.set_notification_sender(AsyncMock(side_effect=RuntimeError("network error")))
 
-        from ductor_bot.multiagent.bus import AsyncInterAgentTask
+        from klir.multiagent.bus import AsyncInterAgentTask
 
         task = AsyncInterAgentTask(
             task_id="x",

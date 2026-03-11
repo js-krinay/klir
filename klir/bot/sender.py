@@ -15,11 +15,11 @@ from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
 from aiogram.types import FSInputFile, InlineKeyboardMarkup, ReplyParameters
 
-from ductor_bot.bot.buttons import extract_buttons
-from ductor_bot.bot.formatting import markdown_to_telegram_html, split_html_message
-from ductor_bot.config import ReplyToMode
-from ductor_bot.files.tags import FILE_PATH_RE, extract_file_paths, guess_mime, path_from_file_tag
-from ductor_bot.security.paths import is_path_safe
+from klir.bot.buttons import extract_buttons
+from klir.bot.formatting import markdown_to_telegram_html, split_html_message
+from klir.config import ReplyToMode
+from klir.files.tags import FILE_PATH_RE, extract_file_paths, guess_mime, path_from_file_tag
+from klir.security.paths import is_path_safe
 
 if TYPE_CHECKING:
     from aiogram import Bot
@@ -189,8 +189,8 @@ async def _send_text_chunks(
 
 async def _process_forwards(bot: Bot, chat_id: int, text: str, targets: set[int]) -> str:
     """Extract forward/copy directives from *text*, execute them, return cleaned text."""
-    from ductor_bot.bot.forward_parser import parse_forwards, strip_forwards
-    from ductor_bot.bot.forward_sender import send_forward as _send_forward
+    from klir.bot.forward_parser import parse_forwards, strip_forwards
+    from klir.bot.forward_sender import send_forward as _send_forward
 
     forwards = parse_forwards(text)
     if not forwards:
@@ -219,8 +219,8 @@ async def send_rich(
 
     # Extract and send polls if enabled
     if o.polls_enabled:
-        from ductor_bot.bot.poll_parser import parse_polls, strip_polls
-        from ductor_bot.bot.poll_sender import send_poll as _send_poll
+        from klir.bot.poll_parser import parse_polls, strip_polls
+        from klir.bot.poll_sender import send_poll as _send_poll
 
         polls = parse_polls(clean_text)
         if polls:

@@ -6,8 +6,8 @@ from datetime import UTC, datetime
 
 import time_machine
 
-from ductor_bot.bot.topic import TopicNameCache
-from ductor_bot.config import ThreadBindingConfig
+from klir.bot.topic import TopicNameCache
+from klir.config import ThreadBindingConfig
 
 
 class TestExpiredBindings:
