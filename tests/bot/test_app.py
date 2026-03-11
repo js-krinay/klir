@@ -809,7 +809,7 @@ class TestCallbackQueryHandler:
 
         orch.handle_message_streaming.assert_called_once()
         sent_text = orch.handle_message_streaming.call_args[0][1]
-        assert "set up klir.dev" in sent_text
+        assert "set up klir" in sent_text
 
     async def test_welcome_callback_shows_button_label_in_indicator(self) -> None:
         tg_bot, bot_instance = _make_tg_bot()

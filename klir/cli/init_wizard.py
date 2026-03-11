@@ -31,7 +31,7 @@ def _load_banner() -> str:
     try:
         return _BANNER_PATH.read_text(encoding="utf-8").rstrip()
     except OSError:
-        return "klir.dev"
+        return "klir"
 
 
 _TOKEN_PATTERN = re.compile(r"^\d{8,}:[A-Za-z0-9_-]{30,}$")
@@ -80,7 +80,7 @@ def _show_banner(console: Console) -> None:
     console.print(
         Panel(
             banner,
-            subtitle="[dim]klir.dev[/dim]",
+            subtitle="[dim]klir[/dim]",
             border_style="cyan",
             padding=(0, 2),
         ),

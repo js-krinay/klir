@@ -685,7 +685,7 @@ class TelegramBot:
 
         version = get_current_version()
         text = fmt(
-            "**klir.dev**",
+            "**klir**",
             f"Version: `{version}`",
             SEP,
             "AI coding agents (Claude, Codex, Gemini) on Telegram.\n"

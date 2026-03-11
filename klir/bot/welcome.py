@@ -16,7 +16,7 @@ _WELCOME_PREFIX = "w:"
 
 WELCOME_CALLBACKS: dict[str, str] = {
     "w:1": (
-        "Hey, I just set up klir.dev and I want you to get to know me. "
+        "Hey, I just set up klir and I want you to get to know me. "
         "Ask me everything you need to know so we can work well together -- "
         "my name, what I do, what I'm working on, how I like to communicate. "
         "Save what you learn to your memory."
@@ -50,7 +50,7 @@ def build_welcome_text(
     auth_block = _build_auth_block(auth_results, config)
 
     return (
-        f"**Welcome to klir.dev{name}!**\n\n"
+        f"**Welcome to klir{name}!**\n\n"
         "Deploy from your pocket. Automate from your couch.\n"
         "Claude Code, Codex & Gemini -- straight from Telegram.\n\n"
         f"{SEP}\n\n"

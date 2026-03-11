@@ -159,11 +159,11 @@ def print_usage() -> None:
     try:
         banner_text = banner_path.read_text(encoding="utf-8").rstrip()
     except OSError:
-        banner_text = "klir.dev"
+        banner_text = "klir"
     _console.print(
         Panel(
             Text(banner_text, style="bold cyan"),
-            subtitle="[dim]klir.dev[/dim]",
+            subtitle="[dim]klir[/dim]",
             border_style="cyan",
             padding=(0, 2),
         ),
