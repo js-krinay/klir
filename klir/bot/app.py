@@ -35,6 +35,7 @@ from klir.bot.handlers import (
     handle_abort,
     handle_abort_all,
     handle_command,
+    handle_interrupt,
     handle_new_session,
     is_command_for_bot,
     strip_mention,
@@ -112,7 +113,7 @@ def _help_line(command: str) -> str:
 _HELP_TEXT = fmt(
     "**Command Reference**",
     SEP,
-    f"Daily\n{_help_line('new')}\n{_help_line('stop')}\n{_help_line('stop_all')}\n"
+    f"Daily\n{_help_line('new')}\n{_help_line('stop')}\n{_help_line('interrupt')}\n{_help_line('stop_all')}\n"
     f"{_help_line('model')}\n{_help_line('status')}\n{_help_line('memory')}",
     f"Automation\n{_help_line('session')}\n{_help_line('tasks')}\n{_help_line('cron')}",
     f"Multi-Agent\n{_help_line('agent_commands')}",
@@ -212,6 +213,7 @@ class TelegramBot:
             lock_pool=self._lock_pool, topic_names=self._topic_names, config=self._config
         )
         self._sequential.set_bot(self._bot)
+        self._sequential.set_interrupt_handler(self._on_interrupt)
         self._sequential.set_abort_handler(self._on_abort)
         self._sequential.set_abort_all_handler(self._on_abort_all)
         self._sequential.set_quick_command_handler(self._on_quick_command)
@@ -743,7 +745,15 @@ class TelegramBot:
 
         await handle_pair(message, self._pairing_svc)
 
-    # -- Abort, commands, sessions ---------------------------------------------
+    # -- Interrupt, abort, commands, sessions ----------------------------------
+
+    async def _on_interrupt(self, chat_id: int, message: Message) -> bool:
+        return await handle_interrupt(
+            self._orchestrator,
+            self._bot,
+            chat_id=chat_id,
+            message=message,
+        )
 
     async def _on_abort_all(self, chat_id: int, message: Message) -> bool:
         return await handle_abort_all(
