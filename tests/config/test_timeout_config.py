@@ -8,7 +8,7 @@ from klir.config import AgentConfig, TimeoutConfig, deep_merge_config, resolve_t
 class TestTimeoutConfigDefaults:
     def test_default_values(self) -> None:
         cfg = TimeoutConfig()
-        assert cfg.normal == 600.0
+        assert cfg.normal == 1800.0
         assert cfg.background == 1800.0
         assert cfg.subagent == 3600.0
         assert cfg.warning_intervals == [60.0, 10.0]
@@ -19,7 +19,7 @@ class TestTimeoutConfigDefaults:
     def test_agent_config_has_timeouts(self) -> None:
         cfg = AgentConfig()
         assert isinstance(cfg.timeouts, TimeoutConfig)
-        assert cfg.timeouts.normal == 600.0
+        assert cfg.timeouts.normal == 1800.0
 
     def test_custom_values(self) -> None:
         cfg = TimeoutConfig(normal=300.0, background=900.0, subagent=1800.0)
@@ -40,16 +40,16 @@ class TestCliTimeoutSync:
         assert cfg.timeouts.normal == 900.0
 
     def test_default_cli_timeout_no_sync_needed(self) -> None:
-        """When cli_timeout is default 600, timeouts.normal should also be 600."""
+        """When cli_timeout is default 1800, timeouts.normal should also be 1800."""
         cfg = AgentConfig()
-        assert cfg.cli_timeout == 600.0
-        assert cfg.timeouts.normal == 600.0
+        assert cfg.cli_timeout == 1800.0
+        assert cfg.timeouts.normal == 1800.0
 
 
 class TestResolveTimeout:
     def test_resolve_normal(self) -> None:
         cfg = AgentConfig()
-        assert resolve_timeout(cfg, "normal") == 600.0
+        assert resolve_timeout(cfg, "normal") == 1800.0
 
     def test_resolve_background(self) -> None:
         cfg = AgentConfig()
@@ -74,7 +74,7 @@ class TestDeepMergeWithTimeouts:
     def test_old_config_without_timeouts_gets_defaults(self) -> None:
         old_config: dict[str, object] = {
             "provider": "claude",
-            "cli_timeout": 600.0,
+            "cli_timeout": 1800.0,
         }
         defaults = AgentConfig().model_dump()
         merged, changed = deep_merge_config(old_config, defaults)

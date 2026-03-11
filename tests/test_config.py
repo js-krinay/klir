@@ -28,7 +28,7 @@ def test_agent_config_defaults() -> None:
     assert cfg.model == "opus"
     assert cfg.idle_timeout_minutes == 1440
     assert cfg.daily_reset_hour == 4
-    assert cfg.cli_timeout == 600.0
+    assert cfg.cli_timeout == 1800.0
     assert cfg.permission_mode == "bypassPermissions"
     assert cfg.gemini_api_key is None
     assert cfg.telegram_token == ""

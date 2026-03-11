@@ -147,7 +147,7 @@ class TasksConfig(BaseModel):
 class TimeoutConfig(BaseModel):
     """Per-execution-path timeout settings."""
 
-    normal: float = 600.0
+    normal: float = 1800.0
     background: float = 1800.0
     subagent: float = 3600.0
     warning_intervals: list[float] = Field(default_factory=lambda: [60.0, 10.0])
@@ -332,7 +332,7 @@ class AgentConfig(BaseModel):
     max_turns: int | None = None
     max_session_messages: int | None = None
     permission_mode: str = "bypassPermissions"
-    cli_timeout: float = 600.0
+    cli_timeout: float = 1800.0
     reasoning_effort: str = "medium"
     file_access: str = "all"
     gemini_api_key: str | None = None
@@ -387,10 +387,10 @@ class AgentConfig(BaseModel):
     def _sync_cli_timeout_to_timeouts(self) -> AgentConfig:
         """Sync legacy ``cli_timeout`` to ``timeouts.normal`` for backward compat.
 
-        When ``cli_timeout`` differs from the default 600.0 and ``timeouts.normal``
+        When ``cli_timeout`` differs from the default 1800.0 and ``timeouts.normal``
         is still at its default, propagate ``cli_timeout`` into ``timeouts.normal``.
         """
-        if self.cli_timeout != 600.0 and self.timeouts.normal == 600.0:
+        if self.cli_timeout != 1800.0 and self.timeouts.normal == 1800.0:
             self.timeouts.normal = self.cli_timeout
         return self
 
