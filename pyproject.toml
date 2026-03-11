@@ -3,7 +3,7 @@ requires = ["hatchling>=1.28.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "klir"
+name = "klir-bot"
 version = "0.1.0"
 description = "Control AI coding CLIs from Telegram. Live streaming, sessions, cron jobs, webhooks, Docker sandboxing. Originally forked from ductor by PleasePrompto."
 readme = "README.md"
