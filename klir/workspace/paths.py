@@ -28,7 +28,7 @@ class KlirPaths:
 
     All framework paths are derived from three roots:
 
-    - ``klir_home``:    User data directory (default ``~/.ductor``).
+    - ``klir_home``:    User data directory (default ``~/.klir``).
     - ``home_defaults``:  Bundled template that mirrors ``klir_home`` (package-internal).
     - ``framework_root``: Repository root (for Dockerfile, config.example.json).
     """
@@ -101,7 +101,7 @@ class KlirPaths:
 
     @property
     def bundled_skills_dir(self) -> Path:
-        """Package-internal skill directory (read-only, ships with ductor)."""
+        """Package-internal skill directory (read-only, ships with klir)."""
         return self.home_defaults / "workspace" / "skills"
 
     @property
@@ -167,7 +167,7 @@ def resolve_paths(
     """Build KlirPaths from explicit values, env vars, or defaults.
 
     Args:
-        klir_home: User data directory. Falls back to ``$KLIR_HOME`` or ``~/.ductor``.
+        klir_home: User data directory. Falls back to ``$KLIR_HOME`` or ``~/.klir``.
         framework_root: Repository root. Falls back to ``$KLIR_FRAMEWORK_ROOT``.
         home_defaults: Template directory. Falls back to ``klir/_home_defaults/``.
     """
@@ -176,7 +176,7 @@ def resolve_paths(
     else:
         home = (
             Path(
-                os.environ.get("KLIR_HOME", str(Path.home() / ".ductor")),
+                os.environ.get("KLIR_HOME", str(Path.home() / ".klir")),
             )
             .expanduser()
             .resolve()

@@ -1,4 +1,4 @@
-"""Platform-dispatching service management for ductor.
+"""Platform-dispatching service management for klir.
 
 On Linux: delegates to systemd user service (service_linux).
 On Windows: delegates to Windows Task Scheduler (service_windows).
@@ -26,22 +26,22 @@ def is_service_available() -> bool:
 
 
 def is_service_installed() -> bool:
-    """Check if the ductor service is installed."""
+    """Check if the klir service is installed."""
     return _backend.is_service_installed()
 
 
 def is_service_running() -> bool:
-    """Check if the ductor service is currently running."""
+    """Check if the klir service is currently running."""
     return _backend.is_service_running()
 
 
 def install_service(console: Console | None = None) -> bool:
-    """Install and start the ductor background service. Returns True on success."""
+    """Install and start the klir background service. Returns True on success."""
     return _backend.install_service(console)
 
 
 def uninstall_service(console: Console | None = None) -> bool:
-    """Stop and remove the ductor background service."""
+    """Stop and remove the klir background service."""
     return _backend.uninstall_service(console)
 
 

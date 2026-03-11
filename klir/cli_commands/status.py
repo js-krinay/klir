@@ -1,4 +1,4 @@
-"""Status display CLI commands (``ductor status``, ``ductor help``)."""
+"""Status display CLI commands (``klir status``, ``klir help``)."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ def count_log_errors(log_dir: Path) -> int:
     if not log_dir.is_dir():
         return 0
     log_files = sorted(
-        log_dir.glob("ductor*.log"),
+        log_dir.glob("klir*.log"),
         key=lambda p: p.stat().st_mtime,
         reverse=True,
     )
@@ -159,11 +159,11 @@ def print_usage() -> None:
     try:
         banner_text = banner_path.read_text(encoding="utf-8").rstrip()
     except OSError:
-        banner_text = "ductor.dev"
+        banner_text = "klir.dev"
     _console.print(
         Panel(
             Text(banner_text, style="bold cyan"),
-            subtitle="[dim]ductor.dev[/dim]",
+            subtitle="[dim]klir.dev[/dim]",
             border_style="cyan",
             padding=(0, 2),
         ),
@@ -172,22 +172,22 @@ def print_usage() -> None:
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column(style="bold green", min_width=24)
     table.add_column()
-    table.add_row("ductor", "Start the bot (runs onboarding if needed)")
-    table.add_row("ductor onboarding", "Setup wizard (resets if already configured)")
-    table.add_row("ductor stop", "Stop running bot and Docker container")
-    table.add_row("ductor restart", "Restart the bot")
-    table.add_row("ductor reset", "Full reset and re-setup")
-    table.add_row("ductor upgrade", "Stop, upgrade to latest, restart")
-    table.add_row("ductor uninstall", "Remove everything and uninstall")
+    table.add_row("klir", "Start the bot (runs onboarding if needed)")
+    table.add_row("klir onboarding", "Setup wizard (resets if already configured)")
+    table.add_row("klir stop", "Stop running bot and Docker container")
+    table.add_row("klir restart", "Restart the bot")
+    table.add_row("klir reset", "Full reset and re-setup")
+    table.add_row("klir upgrade", "Stop, upgrade to latest, restart")
+    table.add_row("klir uninstall", "Remove everything and uninstall")
     is_macos = sys.platform == "darwin"
     svc_hint = "Task Scheduler" if is_windows() else ("launchd" if is_macos else "systemd")
-    table.add_row("ductor service install", f"Run as background service ({svc_hint})")
-    table.add_row("ductor service", "Service management (status/stop/logs/...)")
-    table.add_row("ductor agents", "Sub-agent management (list/add/remove)")
-    table.add_row("ductor docker", "Docker management (rebuild/enable/disable)")
-    table.add_row("ductor api", "API server management (enable/disable) [beta]")
-    table.add_row("ductor status", "Show bot status, paths, and agents")
-    table.add_row("ductor help", "Show this message")
+    table.add_row("klir service install", f"Run as background service ({svc_hint})")
+    table.add_row("klir service", "Service management (status/stop/logs/...)")
+    table.add_row("klir agents", "Sub-agent management (list/add/remove)")
+    table.add_row("klir docker", "Docker management (rebuild/enable/disable)")
+    table.add_row("klir api", "API server management (enable/disable) [beta]")
+    table.add_row("klir status", "Show bot status, paths, and agents")
+    table.add_row("klir help", "Show this message")
     table.add_row("-v, --verbose", "Verbose logging output")
 
     _console.print(
@@ -200,7 +200,7 @@ def print_usage() -> None:
         _console.print(
             Panel(
                 "[bold yellow]Not configured.[/bold yellow]\n\n"
-                "Run [bold]ductor[/bold] to start the setup wizard.",
+                "Run [bold]klir[/bold] to start the setup wizard.",
                 title="[bold]Status[/bold]",
                 border_style="yellow",
                 padding=(1, 2),

@@ -1,4 +1,4 @@
-"""Windows Task Scheduler service management for ductor."""
+"""Windows Task Scheduler service management for klir."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_TASK_NAME = "ductor"
+_TASK_NAME = "klir"
 _CREATE_NO_WINDOW: int = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 _ACCESS_DENIED_HINTS = ("access is denied", "zugriff verweigert", "zugriff wurde verweigert")
@@ -44,7 +44,7 @@ _ADMIN_HINT_PANEL = Panel(
     "Open a terminal as Administrator and try again:\n\n"
     "  [bold]1.[/bold] Right-click on CMD or PowerShell\n"
     "  [bold]2.[/bold] Select [cyan]'Run as administrator'[/cyan]\n"
-    "  [bold]3.[/bold] Run: [cyan]ductor service install[/cyan]",
+    "  [bold]3.[/bold] Run: [cyan]klir service install[/cyan]",
     title="[bold yellow]Admin Required[/bold yellow]",
     border_style="yellow",
     padding=(1, 2),
@@ -96,7 +96,7 @@ def _generate_task_xml(command: str, arguments: str = "") -> str:
 
     # -- Registration info --
     reg = SubElement(task, "RegistrationInfo")
-    SubElement(reg, "Description").text = "ductor - Telegram bot powered by AI CLIs"
+    SubElement(reg, "Description").text = "klir - Telegram bot powered by AI CLIs"
 
     # -- Triggers: start on logon --
     triggers = SubElement(task, "Triggers")
@@ -149,13 +149,13 @@ def is_service_available() -> bool:
 
 
 def is_service_installed() -> bool:
-    """Check if the ductor scheduled task exists."""
+    """Check if the klir scheduled task exists."""
     result = _run_schtasks("/Query", "/TN", _TASK_NAME, "/FO", "LIST")
     return result.returncode == 0
 
 
 def is_service_running() -> bool:
-    """Check if the ductor scheduled task is currently running."""
+    """Check if the klir scheduled task is currently running."""
     if not is_service_installed():
         return False
     result = _run_schtasks("/Query", "/TN", _TASK_NAME, "/FO", "CSV", "/V")
@@ -165,7 +165,7 @@ def is_service_running() -> bool:
 
 
 def install_service(console: Console | None = None) -> bool:
-    """Install and start the ductor scheduled task.
+    """Install and start the klir scheduled task.
 
     Returns True on success.
     """
@@ -177,7 +177,7 @@ def install_service(console: Console | None = None) -> bool:
         )
         return False
 
-    # Resolve command: prefer pythonw.exe (no console window) over ductor binary
+    # Resolve command: prefer pythonw.exe (no console window) over klir binary
     pythonw = _find_pythonw()
     if pythonw:
         command = pythonw
@@ -235,7 +235,7 @@ def install_service(console: Console | None = None) -> bool:
 
 
 def uninstall_service(console: Console | None = None) -> bool:
-    """Stop and remove the ductor scheduled task."""
+    """Stop and remove the klir scheduled task."""
     console = ensure_console(console)
 
     if not is_service_installed():
@@ -305,7 +305,7 @@ def print_service_status(console: Console | None = None) -> None:
 def print_service_logs(console: Console | None = None) -> None:
     """Show recent log output.
 
-    Windows has no journalctl equivalent, so we tail the ductor log file.
+    Windows has no journalctl equivalent, so we tail the klir log file.
     """
     console = ensure_console(console)
     print_file_service_logs(

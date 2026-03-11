@@ -1,4 +1,4 @@
-"""macOS launchd Launch Agent service management for ductor."""
+"""macOS launchd Launch Agent service management for klir."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_LABEL = "dev.ductor"
+_LABEL = "dev.klir"
 _PLIST_NAME = f"{_LABEL}.plist"
 
 
@@ -103,12 +103,12 @@ def is_service_available() -> bool:
 
 
 def is_service_installed() -> bool:
-    """Check if the ductor Launch Agent plist exists."""
+    """Check if the klir Launch Agent plist exists."""
     return _plist_path().exists()
 
 
 def is_service_running() -> bool:
-    """Check if the ductor Launch Agent is currently running."""
+    """Check if the klir Launch Agent is currently running."""
     if not is_service_installed():
         return False
     result = _run_launchctl("list", _LABEL)
@@ -118,7 +118,7 @@ def is_service_running() -> bool:
 
 
 def install_service(console: Console | None = None) -> bool:
-    """Install and start the ductor Launch Agent.
+    """Install and start the klir Launch Agent.
 
     Returns True on success.
     """
@@ -165,7 +165,7 @@ def install_service(console: Console | None = None) -> bool:
 
 
 def uninstall_service(console: Console | None = None) -> bool:
-    """Stop and remove the ductor Launch Agent."""
+    """Stop and remove the klir Launch Agent."""
     console = ensure_console(console)
 
     if not is_service_installed():
@@ -224,7 +224,7 @@ def print_service_status(console: Console | None = None) -> None:
     if result.returncode == 0:
         console.print(result.stdout)
     else:
-        console.print("[red]Agent not loaded. Try: [bold]ductor service install[/bold][/red]")
+        console.print("[red]Agent not loaded. Try: [bold]klir service install[/bold][/red]")
 
 
 def print_service_logs(console: Console | None = None) -> None:

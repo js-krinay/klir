@@ -1,4 +1,4 @@
-"""API server management CLI subcommands (``ductor api ...``)."""
+"""API server management CLI subcommands (``klir api ...``)."""
 
 from __future__ import annotations
 
@@ -37,8 +37,8 @@ def print_api_help() -> None:
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column(style="bold green", min_width=30)
     table.add_column()
-    table.add_row("ductor api enable", "Enable the WebSocket API server")
-    table.add_row("ductor api disable", "Disable the WebSocket API server")
+    table.add_row("klir api enable", "Enable the WebSocket API server")
+    table.add_row("klir api disable", "Disable the WebSocket API server")
 
     # Show current status
     paths = resolve_paths()
@@ -80,8 +80,8 @@ def api_install_hint() -> str:
 
     mode = detect_install_mode()
     if mode == "pipx":
-        return "pipx inject ductor PyNaCl"
-    return "pip install ductor[api]"
+        return "pipx inject klir PyNaCl"
+    return "pip install klir[api]"
 
 
 def api_enable() -> None:
@@ -94,7 +94,7 @@ def api_enable() -> None:
             Panel(
                 "[bold yellow]PyNaCl is required for the API server (E2E encryption).[/bold yellow]"
                 f"\n\nInstall it with:\n\n  [bold]{hint}[/bold]"
-                "\n\nThen run [bold]ductor api enable[/bold] again.",
+                "\n\nThen run [bold]klir api enable[/bold] again.",
                 title="[bold]Missing dependency[/bold]",
                 border_style="yellow",
                 padding=(1, 2),
@@ -161,7 +161,7 @@ def api_disable() -> None:
 
 
 def cmd_api(args: list[str]) -> None:
-    """Handle 'ductor api <subcommand>'."""
+    """Handle 'klir api <subcommand>'."""
     sub = _parse_api_subcommand(args)
     if sub is None:
         print_api_help()

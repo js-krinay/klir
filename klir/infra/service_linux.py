@@ -1,4 +1,4 @@
-"""Systemd user service management for ductor (Linux)."""
+"""Systemd user service management for klir (Linux)."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_SERVICE_NAME = "ductor"
+_SERVICE_NAME = "klir"
 _SERVICE_FILE = f"{_SERVICE_NAME}.service"
 
 
@@ -81,7 +81,7 @@ def _generate_service_unit(binary_path: str) -> str:
 
     return f"""\
 [Unit]
-Description=ductor - Telegram bot powered by AI CLIs
+Description=klir - Telegram bot powered by AI CLIs
 After=network-online.target
 Wants=network-online.target
 
@@ -100,12 +100,12 @@ WantedBy=default.target
 
 
 def is_service_installed() -> bool:
-    """Check if the ductor service is installed."""
+    """Check if the klir service is installed."""
     return _service_path().exists()
 
 
 def is_service_running() -> bool:
-    """Check if the ductor service is currently running."""
+    """Check if the klir service is currently running."""
     if not _has_systemd() or not is_service_installed():
         return False
     result = _run_systemctl("is-active", _SERVICE_NAME)
@@ -118,7 +118,7 @@ def is_service_available() -> bool:
 
 
 def install_service(console: Console | None = None) -> bool:
-    """Install and start the ductor systemd user service.
+    """Install and start the klir systemd user service.
 
     Returns True on success.
     """
@@ -147,7 +147,7 @@ def install_service(console: Console | None = None) -> bool:
 
     if not _has_linger():
         console.print(
-            "\n[bold yellow]Linger must be enabled so ductor keeps running "
+            "\n[bold yellow]Linger must be enabled so klir keeps running "
             "after you log out.[/bold yellow]"
         )
         user = getpass.getuser()
@@ -179,7 +179,7 @@ def install_service(console: Console | None = None) -> bool:
 
 
 def uninstall_service(console: Console | None = None) -> bool:
-    """Stop, disable, and remove the ductor service."""
+    """Stop, disable, and remove the klir service."""
     console = ensure_console(console)
 
     if not _has_systemd():

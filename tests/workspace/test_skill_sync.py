@@ -108,13 +108,13 @@ def test_discover_ignores_plain_files(tmp_path: Path) -> None:
 
 
 def test_canonical_ductor_priority(tmp_path: Path) -> None:
-    ductor = {"sk": tmp_path / "ductor" / "sk"}
+    klir = {"sk": tmp_path / "klir" / "sk"}
     claude = {"sk": tmp_path / "claude" / "sk"}
     codex = {"sk": tmp_path / "codex" / "sk"}
-    for d in (ductor["sk"], claude["sk"], codex["sk"]):
+    for d in (klir["sk"], claude["sk"], codex["sk"]):
         d.mkdir(parents=True)
-    result = _resolve_canonical("sk", ductor, claude, codex)
-    assert result == ductor["sk"]
+    result = _resolve_canonical("sk", klir, claude, codex)
+    assert result == klir["sk"]
 
 
 def test_canonical_claude_over_codex(tmp_path: Path) -> None:
@@ -267,14 +267,14 @@ def test_sync_ductor_to_both(tmp_path: Path) -> None:
     paths, claude_skills, codex_skills = _setup_three_dirs(tmp_path)
     claude_skills.mkdir(parents=True, exist_ok=True)
     codex_skills.mkdir(parents=True, exist_ok=True)
-    _make_skill(paths.skills_dir, "from-ductor")
+    _make_skill(paths.skills_dir, "from-klir")
     with patch("klir.workspace.skill_sync._cli_skill_dirs") as mock:
         mock.return_value = {"claude": claude_skills, "codex": codex_skills}
         sync_skills(paths)
     for d in (claude_skills, codex_skills):
-        link = d / "from-ductor"
+        link = d / "from-klir"
         assert link.is_symlink()
-        assert link.resolve() == (paths.skills_dir / "from-ductor").resolve()
+        assert link.resolve() == (paths.skills_dir / "from-klir").resolve()
 
 
 def test_sync_gemini_to_ductor(tmp_path: Path) -> None:
@@ -299,7 +299,7 @@ def test_sync_ductor_to_all_three(tmp_path: Path) -> None:
     claude_skills.mkdir(parents=True, exist_ok=True)
     codex_skills.mkdir(parents=True, exist_ok=True)
     gemini_skills.mkdir(parents=True, exist_ok=True)
-    _make_skill(paths.skills_dir, "from-ductor")
+    _make_skill(paths.skills_dir, "from-klir")
     with patch("klir.workspace.skill_sync._cli_skill_dirs") as mock:
         mock.return_value = {
             "claude": claude_skills,
@@ -308,9 +308,9 @@ def test_sync_ductor_to_all_three(tmp_path: Path) -> None:
         }
         sync_skills(paths)
     for d in (claude_skills, codex_skills, gemini_skills):
-        link = d / "from-ductor"
+        link = d / "from-klir"
         assert link.is_symlink()
-        assert link.resolve() == (paths.skills_dir / "from-ductor").resolve()
+        assert link.resolve() == (paths.skills_dir / "from-klir").resolve()
 
 
 def test_sync_no_providers(tmp_path: Path) -> None:
@@ -520,7 +520,7 @@ def test_sync_preserves_external_symlink(tmp_path: Path) -> None:
 
 
 def test_sync_replaces_internal_symlink(tmp_path: Path) -> None:
-    """Symlinks pointing inside sync dirs (ductor-managed) can be updated."""
+    """Symlinks pointing inside sync dirs (klir-managed) can be updated."""
     paths, claude_skills, codex_skills = _setup_three_dirs(tmp_path)
     claude_skills.mkdir(parents=True, exist_ok=True)
     codex_skills.mkdir(parents=True, exist_ok=True)
@@ -538,7 +538,7 @@ def test_sync_replaces_internal_symlink(tmp_path: Path) -> None:
         mock.return_value = {"claude": claude_skills, "codex": codex_skills}
         sync_skills(paths)
 
-    # Claude's symlink should now point to ductor (higher priority canonical)
+    # Claude's symlink should now point to klir (higher priority canonical)
     link = claude_skills / "shared"
     assert link.is_symlink()
     assert link.resolve() == (paths.skills_dir / "shared").resolve()
@@ -637,18 +637,18 @@ def test_cleanup_removes_ductor_links(tmp_path: Path) -> None:
     claude_skills.mkdir(parents=True, exist_ok=True)
     codex_skills.mkdir(parents=True, exist_ok=True)
 
-    # Simulate ductor-created symlinks (target under ductor skills dir)
-    _make_skill(paths.skills_dir, "from-ductor")
-    (claude_skills / "from-ductor").symlink_to(paths.skills_dir / "from-ductor")
-    (codex_skills / "from-ductor").symlink_to(paths.skills_dir / "from-ductor")
+    # Simulate klir-created symlinks (target under klir skills dir)
+    _make_skill(paths.skills_dir, "from-klir")
+    (claude_skills / "from-klir").symlink_to(paths.skills_dir / "from-klir")
+    (codex_skills / "from-klir").symlink_to(paths.skills_dir / "from-klir")
 
     with patch("klir.workspace.skill_sync._cli_skill_dirs") as mock:
         mock.return_value = {"claude": claude_skills, "codex": codex_skills}
         removed = cleanup_ductor_links(paths)
 
     assert removed == 2
-    assert not (claude_skills / "from-ductor").exists()
-    assert not (codex_skills / "from-ductor").exists()
+    assert not (claude_skills / "from-klir").exists()
+    assert not (codex_skills / "from-klir").exists()
 
 
 def test_cleanup_preserves_external_links(tmp_path: Path) -> None:

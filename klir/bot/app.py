@@ -91,7 +91,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_WELCOME_IMAGE = Path(__file__).resolve().parent / "ductor_images" / "welcome.png"
+_WELCOME_IMAGE = Path(__file__).resolve().parent / "klir_images" / "welcome.png"
 _CAPTION_LIMIT = 1024
 
 # Backward-compatible patch points used by tests.
@@ -668,7 +668,7 @@ class TelegramBot:
             "",
             "**Setup**",
             "Ask your agent to create a new sub-agent or edit "
-            "`agents.json` in your ductor home directory.",
+            "`agents.json` in your klir home directory.",
         ]
         text = fmt("**Multi-Agent System**", SEP, "\n".join(lines))
         await send_rich(
@@ -685,7 +685,7 @@ class TelegramBot:
 
         version = get_current_version()
         text = fmt(
-            "**ductor.dev**",
+            "**klir.dev**",
             f"Version: `{version}`",
             SEP,
             "AI coding agents (Claude, Codex, Gemini) on Telegram.\n"
@@ -695,14 +695,14 @@ class TelegramBot:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="GitHub", url="https://github.com/PleasePrompto/ductor"
+                        text="GitHub", url="https://github.com/PleasePrompto/klir"
                     ),
                     InlineKeyboardButton(
                         text="Changelog",
-                        url="https://github.com/PleasePrompto/ductor/releases",
+                        url="https://github.com/PleasePrompto/klir/releases",
                     ),
                 ],
-                [InlineKeyboardButton(text="PyPI", url="https://pypi.org/project/ductor/")],
+                [InlineKeyboardButton(text="PyPI", url="https://pypi.org/project/klir/")],
             ],
         )
         await send_rich(
@@ -718,7 +718,7 @@ class TelegramBot:
 
     @_for_this_bot
     async def _on_showfiles(self, message: Message) -> None:
-        """Handle /showfiles: interactive file browser for ~/.ductor."""
+        """Handle /showfiles: interactive file browser for ~/.klir."""
         text, keyboard = await file_browser_start(self._orch.paths)
         await send_rich(
             self._bot,

@@ -1,1 +1,1 @@
-"""CLI subcommand implementations for the ``ductor`` entry point."""
+"""CLI subcommand implementations for the ``klir`` entry point."""

@@ -401,9 +401,9 @@ def test_check_gemini_auth_ductor_config_key(
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
 
-    ductor_config = tmp_path / ".ductor" / "config" / "config.json"
+    ductor_config = tmp_path / ".klir" / "config" / "config.json"
     ductor_config.parent.mkdir(parents=True)
-    ductor_config.write_text('{"gemini_api_key":"from-ductor-config"}')
+    ductor_config.write_text('{"gemini_api_key":"from-klir-config"}')
 
     result = check_gemini_auth()
 
@@ -422,7 +422,7 @@ def test_check_gemini_auth_ductor_config_null_string_ignored(
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
 
-    ductor_config = tmp_path / ".ductor" / "config" / "config.json"
+    ductor_config = tmp_path / ".klir" / "config" / "config.json"
     ductor_config.parent.mkdir(parents=True)
     ductor_config.write_text('{"gemini_api_key":"null"}')
 

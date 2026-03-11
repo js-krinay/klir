@@ -1,6 +1,6 @@
-"""Interactive file browser for the ~/.ductor directory.
+"""Interactive file browser for the ~/.klir directory.
 
-Renders the ductor home directory as a navigable inline-keyboard tree.
+Renders the klir home directory as a navigable inline-keyboard tree.
 Folders are clickable buttons that edit the message in-place; files are
 listed in the text body for reference.
 
@@ -81,7 +81,7 @@ def _build_view(paths: KlirPaths, rel: str) -> tuple[str, InlineKeyboardMarkup]:
 
     dirs, files = _list_directory(target)
 
-    display_path = f"~/.ductor/{rel}" if rel else "~/.ductor/"
+    display_path = f"~/.klir/{rel}" if rel else "~/.klir/"
     if not display_path.endswith("/"):
         display_path += "/"
 

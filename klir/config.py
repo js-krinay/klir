@@ -310,7 +310,7 @@ class AgentConfig(BaseModel):
     log_level: str = "INFO"
     provider: str = "claude"
     model: str = "opus"
-    klir_home: str = "~/.ductor"
+    klir_home: str = "~/.klir"
     idle_timeout_minutes: int = 1440
     session_age_warning_hours: int = 12
     daily_reset_hour: int = 4

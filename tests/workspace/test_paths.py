@@ -11,47 +11,47 @@ from klir.workspace.paths import KlirPaths, resolve_paths
 
 def test_workspace_property() -> None:
     paths = KlirPaths(
-        klir_home=Path("/home/test/.ductor"),
-        home_defaults=Path("/opt/ductor/workspace"),
-        framework_root=Path("/opt/ductor"),
+        klir_home=Path("/home/test/.klir"),
+        home_defaults=Path("/opt/klir/workspace"),
+        framework_root=Path("/opt/klir"),
     )
-    assert paths.workspace == Path("/home/test/.ductor/workspace")
+    assert paths.workspace == Path("/home/test/.klir/workspace")
 
 
 def test_config_path() -> None:
     paths = KlirPaths(
-        klir_home=Path("/home/test/.ductor"),
-        home_defaults=Path("/opt/ductor/workspace"),
-        framework_root=Path("/opt/ductor"),
+        klir_home=Path("/home/test/.klir"),
+        home_defaults=Path("/opt/klir/workspace"),
+        framework_root=Path("/opt/klir"),
     )
-    assert paths.config_path == Path("/home/test/.ductor/config/config.json")
+    assert paths.config_path == Path("/home/test/.klir/config/config.json")
 
 
 def test_sessions_path() -> None:
     paths = KlirPaths(
-        klir_home=Path("/home/test/.ductor"),
-        home_defaults=Path("/opt/ductor/workspace"),
-        framework_root=Path("/opt/ductor"),
+        klir_home=Path("/home/test/.klir"),
+        home_defaults=Path("/opt/klir/workspace"),
+        framework_root=Path("/opt/klir"),
     )
-    assert paths.sessions_path == Path("/home/test/.ductor/sessions.json")
+    assert paths.sessions_path == Path("/home/test/.klir/sessions.json")
 
 
 def test_logs_dir() -> None:
     paths = KlirPaths(
-        klir_home=Path("/home/test/.ductor"),
-        home_defaults=Path("/opt/ductor/workspace"),
-        framework_root=Path("/opt/ductor"),
+        klir_home=Path("/home/test/.klir"),
+        home_defaults=Path("/opt/klir/workspace"),
+        framework_root=Path("/opt/klir"),
     )
-    assert paths.logs_dir == Path("/home/test/.ductor/logs")
+    assert paths.logs_dir == Path("/home/test/.klir/logs")
 
 
 def test_home_defaults() -> None:
     paths = KlirPaths(
         klir_home=Path("/x"),
-        home_defaults=Path("/opt/ductor/workspace"),
-        framework_root=Path("/opt/ductor"),
+        home_defaults=Path("/opt/klir/workspace"),
+        framework_root=Path("/opt/klir"),
     )
-    assert paths.home_defaults == Path("/opt/ductor/workspace")
+    assert paths.home_defaults == Path("/opt/klir/workspace")
 
 
 def test_resolve_paths_explicit() -> None:
@@ -76,4 +76,4 @@ def test_resolve_paths_defaults() -> None:
         }
         with patch.dict(os.environ, env_clean, clear=True):
             paths = resolve_paths()
-            assert paths.klir_home == (Path.home() / ".ductor").resolve()
+            assert paths.klir_home == (Path.home() / ".klir").resolve()

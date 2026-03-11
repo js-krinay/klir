@@ -331,7 +331,7 @@ def read_gemini_selected_auth_type(settings_file: Path) -> str | None:
 
 
 def read_ductor_gemini_api_key() -> tuple[str | None, Path | None]:
-    """Read ``gemini_api_key`` from ``~/.ductor/config/config.json``.
+    """Read ``gemini_api_key`` from ``~/.klir/config/config.json``.
 
     Returns ``(key, path)`` when configured, otherwise ``(None, None)``.
     """

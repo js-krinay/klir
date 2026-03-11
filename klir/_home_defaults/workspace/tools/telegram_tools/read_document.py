@@ -23,7 +23,7 @@ _TEXT_EXTENSIONS = frozenset({
 
 _MAX_TEXT_CHARS = 100_000
 _TELEGRAM_FILES = Path(
-    os.environ.get("KLIR_HOME", str(Path.home() / ".ductor"))
+    os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))
 ).expanduser() / "workspace" / "telegram_files"
 
 

@@ -313,10 +313,10 @@ async def _gemini_missing_config_key_warning(
     return OrchestratorResult(
         text=(
             "Gemini is set to API-key auth mode, but `gemini_api_key` in "
-            '`~/.ductor/config/config.json` is `"null"` or empty.\n'
-            "Why this is required: when ductor calls Gemini CLI as an external process, "
+            '`~/.klir/config/config.json` is `"null"` or empty.\n'
+            "Why this is required: when klir calls Gemini CLI as an external process, "
             "Gemini CLI does not expose an internally entered API key to that caller.\n"
-            "Set a real API key in `gemini_api_key` and restart `ductor`."
+            "Set a real API key in `gemini_api_key` and restart `klir`."
         ),
     )
 
@@ -334,7 +334,7 @@ async def normal(
     request, session = await _prepare_normal(orch, key, text, model_override=model_override)
     warning = await _gemini_missing_config_key_warning(orch, request)
     if warning is not None:
-        logger.warning("Gemini API-key mode without configured ductor key")
+        logger.warning("Gemini API-key mode without configured klir key")
         return warning
 
     _begin_inflight(orch, request, session, is_recovery=is_recovery)
@@ -388,7 +388,7 @@ async def normal_streaming(
     request, session = await _prepare_normal(orch, key, text, model_override=model_override)
     warning = await _gemini_missing_config_key_warning(orch, request)
     if warning is not None:
-        logger.warning("Gemini API-key mode without configured ductor key")
+        logger.warning("Gemini API-key mode without configured klir key")
         return warning
 
     _begin_inflight(orch, request, session, is_recovery=False)

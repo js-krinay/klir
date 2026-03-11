@@ -25,7 +25,7 @@ class TestLoadConfig:
     def test_creates_config_from_example(self, tmp_path: Path) -> None:
         from klir.__main__ import load_config
 
-        home = tmp_path / ".ductor"
+        home = tmp_path / ".klir"
         fw = tmp_path / "framework"
         fw.mkdir()
         example = {"telegram_token": "TEST", "provider": "claude"}
@@ -43,7 +43,7 @@ class TestLoadConfig:
     def test_preserves_existing_user_config(self, tmp_path: Path) -> None:
         from klir.__main__ import load_config
 
-        home = tmp_path / ".ductor"
+        home = tmp_path / ".klir"
         config_dir = home / "config"
         config_dir.mkdir(parents=True)
         fw = tmp_path / "framework"
@@ -63,7 +63,7 @@ class TestLoadConfig:
     def test_merges_new_defaults_into_existing(self, tmp_path: Path) -> None:
         from klir.__main__ import load_config
 
-        home = tmp_path / ".ductor"
+        home = tmp_path / ".klir"
         config_dir = home / "config"
         config_dir.mkdir(parents=True)
         fw = tmp_path / "framework"
@@ -85,7 +85,7 @@ class TestLoadConfig:
     def test_creates_default_config_when_no_example(self, tmp_path: Path) -> None:
         from klir.__main__ import load_config
 
-        home = tmp_path / ".ductor"
+        home = tmp_path / ".klir"
         fw = tmp_path / "framework"
         fw.mkdir()
 
@@ -103,7 +103,7 @@ class TestLoadConfig:
     def test_normalizes_existing_null_gemini_api_key_to_string(self, tmp_path: Path) -> None:
         from klir.__main__ import load_config
 
-        home = tmp_path / ".ductor"
+        home = tmp_path / ".klir"
         config_dir = home / "config"
         config_dir.mkdir(parents=True)
         fw = tmp_path / "framework"
@@ -301,7 +301,7 @@ class TestUpgradeCli:
             patch(f"{_LIFECYCLE}.resolve_paths", return_value=paths),
             patch(
                 "klir.infra.updater.perform_upgrade_pipeline",
-                new=AsyncMock(return_value=(True, "9.9.9", "upgraded ductor")),
+                new=AsyncMock(return_value=(True, "9.9.9", "upgraded klir")),
             ) as mock_pipeline,
             patch(f"{_LIFECYCLE}._re_exec_bot") as mock_exec,
             patch(f"{_LIFECYCLE}.stop_bot"),
@@ -320,7 +320,7 @@ class TestUpgradeCli:
             patch(f"{_LIFECYCLE}.resolve_paths", return_value=paths),
             patch(
                 "klir.infra.updater.perform_upgrade_pipeline",
-                new=AsyncMock(return_value=(True, "9.9.9", "installed ductor-2.0.0")),
+                new=AsyncMock(return_value=(True, "9.9.9", "installed klir-2.0.0")),
             ) as mock_pipeline,
             patch(f"{_LIFECYCLE}._re_exec_bot") as mock_exec,
             patch(f"{_LIFECYCLE}.stop_bot"),
@@ -492,7 +492,7 @@ class TestCountLogErrors:
 
         log_dir = tmp_path / "logs"
         log_dir.mkdir()
-        (log_dir / "ductor.log").write_text(
+        (log_dir / "klir.log").write_text(
             "2024-01-01 INFO Started\n2024-01-01 ERROR Something broke\n"
             "2024-01-01 INFO Continued\n2024-01-01 ERROR Another error\n",
             encoding="utf-8",
@@ -550,7 +550,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "help"]),
+            patch("sys.argv", ["klir", "help"]),
             patch("klir.__main__._print_usage") as mock_usage,
         ):
             main()
@@ -560,7 +560,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "status"]),
+            patch("sys.argv", ["klir", "status"]),
             patch("klir.__main__._cmd_status") as mock_status,
         ):
             main()
@@ -570,7 +570,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "stop"]),
+            patch("sys.argv", ["klir", "stop"]),
             patch("klir.__main__._stop_bot") as mock_stop,
         ):
             main()
@@ -580,7 +580,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor"]),
+            patch("sys.argv", ["klir"]),
             patch("klir.__main__._is_configured", return_value=True),
             patch("klir.__main__._start_bot") as mock_start,
         ):
@@ -591,7 +591,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor"]),
+            patch("sys.argv", ["klir"]),
             patch("klir.__main__._is_configured", return_value=False),
             patch("klir.cli.init_wizard.run_onboarding", return_value=False) as mock_onboard,
             patch("klir.__main__._start_bot") as mock_start,
@@ -604,7 +604,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor"]),
+            patch("sys.argv", ["klir"]),
             patch("klir.__main__._is_configured", return_value=False),
             patch("klir.cli.init_wizard.run_onboarding", return_value=True),
             patch("klir.__main__._start_bot") as mock_start,
@@ -616,7 +616,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "-v"]),
+            patch("sys.argv", ["klir", "-v"]),
             patch("klir.__main__._is_configured", return_value=True),
             patch("klir.__main__._start_bot") as mock_start,
         ):
@@ -627,7 +627,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "-h"]),
+            patch("sys.argv", ["klir", "-h"]),
             patch("klir.__main__._print_usage") as mock_usage,
         ):
             main()
@@ -637,7 +637,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "upgrade"]),
+            patch("sys.argv", ["klir", "upgrade"]),
             patch("klir.__main__._upgrade") as mock_upgrade,
         ):
             main()
@@ -647,7 +647,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "onboarding"]),
+            patch("sys.argv", ["klir", "onboarding"]),
             patch("klir.__main__._cmd_setup") as mock_setup,
         ):
             main()
@@ -657,7 +657,7 @@ class TestMainDispatch:
         from klir.__main__ import main
 
         with (
-            patch("sys.argv", ["ductor", "reset"]),
+            patch("sys.argv", ["klir", "reset"]),
             patch("klir.__main__._cmd_setup") as mock_setup,
         ):
             main()

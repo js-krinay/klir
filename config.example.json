@@ -2,7 +2,7 @@
     "log_level": "INFO",
     "provider": "claude",
     "model": "opus",
-    "klir_home": "~/.ductor",
+    "klir_home": "~/.klir",
     "idle_timeout_minutes": 1440,
     "session_age_warning_hours": 12,
     "daily_reset_hour": 4,

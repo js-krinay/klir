@@ -84,18 +84,18 @@ def _build_upgrade_command(
     if mode == "pipx":
         # On non-Windows, prefer `pipx upgrade` for plain upgrades (no pin).
         if target_version is None and not force_reinstall and sys.platform != "win32":
-            return ["pipx", "upgrade", "--force", "ductor"]
+            return ["pipx", "upgrade", "--force", "klir"]
         # `pipx runpip` upgrades inside the venv.  On Windows this is
         # required because `pipx upgrade` tries to overwrite the global
-        # ductor.exe which the running process holds locked.
-        spec = f"ductor=={target_version}" if target_version else "ductor"
-        cmd = ["pipx", "runpip", "ductor", "install", "--upgrade", "--no-cache-dir"]
+        # klir.exe which the running process holds locked.
+        spec = f"klir=={target_version}" if target_version else "klir"
+        cmd = ["pipx", "runpip", "klir", "install", "--upgrade", "--no-cache-dir"]
         if force_reinstall:
             cmd.append("--force-reinstall")
         cmd.append(spec)
         return cmd
 
-    spec = f"ductor=={target_version}" if target_version else "ductor"
+    spec = f"klir=={target_version}" if target_version else "klir"
     cmd = [sys.executable, "-m", "pip", "install", "--upgrade", "--no-cache-dir"]
     if force_reinstall:
         cmd.append("--force-reinstall")
@@ -152,7 +152,7 @@ async def _perform_upgrade_impl(
     # On Windows the fallback would hit the same PermissionError on the
     # locked exe, so skip it there.
     if mode == "pipx" and normalized_target is not None and sys.platform != "win32":
-        fallback_cmd = ["pipx", "upgrade", "--force", "ductor"]
+        fallback_cmd = ["pipx", "upgrade", "--force", "klir"]
         fb_ok, fb_output = await _run_upgrade_command(fallback_cmd, env=env)
         combined = "\n\n".join(part for part in (output.strip(), fb_output.strip()) if part)
         return fb_ok, combined
@@ -169,7 +169,7 @@ async def get_installed_version() -> str:
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
         "-c",
-        "from importlib.metadata import version; print(version('ductor'))",
+        "from importlib.metadata import version; print(version('klir'))",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.DEVNULL,
     )

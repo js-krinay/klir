@@ -220,7 +220,7 @@ def _resolve_log_path(orch: Orchestrator) -> Path:
     """Return the best available log file path.
 
     Sub-agents don't have their own log files — fall back to the central
-    log in the main ductor home (parent of ``agents/<name>``).
+    log in the main klir home (parent of ``agents/<name>``).
     """
     log_path = orch.paths.logs_dir / "agent.log"
     if not log_path.exists():

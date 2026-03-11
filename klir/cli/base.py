@@ -102,13 +102,13 @@ class CLIConfig:
     interagent_port: int = 8799
 
 
-_CONTAINER_KLIR_MOUNT = "/ductor"
+_CONTAINER_KLIR_MOUNT = "/klir"
 
 
 def _to_container_path(host_path: Path, main_home: Path) -> str:
     """Map a host path under *main_home* to its container equivalent.
 
-    The Docker container mounts the root ductor home at ``/ductor``.
+    The Docker container mounts the root klir home at ``/klir``.
     """
     rel = host_path.relative_to(main_home)
     if str(rel) == ".":
@@ -137,7 +137,7 @@ def docker_wrap(
         working_dir = Path(config.working_dir)
         klir_home = working_dir.parent if working_dir.name == "workspace" else working_dir
 
-        # Resolve root ductor home for host → container path mapping.
+        # Resolve root klir home for host → container path mapping.
         # Sub-agents live at <root>/agents/<name>/; the Docker mount is the root.
         main_home = klir_home
         if main_home.parent.name == "agents":

@@ -123,7 +123,7 @@ async def start_api_server(
         from klir.api.server import ApiServer
     except ImportError:
         logger.warning(
-            "API server enabled but PyNaCl is not installed. Install with: pip install ductor[api]"
+            "API server enabled but PyNaCl is not installed. Install with: pip install klir[api]"
         )
         return
 

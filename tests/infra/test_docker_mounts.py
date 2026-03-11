@@ -120,7 +120,7 @@ class TestResolveMountTarget:
 
 @pytest.fixture
 def docker_paths(tmp_path: Path) -> KlirPaths:
-    home = tmp_path / ".ductor"
+    home = tmp_path / ".klir"
     home.mkdir()
     ws = home / "workspace"
     ws.mkdir()

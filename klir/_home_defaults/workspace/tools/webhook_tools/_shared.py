@@ -19,7 +19,7 @@ from klir._home_defaults.workspace.tools._tool_shared import (
 # Re-export so existing tool scripts keep working with ``from _shared import sanitize_name``
 sanitize_name = sanitize_name
 
-KLIR_HOME = Path(os.environ.get("KLIR_HOME", "~/.ductor")).expanduser()
+KLIR_HOME = Path(os.environ.get("KLIR_HOME", "~/.klir")).expanduser()
 HOOKS_PATH = KLIR_HOME / "webhooks.json"
 CONFIG_PATH = KLIR_HOME / "config" / "config.json"
 CRON_TASKS_DIR = KLIR_HOME / "workspace" / "cron_tasks"

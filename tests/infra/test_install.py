@@ -13,7 +13,7 @@ class TestDetectInstallMode:
 
     def test_pipx_detected_from_sys_prefix(self) -> None:
         with patch("klir.infra.install.sys") as mock_sys:
-            mock_sys.prefix = "/home/user/.local/share/pipx/venvs/ductor"
+            mock_sys.prefix = "/home/user/.local/share/pipx/venvs/klir"
             assert detect_install_mode() == "pipx"
 
     def test_editable_install_detected_as_dev(self) -> None:
@@ -46,7 +46,7 @@ class TestDetectInstallMode:
             patch("klir.infra.install.sys") as mock_sys,
             patch(
                 "klir.infra.install.distribution",
-                side_effect=PackageNotFoundError("ductor"),
+                side_effect=PackageNotFoundError("klir"),
             ),
         ):
             mock_sys.prefix = "/usr"
@@ -62,7 +62,7 @@ class TestDetectInstallMode:
 
     def test_pipx_path_variant_windows(self) -> None:
         with patch("klir.infra.install.sys") as mock_sys:
-            mock_sys.prefix = "C:\\Users\\me\\AppData\\Local\\pipx\\venvs\\ductor"
+            mock_sys.prefix = "C:\\Users\\me\\AppData\\Local\\pipx\\venvs\\klir"
             assert detect_install_mode() == "pipx"
 
     def test_non_editable_direct_url_is_pip(self) -> None:

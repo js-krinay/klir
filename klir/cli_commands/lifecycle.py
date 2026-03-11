@@ -62,11 +62,11 @@ def _stop_docker_container(container_name: str) -> None:
 
 
 def stop_bot() -> None:
-    """Stop all running ductor instances and Docker container.
+    """Stop all running klir instances and Docker container.
 
     1. Stop the system service (prevents Task Scheduler/systemd/launchd respawn)
     2. Kill the PID-file instance
-    3. Kill any remaining ductor processes system-wide
+    3. Kill any remaining klir processes system-wide
     4. Wait for file locks to release (Windows only)
     5. Stop Docker container if enabled
     """
@@ -94,12 +94,12 @@ def stop_bot() -> None:
         else:
             pid_file.unlink(missing_ok=True)
 
-    # 3. Kill all remaining ductor processes system-wide
+    # 3. Kill all remaining klir processes system-wide
     from klir.infra.process_tree import kill_all_ductor_processes
 
     extra = kill_all_ductor_processes()
     if extra:
-        _console.print(f"[dim]Killed {extra} remaining ductor process(es).[/dim]")
+        _console.print(f"[dim]Killed {extra} remaining klir process(es).[/dim]")
         stopped = True
 
     if not stopped:
@@ -161,12 +161,12 @@ def uninstall() -> None:
     _console.print()
     _console.print(
         Panel(
-            "[bold red]This will permanently remove ductor from your system.[/bold red]\n\n"
+            "[bold red]This will permanently remove klir from your system.[/bold red]\n\n"
             "  1. Stop the running bot (if active)\n"
             "  2. Remove Docker container and image (if used)\n"
-            "  3. Delete all data in ~/.ductor/\n"
-            "  4. Uninstall the ductor package",
-            title="[bold red]Uninstall ductor[/bold red]",
+            "  3. Delete all data in ~/.klir/\n"
+            "  4. Uninstall the klir package",
+            title="[bold red]Uninstall klir[/bold red]",
             border_style="red",
             padding=(1, 2),
         ),
@@ -180,7 +180,7 @@ def uninstall() -> None:
         _console.print("\n[dim]Uninstall cancelled.[/dim]\n")
         return
 
-    # 1. Stop bot + Docker container + all ductor processes
+    # 1. Stop bot + Docker container + all klir processes
     stop_bot()
 
     # 2. Remove Docker image
@@ -214,24 +214,24 @@ def uninstall() -> None:
             _console.print(f"[green]Deleted {klir_home}[/green]")
 
     # 4. Uninstall package
-    _console.print("[dim]Uninstalling ductor package...[/dim]")
+    _console.print("[dim]Uninstalling klir package...[/dim]")
     if shutil.which("pipx"):
         subprocess.run(
-            ["pipx", "uninstall", "ductor"],
+            ["pipx", "uninstall", "klir"],
             capture_output=True,
             check=False,
         )
     else:
         subprocess.run(
-            [sys.executable, "-m", "pip", "uninstall", "-y", "ductor"],
+            [sys.executable, "-m", "pip", "uninstall", "-y", "klir"],
             capture_output=True,
             check=False,
         )
 
     _console.print(
         Panel(
-            "[bold green]ductor has been completely removed.[/bold green]\n\n"
-            "Thank you for using ductor!",
+            "[bold green]klir has been completely removed.[/bold green]\n\n"
+            "Thank you for using klir!",
             title="[bold green]Uninstalled[/bold green]",
             border_style="green",
             padding=(1, 2),
@@ -263,7 +263,7 @@ def upgrade() -> None:
     _console.print()
     _console.print(
         Panel(
-            "[bold cyan]Upgrading ductor...[/bold cyan]\n\n"
+            "[bold cyan]Upgrading klir...[/bold cyan]\n\n"
             "  1. Stop running bot gracefully\n"
             "  2. Upgrade to latest version\n"
             "  3. Restart",

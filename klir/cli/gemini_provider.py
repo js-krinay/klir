@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_TIMEOUT = 300.0
 
 # Must match ``_KLIR_MOUNT`` in ``klir.infra.docker``.
-_CONTAINER_DUCTOR = "/ductor"
+_CONTAINER_DUCTOR = "/klir"
 
 
 @dataclass(slots=True)
@@ -125,7 +125,7 @@ class GeminiCLI(BaseCLI):
         return env
 
     def _inject_config_gemini_api_key(self, env: dict[str, str]) -> None:
-        """Inject GEMINI_API_KEY from ductor config when API-key auth mode is active."""
+        """Inject GEMINI_API_KEY from klir config when API-key auth mode is active."""
         existing = (env.get("GEMINI_API_KEY") or "").strip()
         if existing and existing.lower() not in NULLISH_TEXT_VALUES:
             return
@@ -143,7 +143,7 @@ class GeminiCLI(BaseCLI):
             return
 
         env["GEMINI_API_KEY"] = key
-        logger.debug("Injected GEMINI_API_KEY from ductor config for Gemini API key mode")
+        logger.debug("Injected GEMINI_API_KEY from klir config for Gemini API key mode")
 
     async def send(
         self,
@@ -311,7 +311,7 @@ class GeminiCLI(BaseCLI):
     def _create_system_prompt_path(self) -> str | None:
         """Create a temporary system prompt file when prompt content is present.
 
-        In Docker mode the file is written to ``~/.ductor/tmp/`` which is
+        In Docker mode the file is written to ``~/.klir/tmp/`` which is
         bind-mounted into the container so it can be read via a translated
         container-side path.
         """
@@ -362,7 +362,7 @@ class GeminiCLI(BaseCLI):
 
     @staticmethod
     def _host_to_container_path(host_path: str) -> str | None:
-        """Translate a host path under ``~/.ductor/`` to its container mount."""
+        """Translate a host path under ``~/.klir/`` to its container mount."""
         prefix = str(resolve_paths().klir_home)
         if host_path.startswith(prefix):
             return _CONTAINER_DUCTOR + host_path[len(prefix) :].replace("\\", "/")

@@ -31,7 +31,7 @@ def _load_banner() -> str:
     try:
         return _BANNER_PATH.read_text(encoding="utf-8").rstrip()
     except OSError:
-        return "ductor.dev"
+        return "klir.dev"
 
 
 _TOKEN_PATTERN = re.compile(r"^\d{8,}:[A-Za-z0-9_-]{30,}$")
@@ -80,7 +80,7 @@ def _show_banner(console: Console) -> None:
     console.print(
         Panel(
             banner,
-            subtitle="[dim]ductor.dev[/dim]",
+            subtitle="[dim]klir.dev[/dim]",
             border_style="cyan",
             padding=(0, 2),
         ),
@@ -138,14 +138,14 @@ def _show_disclaimer(console: Console) -> None:
     """Display the risk disclaimer and require confirmation."""
     disclaimer = (
         "[bold]Important -- please read before continuing.[/bold]\n\n"
-        "ductor connects to [bold]Anthropic Claude CLI[/bold] and "
+        "klir connects to [bold]Anthropic Claude CLI[/bold] and "
         "[bold]OpenAI Codex CLI[/bold] as AI agent backends.\n\n"
         "The bot operates in [bold yellow]full permission bypass mode[/bold yellow]. "
         "The agent can read, write, and delete files, execute commands, "
         "and interact with your system without asking for confirmation.\n\n"
         "While safeguards are in place, [bold red]unintended actions can occur[/bold red] "
         "-- including data loss, unexpected file changes, or unintended command execution.\n\n"
-        "[bold green]We strongly recommend running ductor inside a Docker container[/bold green] "
+        "[bold green]We strongly recommend running klir inside a Docker container[/bold green] "
         "to isolate it from your host system."
     )
     console.print(
@@ -235,7 +235,7 @@ def _ask_docker(console: Console) -> bool:
         console.print(
             Panel(
                 "[bold green]Docker detected on your system.[/bold green]\n\n"
-                "Running ductor inside Docker isolates it from your host.\n"
+                "Running klir inside Docker isolates it from your host.\n"
                 "This is the recommended setup for safety.",
                 title="[bold]Docker Sandboxing[/bold]",
                 border_style="green",
@@ -306,7 +306,7 @@ def _build_extras_table(console: Console) -> None:
     console.print(
         "[dim]These packages are optional and increase image build time.\n"
         "You can change this later with"
-        " [cyan]ductor docker extras-add / extras-remove[/cyan].[/dim]"
+        " [cyan]klir docker extras-add / extras-remove[/cyan].[/dim]"
     )
     console.print()
 
@@ -393,7 +393,7 @@ def _ask_timezone(console: Console) -> str:
 
 
 def _offer_service_install(console: Console) -> bool:
-    """Ask whether to install ductor as a background service."""
+    """Ask whether to install klir as a background service."""
     from klir.infra.service import is_service_available
 
     if not is_service_available():
@@ -413,9 +413,9 @@ def _offer_service_install(console: Console) -> bool:
 
     console.print(
         Panel(
-            f"[bold]Run ductor as a background service?[/bold]\n\n"
+            f"[bold]Run klir as a background service?[/bold]\n\n"
             f"This creates a {mechanism} that:\n\n"
-            f"  - Starts ductor on {trigger}\n"
+            f"  - Starts klir on {trigger}\n"
             "  - Restarts automatically on crash\n"
             "  - Keeps running in the background\n\n"
             "[dim]Recommended for VPS or always-on setups.[/dim]",
@@ -529,7 +529,7 @@ def run_onboarding() -> bool:
     console.print(
         Panel(
             "[bold green]Setup complete![/bold green]\n\n"
-            "[bold]Your ductor files:[/bold]\n\n"
+            "[bold]Your klir files:[/bold]\n\n"
             f"  Home:       [cyan]{paths.klir_home}[/cyan]\n"
             f"  Config:     [cyan]{config_path}[/cyan]\n"
             f"  Workspace:  [cyan]{paths.workspace}[/cyan]\n"

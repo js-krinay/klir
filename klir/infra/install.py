@@ -1,4 +1,4 @@
-"""Detect how ductor was installed (pipx, pip, or dev/source)."""
+"""Detect how klir was installed (pipx, pip, or dev/source)."""
 
 from __future__ import annotations
 
@@ -12,15 +12,15 @@ logger = logging.getLogger(__name__)
 
 InstallMode = Literal["pipx", "pip", "dev"]
 
-_PACKAGE_NAME = "ductor"
+_PACKAGE_NAME = "klir"
 
 
 def detect_install_mode() -> InstallMode:
     """Detect installation method at runtime.
 
     Returns:
-        ``"pipx"`` -- installed via ``pipx install ductor``
-        ``"pip"``  -- installed via ``pip install ductor`` (from PyPI)
+        ``"pipx"`` -- installed via ``pipx install klir``
+        ``"pip"``  -- installed via ``pip install klir`` (from PyPI)
         ``"dev"``  -- editable install (``pip install -e .``) or running from source
     """
     if "pipx" in sys.prefix:

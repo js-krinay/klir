@@ -18,12 +18,12 @@ from pathlib import Path
 def _agents_path() -> Path:
     """Resolve agents.json path (always in main agent home).
 
-    Sub-agents have KLIR_HOME = ~/.ductor/agents/<name>/, so we navigate
+    Sub-agents have KLIR_HOME = ~/.klir/agents/<name>/, so we navigate
     up to the main home.
     """
     import os
 
-    home = Path(os.environ.get("KLIR_HOME", str(Path.home() / ".ductor")))
+    home = Path(os.environ.get("KLIR_HOME", str(Path.home() / ".klir")))
     direct = home / "agents.json"
     if direct.is_file():
         return direct

@@ -18,7 +18,7 @@ _INIT_MSG = json.dumps(
         "jsonrpc": "2.0",
         "method": "initialize",
         "id": 1,
-        "params": {"clientInfo": {"name": "ductor", "version": "1.0"}},
+        "params": {"clientInfo": {"name": "klir", "version": "1.0"}},
     }
 )
 _LIST_MSG = json.dumps(

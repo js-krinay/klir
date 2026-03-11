@@ -13,7 +13,7 @@ from klir.workspace.paths import KlirPaths
 
 @pytest.fixture
 def docker_paths(tmp_path: Path) -> KlirPaths:
-    home = tmp_path / ".ductor"
+    home = tmp_path / ".klir"
     home.mkdir()
     ws = home / "workspace"
     ws.mkdir()
@@ -210,7 +210,7 @@ class TestDockerManager:
     async def test_mounts_full_klir_home(
         self, docker_config: DockerConfig, docker_paths: KlirPaths
     ) -> None:
-        """Verify run command mounts entire ~/.ductor, not just workspace."""
+        """Verify run command mounts entire ~/.klir, not just workspace."""
         from klir.infra.docker import DockerManager
 
         mgr = DockerManager(docker_config, docker_paths)
@@ -238,12 +238,12 @@ class TestDockerManager:
             await mgr.setup()
 
         run_str = " ".join(run_args)
-        # Full klir_home mounted at /ductor
-        assert f"{docker_paths.klir_home}:/ductor" in run_str
-        # Working dir is /ductor/workspace
-        assert "-w /ductor/workspace" in run_str
+        # Full klir_home mounted at /klir
+        assert f"{docker_paths.klir_home}:/klir" in run_str
+        # Working dir is /klir/workspace
+        assert "-w /klir/workspace" in run_str
         # KLIR_HOME env var set inside container
-        assert "KLIR_HOME=/ductor" in run_str
+        assert "KLIR_HOME=/klir" in run_str
         # Template tools overlay should NOT be present
         assert "tools:ro" not in run_str
 
@@ -385,10 +385,10 @@ class TestDockerManager:
     async def test_sub_agent_mounts_root_klir_home(
         self, docker_config: DockerConfig, tmp_path: Path
     ) -> None:
-        """Sub-agent container mounts ~/.ductor (root), not ~/.ductor/agents/test."""
+        """Sub-agent container mounts ~/.klir (root), not ~/.klir/agents/test."""
         from klir.infra.docker import DockerManager
 
-        root_home = tmp_path / ".ductor"
+        root_home = tmp_path / ".klir"
         agent_home = root_home / "agents" / "test"
         agent_ws = agent_home / "workspace"
         for d in (root_home, agent_home, agent_ws, agent_ws / "tools"):
@@ -425,8 +425,8 @@ class TestDockerManager:
 
         run_str = " ".join(run_args)
         # Must mount root home, not sub-agent home
-        assert f"{root_home}:/ductor" in run_str
-        assert f"{agent_home}:/ductor" not in run_str
+        assert f"{root_home}:/klir" in run_str
+        assert f"{agent_home}:/klir" not in run_str
 
     async def test_setup_lock_serialises_concurrent_calls(
         self, docker_config: DockerConfig, docker_paths: KlirPaths

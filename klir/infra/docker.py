@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_KLIR_MOUNT = "/ductor"
+_KLIR_MOUNT = "/klir"
 _CONTAINER_WS = f"{_KLIR_MOUNT}/workspace"
 _MOUNT_PREFIX = "/mnt"
 
@@ -296,10 +296,10 @@ class DockerManager:
         await self._exec("docker", "rm", "-f", name)
 
     async def _start_container(self, name: str, image: str) -> bool:
-        # Always mount the root ductor home, even when called from a sub-agent.
+        # Always mount the root klir home, even when called from a sub-agent.
         # Sub-agent homes live at <root>/agents/<name>/; the container must see
         # the full tree so every agent can access its own workspace via paths
-        # like /ductor/agents/<name>/workspace.
+        # like /klir/agents/<name>/workspace.
         klir_home = self._paths.klir_home
         if klir_home.parent.name == "agents":
             klir_home = klir_home.parent.parent
@@ -312,7 +312,7 @@ class DockerManager:
             name,
             "-w",
             _CONTAINER_WS,
-            # Mount the ENTIRE ~/.ductor so the CLI sees all framework files.
+            # Mount the ENTIRE ~/.klir so the CLI sees all framework files.
             "-v",
             f"{klir_home}:{_KLIR_MOUNT}",
             "-e",
@@ -382,7 +382,7 @@ class DockerManager:
         return True
 
     def _env_secret_flags(self) -> list[str]:
-        """Return ``-e`` flags for user secrets from ``~/.ductor/.env``."""
+        """Return ``-e`` flags for user secrets from ``~/.klir/.env``."""
         from klir.infra.env_secrets import load_env_secrets
 
         flags: list[str] = []

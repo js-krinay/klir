@@ -32,8 +32,8 @@ def ensure_console(console: Console | None) -> Console:
 
 
 def find_ductor_binary() -> str | None:
-    """Find the ductor binary in PATH. Shared across all backends."""
-    return shutil.which("ductor")
+    """Find the klir binary in PATH. Shared across all backends."""
+    return shutil.which("klir")
 
 
 # ---------------------------------------------------------------------------
@@ -53,10 +53,10 @@ def collect_nvm_bin_dirs(home: Path) -> list[str]:
 # Standardised messages
 # ---------------------------------------------------------------------------
 
-_NOT_INSTALLED_MSG = "[dim]Service not installed. Run [bold]ductor service install[/bold].[/dim]"
+_NOT_INSTALLED_MSG = "[dim]Service not installed. Run [bold]klir service install[/bold].[/dim]"
 _NOT_RUNNING_MSG = "[dim]Service is not running.[/dim]"
 _NO_SERVICE_MSG = "[dim]No service installed.[/dim]"
-_BINARY_NOT_FOUND_MSG = "[bold red]Could not find the ductor binary in PATH.[/bold red]"
+_BINARY_NOT_FOUND_MSG = "[bold red]Could not find the klir binary in PATH.[/bold red]"
 _REMOVED_MSG = "[green]Service removed.[/green]"
 _STARTED_MSG = "[green]Service started.[/green]"
 _STOPPED_MSG = "[green]Service stopped.[/green]"
@@ -78,7 +78,7 @@ def print_no_service(console: Console) -> None:
 
 
 def print_binary_not_found(console: Console) -> None:
-    """Print the 'ductor binary not found' error."""
+    """Print the 'klir binary not found' error."""
     console.print(_BINARY_NOT_FOUND_MSG)
 
 
@@ -116,17 +116,17 @@ def print_install_success(
     """Print the standard success panel after service installation.
 
     *detail* is the platform-specific restart/boot sentence (second line).
-    *logs_hint* is the description next to ``ductor service logs``.
+    *logs_hint* is the description next to ``klir service logs``.
     """
     console.print(
         Panel(
-            "[bold green]ductor is now running as a background service.[/bold green]\n\n"
+            "[bold green]klir is now running as a background service.[/bold green]\n\n"
             f"{detail}\n\n"
             "[bold]Useful commands:[/bold]\n\n"
-            "  [cyan]ductor service status[/cyan]     Check if it's running\n"
-            "  [cyan]ductor service stop[/cyan]       Stop the service\n"
-            f"  [cyan]ductor service logs[/cyan]       {logs_hint}\n"
-            "  [cyan]ductor service uninstall[/cyan]  Remove the service",
+            "  [cyan]klir service status[/cyan]     Check if it's running\n"
+            "  [cyan]klir service stop[/cyan]       Stop the service\n"
+            f"  [cyan]klir service logs[/cyan]       {logs_hint}\n"
+            "  [cyan]klir service uninstall[/cyan]  Remove the service",
             title="[bold green]Service Installed[/bold green]",
             border_style="green",
             padding=(1, 2),

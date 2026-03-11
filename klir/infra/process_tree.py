@@ -104,10 +104,10 @@ def _send_posix_signal(targets: list[int], sig: signal.Signals) -> None:
 
 
 def kill_all_ductor_processes() -> int:
-    """Find and force-kill remaining ``ductor`` processes system-wide.
+    """Find and force-kill remaining ``klir`` processes system-wide.
 
     On Windows this uses two strategies:
-    1. ``tasklist`` scan for ``ductor.exe`` processes
+    1. ``tasklist`` scan for ``klir.exe`` processes
     2. PowerShell scan for ``python.exe``/``pythonw.exe`` running from the
        pipx venv directory (covers ``pythonw.exe -m klir``)
 
@@ -127,7 +127,7 @@ def kill_all_ductor_processes() -> int:
 
 
 def _kill_ductor_exe_windows(current_pid: int) -> int:
-    """Kill processes whose image name is ``ductor.exe``."""
+    """Kill processes whose image name is ``klir.exe``."""
     try:
         result = subprocess.run(
             ["tasklist", "/FO", "CSV", "/NH"],
@@ -145,13 +145,13 @@ def _kill_ductor_exe_windows(current_pid: int) -> int:
         if len(parts) < 2:
             continue
         name = parts[0].lower()
-        if name not in ("ductor.exe", "ductor"):
+        if name not in ("klir.exe", "klir"):
             continue
         with contextlib.suppress(ValueError):
             pid = int(parts[1])
             if pid == current_pid or pid <= 0:
                 continue
-            logger.info("Killing ductor process: pid=%d name=%s", pid, name)
+            logger.info("Killing klir process: pid=%d name=%s", pid, name)
             _run_taskkill(pid, force=True)
             killed += 1
     return killed
@@ -160,8 +160,8 @@ def _kill_ductor_exe_windows(current_pid: int) -> int:
 def _kill_venv_python_windows(current_pid: int) -> int:
     r"""Kill ``python.exe``/``pythonw.exe`` processes running from the pipx venv.
 
-    When ductor is installed via ``pipx``, the bot runs as
-    ``pythonw.exe -m klir`` inside ``~\pipx\venvs\ductor\``.
+    When klir is installed via ``pipx``, the bot runs as
+    ``pythonw.exe -m klir`` inside ``~\pipx\venvs\klir\``.
     These processes lock the venv executables and prevent ``pipx install --force``.
     """
     try:
@@ -172,7 +172,7 @@ def _kill_venv_python_windows(current_pid: int) -> int:
                 "-Command",
                 (
                     "Get-Process python,pythonw -ErrorAction SilentlyContinue"
-                    " | Where-Object { $_.Path -like '*pipx*ductor*' }"
+                    " | Where-Object { $_.Path -like '*pipx*klir*' }"
                     " | Select-Object -ExpandProperty Id"
                 ),
             ],

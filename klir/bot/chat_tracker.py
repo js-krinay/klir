@@ -2,7 +2,7 @@
 
 Tracks group joins/leaves (via ``my_chat_member`` events), rejected
 group access attempts (via AuthMiddleware callback), and private chat
-activity.  Persists to ``chat_activity.json`` in the ductor home.
+activity.  Persists to ``chat_activity.json`` in the klir home.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Docker management CLI subcommands (``ductor docker ...``)."""
+"""Docker management CLI subcommands (``klir docker ...``)."""
 
 from __future__ import annotations
 
@@ -49,8 +49,8 @@ def _parse_docker_subcommand(args: list[str]) -> str | None:
 def _parse_docker_mount_arg(args: list[str]) -> str | None:
     """Extract the path argument after 'docker mount/unmount' from CLI args.
 
-    Expects the form: ``ductor docker mount <path>`` where *args* is
-    ``sys.argv[1:]`` (no ``ductor`` prefix).  Non-flag positionals are
+    Expects the form: ``klir docker mount <path>`` where *args* is
+    ``sys.argv[1:]`` (no ``klir`` prefix).  Non-flag positionals are
     ``docker`` (1), ``mount``/``unmount`` (2), ``<path>`` (3).
     """
     positionals = [a for a in args if not a.startswith("-")]
@@ -64,15 +64,15 @@ def print_docker_help() -> None:
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column(style="bold green", min_width=36)
     table.add_column()
-    table.add_row("ductor docker rebuild", "Remove container & image, rebuild on next start")
-    table.add_row("ductor docker enable", "Enable Docker sandboxing")
-    table.add_row("ductor docker disable", "Disable Docker sandboxing")
-    table.add_row("ductor docker mount <path>", "Mount a host directory into the sandbox")
-    table.add_row("ductor docker unmount <path>", "Remove a mounted directory")
-    table.add_row("ductor docker mounts", "List all mounted directories")
-    table.add_row("ductor docker extras", "List available and installed extras")
-    table.add_row("ductor docker extras-add <id>", "Add an extra package")
-    table.add_row("ductor docker extras-remove <id>", "Remove an extra package")
+    table.add_row("klir docker rebuild", "Remove container & image, rebuild on next start")
+    table.add_row("klir docker enable", "Enable Docker sandboxing")
+    table.add_row("klir docker disable", "Disable Docker sandboxing")
+    table.add_row("klir docker mount <path>", "Mount a host directory into the sandbox")
+    table.add_row("klir docker unmount <path>", "Remove a mounted directory")
+    table.add_row("klir docker mounts", "List all mounted directories")
+    table.add_row("klir docker extras", "List available and installed extras")
+    table.add_row("klir docker extras-add <id>", "Add an extra package")
+    table.add_row("klir docker extras-remove <id>", "Remove an extra package")
     _console.print(
         Panel(table, title="[bold]Docker Commands[/bold]", border_style="blue", padding=(1, 0)),
     )
@@ -84,7 +84,7 @@ def docker_read_config() -> tuple[Path, dict[str, object]] | None:
     paths = resolve_paths()
     config_path = paths.config_path
     if not config_path.exists():
-        _console.print("[bold red]Config not found. Run ductor first.[/bold red]")
+        _console.print("[bold red]Config not found. Run klir first.[/bold red]")
         return None
     try:
         data = json.loads(config_path.read_text(encoding="utf-8"))
@@ -203,7 +203,7 @@ def docker_mount(args: list[str]) -> None:
     """Add a host directory to the Docker sandbox mounts."""
     raw_path = _parse_docker_mount_arg(args)
     if not raw_path:
-        _console.print("[bold red]Usage: ductor docker mount <path>[/bold red]")
+        _console.print("[bold red]Usage: klir docker mount <path>[/bold red]")
         return
 
     expanded = _expand_path(raw_path)
@@ -268,7 +268,7 @@ def docker_unmount(args: list[str]) -> None:
     """Remove a host directory from the Docker sandbox mounts."""
     raw_path = _parse_docker_mount_arg(args)
     if not raw_path:
-        _console.print("[bold red]Usage: ductor docker unmount <path>[/bold red]")
+        _console.print("[bold red]Usage: klir docker unmount <path>[/bold red]")
         return
 
     result = docker_read_config()
@@ -306,7 +306,7 @@ def docker_list_mounts() -> None:
     mounts = docker.get("mounts", []) if isinstance(docker, dict) else []
     if not isinstance(mounts, list) or not mounts:
         _console.print("[dim]No mounts configured.[/dim]")
-        _console.print("[dim]Use 'ductor docker mount <path>' to add one.[/dim]")
+        _console.print("[dim]Use 'klir docker mount <path>' to add one.[/dim]")
         return
 
     from klir.infra.docker import resolve_mount_target
@@ -390,11 +390,11 @@ def docker_extras_list() -> None:
     if selected:
         _console.print()
         _console.print(
-            "[dim]Run 'ductor docker rebuild' to apply selected extras to the image.[/dim]"
+            "[dim]Run 'klir docker rebuild' to apply selected extras to the image.[/dim]"
         )
     _console.print()
-    _console.print("[dim]Use 'ductor docker extras-add <id>' to add an extra.[/dim]")
-    _console.print("[dim]Use 'ductor docker extras-remove <id>' to remove an extra.[/dim]")
+    _console.print("[dim]Use 'klir docker extras-add <id>' to add an extra.[/dim]")
+    _console.print("[dim]Use 'klir docker extras-remove <id>' to remove an extra.[/dim]")
 
 
 def docker_extras_add(args: list[str]) -> None:
@@ -405,13 +405,13 @@ def docker_extras_add(args: list[str]) -> None:
     extra_id = positionals[2] if len(positionals) >= 3 else None
 
     if not extra_id:
-        _console.print("[bold red]Usage: ductor docker extras-add <id>[/bold red]")
-        _console.print("[dim]Run 'ductor docker extras' to see available IDs.[/dim]")
+        _console.print("[bold red]Usage: klir docker extras-add <id>[/bold red]")
+        _console.print("[dim]Run 'klir docker extras' to see available IDs.[/dim]")
         return
 
     if extra_id not in DOCKER_EXTRAS_BY_ID:
         _console.print(f"[bold red]Unknown extra: {extra_id}[/bold red]")
-        _console.print("[dim]Run 'ductor docker extras' to see available IDs.[/dim]")
+        _console.print("[dim]Run 'klir docker extras' to see available IDs.[/dim]")
         return
 
     result = docker_read_config()
@@ -451,7 +451,7 @@ def docker_extras_add(args: list[str]) -> None:
     if dep_ids:
         dep_names = [DOCKER_EXTRAS_BY_ID[i].name for i in dep_ids]
         _console.print(f"[dim]Auto-added dependencies: {', '.join(dep_names)}[/dim]")
-    _console.print("[yellow]Run 'ductor docker rebuild' to apply.[/yellow]")
+    _console.print("[yellow]Run 'klir docker rebuild' to apply.[/yellow]")
 
 
 def docker_extras_remove(args: list[str]) -> None:
@@ -462,8 +462,8 @@ def docker_extras_remove(args: list[str]) -> None:
     extra_id = positionals[2] if len(positionals) >= 3 else None
 
     if not extra_id:
-        _console.print("[bold red]Usage: ductor docker extras-remove <id>[/bold red]")
-        _console.print("[dim]Run 'ductor docker extras' to see installed IDs.[/dim]")
+        _console.print("[bold red]Usage: klir docker extras-remove <id>[/bold red]")
+        _console.print("[dim]Run 'klir docker extras' to see installed IDs.[/dim]")
         return
 
     result = docker_read_config()
@@ -496,11 +496,11 @@ def docker_extras_remove(args: list[str]) -> None:
 
     name = DOCKER_EXTRAS_BY_ID[extra_id].name if extra_id in DOCKER_EXTRAS_BY_ID else extra_id
     _console.print(f"[green]Removed:[/green] {name}")
-    _console.print("[yellow]Run 'ductor docker rebuild' to apply.[/yellow]")
+    _console.print("[yellow]Run 'klir docker rebuild' to apply.[/yellow]")
 
 
 def cmd_docker(args: list[str]) -> None:
-    """Handle 'ductor docker <subcommand>'."""
+    """Handle 'klir docker <subcommand>'."""
     sub = _parse_docker_subcommand(args)
     if sub is None:
         print_docker_help()

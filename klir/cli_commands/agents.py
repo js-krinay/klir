@@ -1,4 +1,4 @@
-"""Agent management CLI subcommands (``ductor agents ...``)."""
+"""Agent management CLI subcommands (``klir agents ...``)."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ def _parse_agents_subcommand(args: list[str]) -> tuple[str | None, list[str]]:
         if found and sub is not None:
             rest.append(a)
     if found and sub is None:
-        # bare "ductor agents" → default to list
+        # bare "klir agents" → default to list
         return "list", []
     return sub, rest
 
@@ -46,10 +46,10 @@ def print_agents_help() -> None:
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column(style="bold green", min_width=36)
     table.add_column()
-    table.add_row("ductor agents", "List all sub-agents and their config")
-    table.add_row("ductor agents list", "List all sub-agents and their config")
-    table.add_row("ductor agents add <name>", "Add a new sub-agent (interactive)")
-    table.add_row("ductor agents remove <name>", "Remove a sub-agent")
+    table.add_row("klir agents", "List all sub-agents and their config")
+    table.add_row("klir agents list", "List all sub-agents and their config")
+    table.add_row("klir agents add <name>", "Add a new sub-agent (interactive)")
+    table.add_row("klir agents remove <name>", "Remove a sub-agent")
     _console.print(
         Panel(table, title="[bold]Agent Commands[/bold]", border_style="blue", padding=(1, 0)),
     )
@@ -146,9 +146,9 @@ def _parse_int_list(raw: str, *, allow_negative: bool = False) -> list[int]:
 
 
 def validate_agent_name(name: str | None, agents: list[dict[str, object]]) -> str | None:
-    """Validate an agent name for ``ductor agents add``. Returns clean name or None on error."""
+    """Validate an agent name for ``klir agents add``. Returns clean name or None on error."""
     if not name:
-        _console.print("[bold red]Usage: ductor agents add <name>[/bold red]")
+        _console.print("[bold red]Usage: klir agents add <name>[/bold red]")
         return None
     name = name.lower().strip()
     if name == "main":
@@ -166,7 +166,7 @@ def agents_list() -> None:
     agents = load_agents_registry(paths)
     if not agents:
         _console.print("[dim]No sub-agents configured.[/dim]")
-        _console.print("[dim]Use 'ductor agents add <name>' to create one.[/dim]")
+        _console.print("[dim]Use 'klir agents add <name>' to create one.[/dim]")
         return
     # Check if bot is running for live health
     pid_file = paths.klir_home / "bot.pid"
@@ -260,7 +260,7 @@ def agents_remove(rest: list[str]) -> None:
 
     name = rest[0] if rest else None
     if not name:
-        _console.print("[bold red]Usage: ductor agents remove <name>[/bold red]")
+        _console.print("[bold red]Usage: klir agents remove <name>[/bold red]")
         return
 
     name = name.lower().strip()
@@ -289,7 +289,7 @@ def agents_remove(rest: list[str]) -> None:
 
 
 def cmd_agents(args: list[str]) -> None:
-    """Handle 'ductor agents [subcommand]'."""
+    """Handle 'klir agents [subcommand]'."""
     sub, rest = _parse_agents_subcommand(args)
     if sub is None:
         print_agents_help()

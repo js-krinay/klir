@@ -55,8 +55,8 @@ def _no_real_process_signals() -> object:
 
 @pytest.fixture
 def tmp_klir_home(tmp_path: Path) -> Path:
-    """Temporary ~/.ductor equivalent."""
-    home = tmp_path / ".ductor"
+    """Temporary ~/.klir equivalent."""
+    home = tmp_path / ".klir"
     home.mkdir()
     return home
 

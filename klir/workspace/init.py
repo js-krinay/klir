@@ -55,7 +55,7 @@ _SKIP_DIRS = frozenset({".venv", ".git", ".mypy_cache", "__pycache__", "node_mod
 def _sync_home_defaults(paths: KlirPaths) -> None:
     """Walk the home-defaults template and copy to ``klir_home``.
 
-    The template at ``<repo>/workspace/`` mirrors ``~/.ductor/`` exactly.
+    The template at ``<repo>/workspace/`` mirrors ``~/.klir/`` exactly.
     Zone rules per file:
 
     - **Zone 2** (``_ZONE2_FILES``): always overwritten so framework updates
@@ -319,7 +319,7 @@ _DOCKER_NOTICE = """
 
 **IMPORTANT: YOU ARE RUNNING INSIDE A DOCKER CONTAINER (`{container}`).**
 
-- Your filesystem is isolated. `/ductor` is the mounted host directory `~/.ductor`.
+- Your filesystem is isolated. `/klir` is the mounted host directory `~/.klir`.
 - You cannot see or access the host system outside this mount.
 - Feel free to experiment -- the host is protected.
 """

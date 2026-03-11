@@ -2,7 +2,7 @@
 
 
 class DuctorError(Exception):
-    """Base for all ductor exceptions."""
+    """Base for all klir exceptions."""
 
 
 class CLIError(DuctorError):

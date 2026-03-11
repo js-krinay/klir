@@ -1,4 +1,4 @@
-"""Service management CLI subcommands (``ductor service ...``)."""
+"""Service management CLI subcommands (``klir service ...``)."""
 
 from __future__ import annotations
 
@@ -33,12 +33,12 @@ def print_service_help() -> None:
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column(style="bold green", min_width=30)
     table.add_column()
-    table.add_row("ductor service install", "Install and start background service")
-    table.add_row("ductor service status", "Show service status")
-    table.add_row("ductor service start", "Start the service")
-    table.add_row("ductor service stop", "Stop the service")
-    table.add_row("ductor service logs", "View live logs")
-    table.add_row("ductor service uninstall", "Remove the service")
+    table.add_row("klir service install", "Install and start background service")
+    table.add_row("klir service status", "Show service status")
+    table.add_row("klir service start", "Start the service")
+    table.add_row("klir service stop", "Stop the service")
+    table.add_row("klir service logs", "View live logs")
+    table.add_row("klir service uninstall", "Remove the service")
     _console.print(
         Panel(table, title="[bold]Service Commands[/bold]", border_style="blue", padding=(1, 0)),
     )
@@ -46,7 +46,7 @@ def print_service_help() -> None:
 
 
 def cmd_service(args: list[str]) -> None:
-    """Handle 'ductor service <subcommand>'."""
+    """Handle 'klir service <subcommand>'."""
     from klir.infra.service import (
         install_service,
         print_service_logs,

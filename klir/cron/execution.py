@@ -42,7 +42,7 @@ def enrich_instruction(instruction: str, task_folder: str) -> str:
         f"IMPORTANT:\n"
         f"- Read the {memory_file} file (it contains important information!)\n"
         f"- When finished, update {memory_file} with DATE + TIME and what you have done.\n"
-        "- The final answer is delivered to Telegram automatically by ductor.\n"
+        "- The final answer is delivered to Telegram automatically by klir.\n"
         "- Return only the user-facing result text.\n"
         "- Do not include transport/debug/tool confirmations "
         '(for example: "Message sent successfully").'

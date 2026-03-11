@@ -387,7 +387,7 @@ def _make_docker_paths(tmp_path: Path) -> tuple[Path, object]:
     """Create KlirPaths and framework dir for Docker manager tests."""
     from klir.workspace.paths import KlirPaths
 
-    home = tmp_path / ".ductor"
+    home = tmp_path / ".klir"
     home.mkdir()
     (home / "workspace").mkdir()
     (home / "workspace" / "tools").mkdir()

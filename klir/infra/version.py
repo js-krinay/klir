@@ -11,14 +11,14 @@ import aiohttp
 
 logger = logging.getLogger(__name__)
 
-_PYPI_URL = "https://pypi.org/pypi/ductor/json"
-_GITHUB_RELEASES_URL = "https://api.github.com/repos/PleasePrompto/ductor/releases"
-_PACKAGE_NAME = "ductor"
+_PYPI_URL = "https://pypi.org/pypi/klir/json"
+_GITHUB_RELEASES_URL = "https://api.github.com/repos/PleasePrompto/klir/releases"
+_PACKAGE_NAME = "klir"
 _TIMEOUT = aiohttp.ClientTimeout(total=10)
 
 
 def get_current_version() -> str:
-    """Return the installed version of ductor."""
+    """Return the installed version of klir."""
     try:
         return importlib.metadata.version(_PACKAGE_NAME)
     except importlib.metadata.PackageNotFoundError:

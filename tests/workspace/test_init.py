@@ -23,11 +23,11 @@ def _mock_all_authenticated() -> dict[str, AuthResult]:
 def _setup_home_defaults(fw_root: Path) -> None:
     """Create a minimal home-defaults template for testing.
 
-    Mirrors the repo ``workspace/`` structure (1:1 copy of ~/.ductor/).
+    Mirrors the repo ``workspace/`` structure (1:1 copy of ~/.klir/).
     """
     ws = fw_root / "workspace"
 
-    # Top-level CLAUDE.md (ductor home)
+    # Top-level CLAUDE.md (klir home)
     ws.mkdir(parents=True)
     (ws / "CLAUDE.md").write_text("# Ductor Home CLAUDE.md")
 

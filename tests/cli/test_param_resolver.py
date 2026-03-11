@@ -20,7 +20,7 @@ def base_config() -> AgentConfig:
     return AgentConfig(
         provider="claude",
         model="sonnet",
-        klir_home="~/ductor",
+        klir_home="~/klir",
         permission_mode="normal",
     )
 
@@ -65,7 +65,7 @@ def test_resolve_global_only(base_config: AgentConfig, codex_cache: CodexModelCa
     assert result.reasoning_effort == ""
     assert result.cli_parameters == []
     assert result.permission_mode == "normal"
-    assert result.working_dir == "~/ductor"
+    assert result.working_dir == "~/klir"
     assert result.file_access == "all"
 
 
