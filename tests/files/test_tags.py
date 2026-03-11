@@ -135,3 +135,20 @@ class TestPathFromFileTag:
             path = path_from_file_tag("/tmp/out.zip")
         # On Windows Path("/tmp/out.zip") uses backslash; normalize for assertion
         assert str(path).replace("\\", "/") == "/tmp/out.zip"
+
+    def test_docker_path_translated(self) -> None:
+        with patch.dict("os.environ", {"KLIR_HOME": "/home/user/.klir"}):
+            with patch("klir.files.tags.is_windows", return_value=False):
+                path = path_from_file_tag("/klir/workspace/output_to_user/img.png")
+        assert path == Path("/home/user/.klir/workspace/output_to_user/img.png")
+
+    def test_docker_path_root(self) -> None:
+        with patch.dict("os.environ", {"KLIR_HOME": "/home/user/.klir"}):
+            with patch("klir.files.tags.is_windows", return_value=False):
+                path = path_from_file_tag("/klir/sessions.json")
+        assert path == Path("/home/user/.klir/sessions.json")
+
+    def test_non_docker_path_not_translated(self) -> None:
+        with patch("klir.files.tags.is_windows", return_value=False):
+            path = path_from_file_tag("/home/user/.klir/workspace/file.txt")
+        assert path == Path("/home/user/.klir/workspace/file.txt")
