@@ -347,6 +347,7 @@ class AgentConfig(BaseModel):
     timeouts: TimeoutConfig = Field(default_factory=TimeoutConfig)
     tasks: TasksConfig = Field(default_factory=TasksConfig)
     user_timezone: str = ""
+    update_check: bool = True
     peer_isolation: bool = False
     group_mention_only: bool = False
     telegram_token: str = ""

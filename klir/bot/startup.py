@@ -129,7 +129,7 @@ async def run_startup(bot: TelegramBot) -> None:
     # Start background version checker (skip for dev/source installs)
     from klir.infra.install import is_upgradeable
 
-    if is_upgradeable():
+    if is_upgradeable() and bot.config.update_check:
         bot._update_observer = UpdateObserver(notify=bot._on_update_available)
         bot._update_observer.start()
 
