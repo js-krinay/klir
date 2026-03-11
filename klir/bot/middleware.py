@@ -65,16 +65,20 @@ MQ_PREFIX = "mq:"
 """Callback data prefix for message queue cancel buttons."""
 
 
-def is_quick_command(text: str) -> bool:
+def is_quick_command(text: str, bot_username: str | None = None) -> bool:
     """Return True if *text* is a command that can bypass the lock.
 
     Matches bare commands (``/status``), bot-mentioned commands
     (``/status@my_bot``), and commands with arguments (``/model sonnet``).
+    Commands addressed to a different bot (``/status@other_bot``) are rejected.
     """
-    cmd = text.strip().lower().split(None, 1)[0] if text.strip() else ""
-    if "@" in cmd:
-        cmd = cmd.split("@", 1)[0]
-    return cmd in QUICK_COMMANDS
+    cmd_part = text.strip().lower().split(None, 1)[0] if text.strip() else ""
+    if "@" in cmd_part:
+        cmd, mention = cmd_part.split("@", 1)
+        if bot_username and mention != bot_username.lower():
+            return False
+        return cmd in QUICK_COMMANDS
+    return cmd_part in QUICK_COMMANDS
 
 
 RejectedCallback = Callable[[int, str, str], None]
@@ -355,7 +359,7 @@ class SequentialMiddleware(BaseMiddleware):
             self._quick_command_handler
             and text
             and is_command_for_bot(text, self._bot_username)
-            and is_quick_command(text)
+            and is_quick_command(text, self._bot_username)
         ):
             logger.debug("Quick command bypass cmd=%s", text)
             handled = await self._quick_command_handler(chat_id, event)
