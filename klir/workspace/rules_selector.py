@@ -54,6 +54,11 @@ class RulesSelector:
             gemini_result.status == AuthStatus.AUTHENTICATED if gemini_result else False
         )
 
+        opencode_result = auth.get("opencode")
+        self._opencode_authenticated = (
+            opencode_result.status == AuthStatus.AUTHENTICATED if opencode_result else False
+        )
+
     @property
     def _authenticated_count(self) -> int:
         """Number of authenticated providers."""
@@ -62,6 +67,7 @@ class RulesSelector:
                 self._claude_authenticated,
                 self._codex_authenticated,
                 self._gemini_authenticated,
+                self._opencode_authenticated,
             )
         )
 
@@ -143,11 +149,12 @@ class RulesSelector:
         """
         variant = self.get_variant_suffix()
         logger.info(
-            "Deploying rule files (variant: %s, claude=%s, codex=%s, gemini=%s)",
+            "Deploying rule files (variant: %s, claude=%s, codex=%s, gemini=%s, opencode=%s)",
             variant,
             self._claude_authenticated,
             self._codex_authenticated,
             self._gemini_authenticated,
+            self._opencode_authenticated,
         )
 
         template_dirs = self.discover_template_directories()
@@ -193,15 +200,23 @@ class RulesSelector:
                     deployed_count += 1
                     logger.debug("Deployed: %s -> GEMINI.md", template.name)
 
+                # Deploy OPENCODE.md if OpenCode is authenticated
+                if self._opencode_authenticated:
+                    opencode_dst = dst_dir / "OPENCODE.md"
+                    shutil.copy2(template, opencode_dst)
+                    deployed_count += 1
+                    logger.debug("Deployed: %s -> OPENCODE.md", template.name)
+
             except OSError:
                 logger.exception("Failed to deploy %s", template)
 
         logger.info(
-            "Deployed %d rule files (Claude=%s, Codex=%s, Gemini=%s)",
+            "Deployed %d rule files (Claude=%s, Codex=%s, Gemini=%s, OpenCode=%s)",
             deployed_count,
             self._claude_authenticated,
             self._codex_authenticated,
             self._gemini_authenticated,
+            self._opencode_authenticated,
         )
 
         # Cleanup: Remove stale files that don't match current auth status
@@ -220,6 +235,8 @@ class RulesSelector:
             stale.append(("AGENTS.md", "Codex"))
         if not self._gemini_authenticated:
             stale.append(("GEMINI.md", "Gemini"))
+        if not self._opencode_authenticated:
+            stale.append(("OPENCODE.md", "OpenCode"))
 
         for filename, provider_name in stale:
             removed = self._remove_files_by_name(filename)

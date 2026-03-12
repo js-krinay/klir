@@ -402,7 +402,7 @@ async def _handle_model_selected(
     """Handle a model button press. Claude/Gemini: switch immediately. Codex: show reasoning."""
     provider = orch.models.provider_for(model_id)
 
-    if provider in ("claude", "gemini"):
+    if provider in ("claude", "gemini", "opencode"):
         result = await switch_model(orch, key, model_id)
         return SelectorResponse(text=result)
 

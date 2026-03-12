@@ -83,6 +83,10 @@ def _cli_skill_dirs() -> dict[str, Path]:
     gemini_home = Path.home() / ".gemini"
     if gemini_home.is_dir():
         dirs["gemini"] = gemini_home / "skills"
+    opencode_base = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
+    opencode_home = opencode_base / "opencode"
+    if opencode_home.is_dir():
+        dirs["opencode"] = opencode_home / "skills"
     return dirs
 
 
@@ -235,7 +239,7 @@ def sync_skills(paths: KlirPaths) -> None:
         all_names.update(reg.keys())
 
     # Priority order: klir > claude > codex > gemini
-    priority = ("klir", "claude", "codex", "gemini")
+    priority = ("klir", "claude", "codex", "gemini", "opencode")
     for skill_name in sorted(all_names):
         canonical = _resolve_canonical(
             skill_name,

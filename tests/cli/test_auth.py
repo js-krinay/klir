@@ -11,6 +11,7 @@ from klir.cli.auth import (
     check_claude_auth,
     check_codex_auth,
     check_gemini_auth,
+    check_opencode_auth,
     format_age,
     gemini_uses_api_key_mode,
 )
@@ -456,3 +457,77 @@ def test_gemini_uses_api_key_mode_false_for_oauth(
     )
 
     assert gemini_uses_api_key_mode() is False
+
+
+# -- OpenCode auth --
+
+
+def test_check_opencode_auth_not_found(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setattr("shutil.which", lambda _x: None)
+    result = check_opencode_auth()
+    assert result.status == AuthStatus.NOT_FOUND
+
+
+def test_check_opencode_auth_installed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setattr("shutil.which", lambda _x: "/usr/bin/opencode")
+    result = check_opencode_auth()
+    assert result.status == AuthStatus.INSTALLED
+
+
+def test_check_opencode_auth_config_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_dir = tmp_path / ".config" / "opencode"
+    config_dir.mkdir(parents=True)
+    (config_dir / "opencode.json").write_text('{"provider":"anthropic"}')
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
+    result = check_opencode_auth()
+    assert result.status == AuthStatus.AUTHENTICATED
+    assert result.auth_file is not None
+
+
+def test_check_opencode_auth_env_key_anthropic(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setattr("shutil.which", lambda _x: "/usr/bin/opencode")
+    result = check_opencode_auth()
+    assert result.status == AuthStatus.AUTHENTICATED
+
+
+def test_check_opencode_auth_env_key_openai(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setattr("shutil.which", lambda _x: "/usr/bin/opencode")
+    result = check_opencode_auth()
+    assert result.status == AuthStatus.AUTHENTICATED
+
+
+def test_check_opencode_auth_env_key_without_binary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / ".config"))
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setattr("shutil.which", lambda _x: None)
+    result = check_opencode_auth()
+    assert result.status == AuthStatus.NOT_FOUND

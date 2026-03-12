@@ -13,6 +13,7 @@ from shutil import which
 from klir.cli.codex_events import parse_codex_jsonl
 from klir.cli.gemini_events import parse_gemini_json
 from klir.cli.gemini_utils import find_gemini_cli
+from klir.cli.opencode_events import parse_opencode_json
 from klir.cli.param_resolver import TaskExecutionConfig
 from klir.infra.platform import CREATION_FLAGS as _CREATION_FLAGS
 from klir.infra.process_tree import force_kill_process_tree
@@ -88,6 +89,17 @@ def parse_codex_result(stdout: bytes) -> str:
     if thread_id is not None or usage is not None:
         return ""
     return raw[:2000]
+
+
+def parse_opencode_result(stdout: bytes) -> str:
+    """Extract result text from OpenCode CLI JSON output."""
+    if not stdout:
+        return ""
+    raw = stdout.decode(errors="replace").strip()
+    if not raw:
+        return ""
+    result_text, _session_id, _usage = parse_opencode_json(raw)
+    return result_text or raw[:2000]
 
 
 def parse_result(provider: str, stdout: bytes) -> str:
@@ -182,6 +194,27 @@ def _build_codex_cmd(exec_config: TaskExecutionConfig, prompt: str) -> OneShotCo
     return OneShotCommand(cmd=cmd)
 
 
+def _build_opencode_cmd(exec_config: TaskExecutionConfig, prompt: str) -> OneShotCommand | None:
+    """Build an OpenCode CLI command for one-shot cron execution."""
+    cli = which("opencode")
+    if not cli:
+        return None
+    cmd = [cli, "-p", prompt, "-q", "-f", "json"]
+
+    if exec_config.model:
+        cmd += ["-m", exec_config.model]
+
+    # Add tool filtering
+    if exec_config.allowed_tools:
+        cmd += ["--allowedTools", ",".join(exec_config.allowed_tools)]
+    if exec_config.disallowed_tools:
+        cmd += ["--excludedTools", ",".join(exec_config.disallowed_tools)]
+
+    # Add extra CLI parameters
+    cmd.extend(exec_config.cli_parameters)
+    return OneShotCommand(cmd=cmd)
+
+
 _CmdBuilder = Callable[[TaskExecutionConfig, str], OneShotCommand | None]
 _ResultParser = Callable[[bytes], str]
 
@@ -189,12 +222,14 @@ _CMD_BUILDERS: dict[str, _CmdBuilder] = {
     "claude": _build_claude_cmd,
     "gemini": _build_gemini_cmd,
     "codex": _build_codex_cmd,
+    "opencode": _build_opencode_cmd,
 }
 
 _RESULT_PARSERS: dict[str, _ResultParser] = {
     "claude": parse_claude_result,
     "gemini": parse_gemini_result,
     "codex": parse_codex_result,
+    "opencode": parse_opencode_result,
 }
 
 

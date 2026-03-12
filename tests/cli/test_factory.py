@@ -9,6 +9,7 @@ from klir.cli.claude_provider import ClaudeCodeCLI
 from klir.cli.codex_provider import CodexCLI
 from klir.cli.factory import create_cli
 from klir.cli.gemini_provider import GeminiCLI
+from klir.cli.opencode_provider import OpenCodeCLI
 
 
 def test_create_cli_returns_claude_by_default() -> None:
@@ -29,6 +30,12 @@ def test_create_cli_returns_gemini() -> None:
     ):
         cli = create_cli(CLIConfig(provider="gemini"))
     assert isinstance(cli, GeminiCLI)
+
+
+def test_create_cli_returns_opencode() -> None:
+    with patch.object(OpenCodeCLI, "_find_cli", return_value="/usr/bin/opencode"):
+        cli = create_cli(CLIConfig(provider="opencode"))
+    assert isinstance(cli, OpenCodeCLI)
 
 
 def test_create_cli_unknown_provider_returns_claude() -> None:

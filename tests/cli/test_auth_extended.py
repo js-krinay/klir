@@ -33,6 +33,7 @@ def test_check_all_auth_returns_both(tmp_path: Path, monkeypatch: pytest.MonkeyP
     results = check_all_auth()
     assert "claude" in results
     assert "codex" in results
+    assert "opencode" in results
 
 
 def test_format_age_future_returns_just_now() -> None:

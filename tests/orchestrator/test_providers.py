@@ -57,6 +57,12 @@ class TestResolveRuntimeTarget:
         assert model == "o3-mini"
         assert provider == "codex"
 
+    def test_opencode_model(self) -> None:
+        pm = _pm()
+        model, provider = pm.resolve_runtime_target("anthropic/claude-sonnet-4")
+        assert model == "anthropic/claude-sonnet-4"
+        assert provider == "opencode"
+
     def test_none_falls_back_to_config(self) -> None:
         pm = _pm(model="haiku")
         model, provider = pm.resolve_runtime_target(None)
@@ -102,6 +108,19 @@ class TestResolveSessionDirective:
         assert result is not None
         assert result == ("gemini", "auto")
 
+    def test_provider_name_opencode(self) -> None:
+        pm = _pm()
+        result = pm.resolve_session_directive("opencode")
+        assert result is not None
+        assert result[0] == "opencode"
+        assert result[1] == ""  # opencode default is empty
+
+    def test_slash_model_resolves_to_none(self) -> None:
+        pm = _pm()
+        # Slash models are not in _known_model_ids; resolve_session_directive
+        # checks is_known_model first, so unknown slash models return None.
+        assert pm.resolve_session_directive("openai/gpt-4o") is None
+
     def test_unknown_returns_none(self) -> None:
         pm = _pm()
         assert pm.resolve_session_directive("unknown-model-xyz") is None
@@ -143,6 +162,11 @@ class TestIsKnownModel:
         pm = _pm(codex_cache_fn=lambda: None)
         assert pm.is_known_model("o3-mini") is False
 
+    def test_opencode_slash_model_not_in_known(self) -> None:
+        pm = _pm()
+        # Slash models are not in _known_model_ids (they're validated by CLI).
+        assert pm.is_known_model("anthropic/claude-sonnet-4") is False
+
 
 # ---------------------------------------------------------------------------
 # default_model_for_provider
@@ -174,6 +198,10 @@ class TestDefaultModelForProvider:
     def test_gemini(self) -> None:
         pm = _pm()
         assert pm.default_model_for_provider("gemini") == ""
+
+    def test_opencode(self) -> None:
+        pm = _pm()
+        assert pm.default_model_for_provider("opencode") == ""
 
     def test_unknown_provider(self) -> None:
         pm = _pm()
@@ -232,6 +260,29 @@ class TestApplyAuthResults:
         )
         assert pm.available_providers == frozenset({"claude", "codex", "gemini"})
 
+    def test_opencode_authenticated(self) -> None:
+        pm = _pm()
+        cli_service = MagicMock()
+
+        auth_status = MagicMock()
+        auth_status.AUTHENTICATED = "auth"
+        auth_status.INSTALLED = "inst"
+
+        results = {}
+        for name in ("claude", "codex", "gemini", "opencode"):
+            r = MagicMock()
+            r.status = "auth"
+            r.is_authenticated = True
+            results[name] = r
+
+        pm.apply_auth_results(
+            results,
+            auth_status_enum=auth_status,
+            cli_service=cli_service,
+        )
+        assert "opencode" in pm.available_providers
+        assert pm.available_providers == frozenset({"claude", "codex", "gemini", "opencode"})
+
 
 # ---------------------------------------------------------------------------
 # active_provider_name
@@ -250,6 +301,10 @@ class TestActiveProviderName:
     def test_codex(self) -> None:
         pm = _pm(model="o3-mini", provider="codex")
         assert pm.active_provider_name == "Codex"
+
+    def test_opencode(self) -> None:
+        pm = _pm(model="anthropic/claude-sonnet-4", provider="opencode")
+        assert pm.active_provider_name == "OpenCode"
 
 
 # ---------------------------------------------------------------------------
