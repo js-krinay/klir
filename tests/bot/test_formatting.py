@@ -248,3 +248,39 @@ class TestSplitHTMLMessage:
         assert len(result) >= 3
         for chunk in result:
             assert len(chunk) <= 20
+
+    def test_pre_tag_closed_at_split_boundary(self) -> None:
+        from klir.bot.formatting import split_html_message
+
+        code = "x" * 3000
+        text = f"<pre>{code}</pre>\n\n{'y' * 3000}"
+        result = split_html_message(text, max_len=4096)
+        assert len(result) >= 2
+        # First chunk must have a closing </pre>
+        assert result[0].endswith("</pre>") or "</pre>" in result[0]
+        # No chunk should have an orphaned <pre> without </pre>
+        for chunk in result:
+            if "<pre>" in chunk:
+                assert "</pre>" in chunk
+
+    def test_nested_pre_code_tags_repaired(self) -> None:
+        from klir.bot.formatting import split_html_message
+
+        code = "z" * 3000
+        text = f'<pre><code class="language-python">{code}</code></pre>\n\n{"w" * 3000}'
+        result = split_html_message(text, max_len=4096)
+        assert len(result) >= 2
+        for chunk in result:
+            if "<pre>" in chunk:
+                assert "</pre>" in chunk
+            if "<code" in chunk:
+                assert "</code>" in chunk
+
+    def test_bold_tag_repaired_across_split(self) -> None:
+        from klir.bot.formatting import split_html_message
+
+        text = f"<b>{'A' * 5000}</b>"
+        result = split_html_message(text, max_len=4096)
+        assert len(result) >= 2
+        assert "</b>" in result[0]
+        assert result[1].startswith("<b>")

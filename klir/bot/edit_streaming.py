@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import html
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -103,7 +104,7 @@ class EditStreamEditor:
     edit errors the editor degrades to append mode.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         bot: Bot,
         chat_id: int,
@@ -318,11 +319,12 @@ class EditStreamEditor:
             await self._create_message_plain(display)
 
     async def _create_message_plain(self, text: str) -> None:
-        """Fallback: send without HTML parse mode."""
+        """Fallback: strip HTML tags and send as plain text."""
+        plain = html.unescape(re.sub(r"<[^>]+>", "", text))
         try:
             msg = await self._bot.send_message(
                 chat_id=self._chat_id,
-                text=text[:TELEGRAM_MSG_LIMIT],
+                text=plain[:TELEGRAM_MSG_LIMIT],
                 parse_mode=None,
                 message_thread_id=self._thread_id,
             )
@@ -408,9 +410,10 @@ class EditStreamEditor:
                     message_thread_id=self._thread_id,
                 )
             except TelegramBadRequest:
+                plain = html.unescape(re.sub(r"<[^>]+>", "", display))
                 await self._bot.send_message(
                     chat_id=self._chat_id,
-                    text=display,
+                    text=plain,
                     parse_mode=None,
                     message_thread_id=self._thread_id,
                 )

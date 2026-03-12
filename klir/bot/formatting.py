@@ -16,6 +16,8 @@ TELEGRAM_MSG_LIMIT = 4096
 """Maximum characters per Telegram message."""
 
 _SENTINEL = "\x00"
+_HTML_TAG_RE = re.compile(r"<(/?)(\w+)(?:\s[^>]*)?>")
+"""Match HTML open/close tags, capturing the slash and tag name."""
 
 
 def _placeholder(kind: str, idx: int) -> str:
@@ -188,6 +190,47 @@ def _accumulate_parts(
     return chunks, oversized
 
 
+def _repair_html_chunks(chunks: list[str]) -> list[str]:
+    """Close unclosed HTML tags at chunk boundaries and re-open in the next chunk.
+
+    When ``split_html_message`` splits inside a ``<pre>`` or ``<b>`` block, the
+    first chunk ends up with an orphaned opening tag and the second with an
+    orphaned closing tag.  Telegram rejects both.  This function walks the tag
+    stack for each chunk, appends missing closing tags, and prepends the
+    corresponding opening tags to the following chunk.
+    """
+    if len(chunks) <= 1:
+        return chunks
+
+    repaired: list[str] = []
+    carry_tags: list[str] = []
+
+    for raw_chunk in chunks:
+        part = "".join(carry_tags) + raw_chunk if carry_tags else raw_chunk
+        carry_tags = []
+
+        # (tag_name, full_opening_tag_text)
+        tag_stack: list[tuple[str, str]] = []
+        for m in _HTML_TAG_RE.finditer(part):
+            is_close = m.group(1) == "/"
+            tag_name = m.group(2)
+            if is_close:
+                for i in range(len(tag_stack) - 1, -1, -1):
+                    if tag_stack[i][0] == tag_name:
+                        tag_stack.pop(i)
+                        break
+            else:
+                tag_stack.append((tag_name, m.group(0)))
+
+        if tag_stack:
+            part += "".join(f"</{name}>" for name, _ in reversed(tag_stack))
+            carry_tags = [full for _, full in tag_stack]
+
+        repaired.append(part)
+
+    return repaired
+
+
 def split_html_message(text: str, max_len: int = TELEGRAM_MSG_LIMIT) -> list[str]:
     """Split an HTML message into chunks that fit Telegram's limit.
 
@@ -206,4 +249,4 @@ def split_html_message(text: str, max_len: int = TELEGRAM_MSG_LIMIT) -> list[str
             for offset in range(0, len(big), max_len):
                 chunks.append(big[offset : offset + max_len])
 
-    return chunks
+    return _repair_html_chunks(chunks)
