@@ -129,3 +129,38 @@ def test_update_available_providers() -> None:
     svc = _make_service()
     svc.update_available_providers(frozenset({"claude", "codex"}))
     assert svc._available_providers == frozenset({"claude", "codex"})
+
+
+async def test_stream_callbacks_detects_tool_loop() -> None:
+    from klir.cli.service import _StreamCallbacks
+    from klir.cli.stream_events import ToolUseEvent
+
+    from klir.cli.tool_activity import ToolActivity
+
+    tools_seen: list[ToolActivity] = []
+
+    async def on_tool(activity: ToolActivity) -> None:
+        tools_seen.append(activity)
+
+    cb = _StreamCallbacks(on_text=None, on_tool=on_tool, on_status=None, loop_threshold=3)
+
+    for _ in range(2):
+        _, result = await cb.dispatch(ToolUseEvent(type="assistant", tool_name="Bash"))
+        assert result is None
+
+    _, result = await cb.dispatch(ToolUseEvent(type="assistant", tool_name="Bash"))
+    assert result is not None
+    assert result.is_error is True
+    assert "loop" in result.result.lower()
+    assert len(tools_seen) == 3  # callback still fires before detection
+
+
+async def test_stream_callbacks_no_loop_when_disabled() -> None:
+    from klir.cli.service import _StreamCallbacks
+    from klir.cli.stream_events import ToolUseEvent
+
+    cb = _StreamCallbacks(on_text=None, on_tool=None, on_status=None, loop_threshold=0)
+
+    for _ in range(20):
+        _, result = await cb.dispatch(ToolUseEvent(type="assistant", tool_name="Bash"))
+        assert result is None

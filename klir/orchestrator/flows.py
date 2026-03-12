@@ -23,6 +23,7 @@ from klir.text.response_format import session_error_text, timeout_error_text
 from klir.workspace.loader import read_mainmemory
 
 if TYPE_CHECKING:
+    from klir.cli.tool_activity import ToolActivity
     from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class StreamingCallbacks:
     """Bundle of optional streaming callbacks passed through flow functions."""
 
     on_text_delta: Callable[[str], Awaitable[None]] | None = field(default=None)
-    on_tool_activity: Callable[[str], Awaitable[None]] | None = field(default=None)
+    on_tool_activity: Callable[[ToolActivity], Awaitable[None]] | None = field(default=None)
     on_system_status: Callable[[str | None], Awaitable[None]] | None = field(default=None)
 
 

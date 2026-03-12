@@ -8,6 +8,7 @@ from aiogram.enums import ParseMode
 from aiogram.types import Message
 
 from klir.bot.streaming import StreamEditor
+from klir.cli.tool_activity import ToolActivity
 
 
 class TestStreamEditor:
@@ -87,7 +88,7 @@ class TestStreamEditor:
         bot.send_message = AsyncMock(return_value=sent_msg)
 
         editor = StreamEditor(bot, chat_id=1)
-        await editor.append_tool("SearchTool")
+        await editor.append_tool(ToolActivity(name="SearchTool"))
         bot.send_message.assert_called_once()
         call_text = bot.send_message.call_args.kwargs["text"]
         assert "SearchTool" in call_text

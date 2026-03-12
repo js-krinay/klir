@@ -69,6 +69,7 @@ from klir.workspace.paths import KlirPaths
 if TYPE_CHECKING:
     from klir.background import BackgroundObserver
     from klir.bus.bus import MessageBus
+    from klir.cli.tool_activity import ToolActivity
     from klir.config import ModelRegistry
     from klir.multiagent.bus import AsyncInterAgentResult
     from klir.multiagent.supervisor import AgentSupervisor
@@ -101,7 +102,7 @@ class _MessageDispatch:
     cmd: str
     streaming: bool = False
     on_text_delta: _TextCallback | None = None
-    on_tool_activity: _TextCallback | None = None
+    on_tool_activity: Callable[[ToolActivity], Awaitable[None]] | None = None
     on_system_status: _SystemStatusCallback | None = None
 
     def streaming_callbacks(self) -> StreamingCallbacks:
@@ -144,6 +145,9 @@ class Orchestrator:
                 claude_cli_parameters=tuple(config.cli_parameters.claude),
                 codex_cli_parameters=tuple(config.cli_parameters.codex),
                 gemini_cli_parameters=tuple(config.cli_parameters.gemini),
+                allowed_tools=tuple(config.allowed_tools),
+                disallowed_tools=tuple(config.disallowed_tools),
+                tool_loop_threshold=config.tool_loop_threshold,
                 agent_name=agent_name,
                 interagent_port=interagent_port,
             ),
@@ -279,7 +283,7 @@ class Orchestrator:
         text: str,
         *,
         on_text_delta: _TextCallback | None = None,
-        on_tool_activity: _TextCallback | None = None,
+        on_tool_activity: Callable[[ToolActivity], Awaitable[None]] | None = None,
         on_system_status: _SystemStatusCallback | None = None,
     ) -> OrchestratorResult:
         """Main entry point with streaming support."""
@@ -608,6 +612,9 @@ class Orchestrator:
                 "permission_mode",
                 "reasoning_effort",
                 "cli_parameters",
+                "allowed_tools",
+                "disallowed_tools",
+                "tool_loop_threshold",
             )
         ):
             self._cli_service.update_config(
@@ -623,6 +630,9 @@ class Orchestrator:
                     claude_cli_parameters=tuple(config.cli_parameters.claude),
                     codex_cli_parameters=tuple(config.cli_parameters.codex),
                     gemini_cli_parameters=tuple(config.cli_parameters.gemini),
+                    allowed_tools=tuple(config.allowed_tools),
+                    disallowed_tools=tuple(config.disallowed_tools),
+                    tool_loop_threshold=config.tool_loop_threshold,
                 )
             )
 

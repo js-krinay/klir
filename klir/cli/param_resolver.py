@@ -54,6 +54,8 @@ class TaskExecutionConfig:
     permission_mode: str
     working_dir: str
     file_access: str
+    allowed_tools: list[str] = field(default_factory=list)
+    disallowed_tools: list[str] = field(default_factory=list)
 
 
 def resolve_cli_config(
@@ -134,4 +136,6 @@ def resolve_cli_config(
         permission_mode=base_config.permission_mode,
         working_dir=base_config.klir_home,
         file_access=base_config.file_access,
+        allowed_tools=list(base_config.allowed_tools),
+        disallowed_tools=list(base_config.disallowed_tools),
     )

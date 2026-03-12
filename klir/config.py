@@ -351,6 +351,9 @@ class AgentConfig(BaseModel):
     reply_to_mode: ReplyToMode = "first"
     resilience: ResilienceConfig = Field(default_factory=ResilienceConfig)
     message_hooks: list[UserMessageHookConfig] = Field(default_factory=list)
+    allowed_tools: list[str] = Field(default_factory=list)
+    disallowed_tools: list[str] = Field(default_factory=list)
+    tool_loop_threshold: int = 0
     chat_overrides: dict[str, dict[str, object]] = Field(default_factory=dict)
 
     @property

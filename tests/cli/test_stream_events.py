@@ -77,6 +77,36 @@ def test_parse_assistant_tool_use() -> None:
     assert len(events) == 1
     assert isinstance(events[0], ToolUseEvent)
     assert events[0].tool_name == "Read"
+    assert events[0].parameters is None
+
+
+def test_parse_assistant_tool_use_with_parameters() -> None:
+    data = {
+        "type": "assistant",
+        "message": {
+            "content": [
+                {"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/x"}},
+            ]
+        },
+    }
+    events = parse_stream_line(json.dumps(data))
+    assert len(events) == 1
+    assert isinstance(events[0], ToolUseEvent)
+    assert events[0].tool_name == "Read"
+    assert events[0].parameters == {"file_path": "/tmp/x"}
+
+
+def test_parse_assistant_tool_use_non_dict_input() -> None:
+    data = {
+        "type": "assistant",
+        "message": {
+            "content": [{"type": "tool_use", "name": "Bash", "input": "not_a_dict"}],
+        },
+    }
+    events = parse_stream_line(json.dumps(data))
+    assert len(events) == 1
+    assert isinstance(events[0], ToolUseEvent)
+    assert events[0].parameters is None
 
 
 def test_parse_assistant_thinking() -> None:

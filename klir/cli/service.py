@@ -24,6 +24,8 @@ from klir.cli.stream_events import (
     ThinkingEvent,
     ToolUseEvent,
 )
+from klir.cli.tool_activity import ToolActivity
+from klir.cli.tool_loop_detector import ToolLoopDetector
 from klir.cli.types import AgentRequest, AgentResponse, CLIResponse
 
 if TYPE_CHECKING:
@@ -40,13 +42,15 @@ class _StreamCallbacks:
     def __init__(
         self,
         on_text: Callable[[str], Awaitable[None]] | None,
-        on_tool: Callable[[str], Awaitable[None]] | None,
+        on_tool: Callable[[ToolActivity], Awaitable[None]] | None,
         on_status: Callable[[str | None], Awaitable[None]] | None,
+        loop_threshold: int = 0,
     ) -> None:
         self._on_text = on_text
         self._on_tool = on_tool
         self._on_status = on_status
         self.init_session_id: str | None = None
+        self._loop_detector = ToolLoopDetector(loop_threshold) if loop_threshold > 0 else None
 
     async def dispatch(self, event: StreamEvent) -> tuple[str, ResultEvent | None]:
         """Handle one event. Returns (accumulated_text_chunk, result_or_none)."""
@@ -59,21 +63,44 @@ class _StreamCallbacks:
             return event.text, None
         if isinstance(event, ThinkingEvent) and self._on_status is not None:
             await self._on_status("thinking")
-        elif isinstance(event, ToolUseEvent) and self._on_tool is not None:
-            await self._on_tool(event.tool_name)
+        elif isinstance(event, ToolUseEvent):
+            loop_result = await self._handle_tool_use(event)
+            if loop_result is not None:
+                return "", loop_result
         elif isinstance(event, SystemStatusEvent) and self._on_status is not None:
             await self._on_status(event.status)
         elif isinstance(event, CompactBoundaryEvent):
-            logger.info(
-                "Context compacted (trigger=%s, pre_tokens=%d)",
-                event.trigger,
-                event.pre_tokens,
-            )
-            if self._on_status is not None:
-                await self._on_status(None)
+            await self._handle_compact_boundary(event)
         elif isinstance(event, ResultEvent):
             return "", event
         return "", None
+
+    async def _handle_compact_boundary(self, event: CompactBoundaryEvent) -> None:
+        """Log context compaction and notify status callback."""
+        logger.info(
+            "Context compacted (trigger=%s, pre_tokens=%d)",
+            event.trigger,
+            event.pre_tokens,
+        )
+        if self._on_status is not None:
+            await self._on_status(None)
+
+    async def _handle_tool_use(self, event: ToolUseEvent) -> ResultEvent | None:
+        """Fire tool callback and check for runaway loops."""
+        if self._on_tool is not None:
+            activity = ToolActivity.from_event(event)
+            await self._on_tool(activity)
+        if self._loop_detector is not None:
+            self._loop_detector.record(event.tool_name)
+            if self._loop_detector.is_looping:
+                return ResultEvent(
+                    type="result",
+                    result=f"Tool loop detected: {event.tool_name} called "
+                    f"{self._loop_detector.consecutive_count} times consecutively. "
+                    f"Aborting to prevent runaway execution.",
+                    is_error=True,
+                )
+        return None
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,8 +118,11 @@ class CLIServiceConfig:
     claude_cli_parameters: tuple[str, ...] = ()
     codex_cli_parameters: tuple[str, ...] = ()
     gemini_cli_parameters: tuple[str, ...] = ()
+    allowed_tools: tuple[str, ...] = ()
+    disallowed_tools: tuple[str, ...] = ()
     agent_name: str = "main"
     interagent_port: int = 8799
+    tool_loop_threshold: int = 0
 
     def cli_parameters_for_provider(self, provider: str) -> list[str]:
         """Return CLI parameters for the given provider."""
@@ -167,7 +197,7 @@ class CLIService:
         self,
         request: AgentRequest,
         on_text_delta: Callable[[str], Awaitable[None]] | None = None,
-        on_tool_activity: Callable[[str], Awaitable[None]] | None = None,
+        on_tool_activity: Callable[[ToolActivity], Awaitable[None]] | None = None,
         on_system_status: Callable[[str | None], Awaitable[None]] | None = None,
     ) -> AgentResponse:
         """Execute a streaming CLI call with automatic fallback to non-streaming."""
@@ -182,7 +212,12 @@ class CLIService:
         result_event: ResultEvent | None = None
         stream_error = False
 
-        callbacks = _StreamCallbacks(on_text_delta, on_tool_activity, on_system_status)
+        callbacks = _StreamCallbacks(
+            on_text_delta,
+            on_tool_activity,
+            on_system_status,
+            loop_threshold=self._config.tool_loop_threshold,
+        )
 
         try:
             async for event in cli.send_streaming(
@@ -311,6 +346,8 @@ class CLIService:
                 append_system_prompt=request.append_system_prompt,
                 max_turns=self._config.max_turns,
                 max_budget_usd=self._config.max_budget_usd,
+                allowed_tools=list(self._config.allowed_tools),
+                disallowed_tools=list(self._config.disallowed_tools),
                 permission_mode=self._config.permission_mode,
                 reasoning_effort=self._config.reasoning_effort,
                 thinking_level=request.thinking_level,

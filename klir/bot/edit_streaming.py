@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
+    from klir.cli.tool_activity import ToolActivity
     from klir.config import StreamingConfig
 
 logger = logging.getLogger(__name__)
@@ -140,15 +141,16 @@ class EditStreamEditor:
         self._s.raw_text_parts.append(text)
         await self._schedule_edit()
 
-    async def append_tool(self, tool_name: str) -> None:
+    async def append_tool(self, activity: ToolActivity) -> None:
         """Record a tool event (collapsed with consecutive duplicates)."""
         if self._s.fallen_back:
-            indicator = f"<b>[TOOL: {html.escape(tool_name)}]</b>"
+            label = activity.display_label()
+            indicator = f"<b>[TOOL: {html.escape(label)}]</b>"
             await self._send_new(indicator)
             return
         # Transition text -> tool: seal the text block
         self._flush_text_segment()
-        self._s.tool_tracker.add(tool_name)
+        self._s.tool_tracker.add(activity.display_label())
         await self._schedule_edit()
 
     async def append_system(self, text: str) -> None:

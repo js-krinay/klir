@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
+    from klir.cli.tool_activity import ToolActivity
     from klir.config import StreamingConfig
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class StreamEditorProtocol(Protocol):
     @property
     def has_content(self) -> bool: ...
     async def append_text(self, text: str) -> None: ...
-    async def append_tool(self, tool_name: str) -> None: ...
+    async def append_tool(self, activity: ToolActivity) -> None: ...
     async def append_system(self, text: str) -> None: ...
     async def finalize(self, full_text: str) -> None: ...
 
@@ -87,9 +88,10 @@ class StreamEditor:
         for chunk in chunks:
             await self._send(chunk, raw_fallback=text)
 
-    async def append_tool(self, tool_name: str) -> None:
+    async def append_tool(self, activity: ToolActivity) -> None:
         """Send a tool indicator as a new message."""
-        indicator = f"<b>[TOOL: {html.escape(tool_name)}]</b>"
+        label = activity.display_label()
+        indicator = f"<b>[TOOL: {html.escape(label)}]</b>"
         await self._send(indicator)
 
     async def append_system(self, text: str) -> None:

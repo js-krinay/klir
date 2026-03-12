@@ -178,7 +178,14 @@ def _parse_assistant_content(data: dict[str, Any]) -> list[StreamEvent]:
         elif block_type == "tool_use":
             name = block.get("name", "")
             if name:
-                events.append(ToolUseEvent(type="assistant", tool_name=name))
+                input_data = block.get("input")
+                events.append(
+                    ToolUseEvent(
+                        type="assistant",
+                        tool_name=name,
+                        parameters=input_data if isinstance(input_data, dict) else None,
+                    )
+                )
 
         elif block_type == "thinking":
             events.append(

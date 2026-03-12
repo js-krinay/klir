@@ -9,6 +9,8 @@ from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.types import Message
 
+from klir.cli.tool_activity import ToolActivity
+
 if TYPE_CHECKING:
     from klir.bot.edit_streaming import EditStreamEditor
 
@@ -80,9 +82,9 @@ class TestEditStreamEditor:
 
     async def test_tool_collapse_same_name(self) -> None:
         bot, editor = _make_editor()
-        await editor.append_tool("Bash")
-        await editor.append_tool("Bash")
-        await editor.append_tool("Bash")
+        await editor.append_tool(ToolActivity(name="Bash"))
+        await editor.append_tool(ToolActivity(name="Bash"))
+        await editor.append_tool(ToolActivity(name="Bash"))
         await editor.finalize("")
         # Find the last call that contains the tool indicator
         last_text = self._get_last_message_text(bot)
@@ -90,9 +92,9 @@ class TestEditStreamEditor:
 
     async def test_tool_collapse_mixed(self) -> None:
         bot, editor = _make_editor()
-        await editor.append_tool("Bash")
-        await editor.append_tool("Bash")
-        await editor.append_tool("Write")
+        await editor.append_tool(ToolActivity(name="Bash"))
+        await editor.append_tool(ToolActivity(name="Bash"))
+        await editor.append_tool(ToolActivity(name="Write"))
         await editor.finalize("")
         last_text = self._get_last_message_text(bot)
         assert "[TOOL: Bash] x2" in last_text
@@ -102,7 +104,7 @@ class TestEditStreamEditor:
     async def test_text_tool_text_ordering(self) -> None:
         bot, editor = _make_editor()
         await editor.append_text("Before tools")
-        await editor.append_tool("Bash")
+        await editor.append_tool(ToolActivity(name="Bash"))
         await editor.append_text("After tools")
         await editor.finalize("")
         last_text = self._get_last_message_text(bot)
@@ -179,13 +181,13 @@ class TestEditStreamEditor:
 
     async def test_has_content_after_tool(self) -> None:
         _, editor = _make_editor()
-        await editor.append_tool("Bash")
+        await editor.append_tool(ToolActivity(name="Bash"))
         await editor.finalize("")
         assert editor.has_content is True
 
     async def test_single_tool_no_count_suffix(self) -> None:
         bot, editor = _make_editor()
-        await editor.append_tool("Read")
+        await editor.append_tool(ToolActivity(name="Read"))
         await editor.finalize("")
         last_text = self._get_last_message_text(bot)
         assert "[TOOL: Read]" in last_text
@@ -363,8 +365,8 @@ class TestIndicatorStripping:
     async def test_finalize_strips_tool_indicators(self) -> None:
         bot, editor = _make_editor()
         await editor.append_text("Hello")
-        await editor.append_tool("Bash")
-        await editor.append_tool("Bash")
+        await editor.append_tool(ToolActivity(name="Bash"))
+        await editor.append_tool(ToolActivity(name="Bash"))
         await editor.append_text("World")
         await editor.finalize("")
         last_text = _get_last_text(bot)
@@ -387,7 +389,7 @@ class TestIndicatorStripping:
         bot, editor = _make_editor()
         await editor.append_text("A")
         await editor.append_system("THINKING")
-        await editor.append_tool("Bash")
+        await editor.append_tool(ToolActivity(name="Bash"))
         await editor.append_system("THINKING")
         await editor.append_text("B")
         await editor.finalize("")

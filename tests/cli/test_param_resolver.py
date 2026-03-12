@@ -67,6 +67,21 @@ def test_resolve_global_only(base_config: AgentConfig, codex_cache: CodexModelCa
     assert result.permission_mode == "normal"
     assert result.working_dir == "~/klir"
     assert result.file_access == "all"
+    assert result.allowed_tools == []
+    assert result.disallowed_tools == []
+
+
+def test_resolve_propagates_tool_filtering(codex_cache: CodexModelCache) -> None:
+    """allowed_tools and disallowed_tools should flow from config to TaskExecutionConfig."""
+    config = AgentConfig(
+        provider="claude",
+        model="sonnet",
+        allowed_tools=["Read", "Grep"],
+        disallowed_tools=["Bash"],
+    )
+    result = resolve_cli_config(config, codex_cache)
+    assert result.allowed_tools == ["Read", "Grep"]
+    assert result.disallowed_tools == ["Bash"]
 
 
 def test_resolve_with_task_overrides(

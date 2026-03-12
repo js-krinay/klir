@@ -241,9 +241,30 @@ def _parse_tool_item(item: dict[str, Any], item_type: str, event_type: str) -> l
         return []
     if item_type == "mcp_tool_call":
         name = item.get("name") or item.get("tool_name") or "MCP"
-        return [ToolUseEvent(type="assistant", tool_name=str(name))]
+        params = item.get("parameters") or item.get("input")
+        return [
+            ToolUseEvent(
+                type="assistant",
+                tool_name=str(name),
+                parameters=params if isinstance(params, dict) else None,
+            )
+        ]
     tool_name = _CODEX_ITEM_TOOL_MAP.get(item_type)
-    return [ToolUseEvent(type="assistant", tool_name=tool_name)] if tool_name else []
+    if not tool_name:
+        return []
+    params = _extract_codex_params(item, item_type)
+    return [ToolUseEvent(type="assistant", tool_name=tool_name, parameters=params)]
+
+
+def _extract_codex_params(item: dict[str, Any], item_type: str) -> dict[str, Any] | None:
+    """Extract tool parameters from Codex item data."""
+    if item_type == "command_execution":
+        cmd = item.get("command")
+        return {"command": cmd} if isinstance(cmd, str) else None
+    if item_type == "file_change":
+        path = item.get("file") or item.get("path") or item.get("filename")
+        return {"file_path": path} if isinstance(path, str) else None
+    return None
 
 
 class CodexThinkingFilter:

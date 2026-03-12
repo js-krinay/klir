@@ -128,6 +128,62 @@ class TestBuildCmd:
         ):
             assert build_cmd(exec_config, "hello") is None
 
+    def test_claude_with_allowed_tools(self) -> None:
+        exec_config = TaskExecutionConfig(
+            provider="claude",
+            model="sonnet",
+            reasoning_effort="",
+            cli_parameters=[],
+            permission_mode="bypassPermissions",
+            working_dir="/tmp",
+            file_access="all",
+            allowed_tools=["Read", "Grep"],
+        )
+        with patch("klir.cron.execution.which", return_value="/usr/bin/claude"):
+            result = build_cmd(exec_config, "test")
+        assert result is not None
+        assert "--allowedTools" in result.cmd
+        idx = result.cmd.index("--allowedTools")
+        assert result.cmd[idx + 1] == "Read"
+        assert result.cmd[idx + 2] == "Grep"
+
+    def test_claude_with_disallowed_tools(self) -> None:
+        exec_config = TaskExecutionConfig(
+            provider="claude",
+            model="sonnet",
+            reasoning_effort="",
+            cli_parameters=[],
+            permission_mode="bypassPermissions",
+            working_dir="/tmp",
+            file_access="all",
+            disallowed_tools=["Bash"],
+        )
+        with patch("klir.cron.execution.which", return_value="/usr/bin/claude"):
+            result = build_cmd(exec_config, "test")
+        assert result is not None
+        assert "--disallowedTools" in result.cmd
+        idx = result.cmd.index("--disallowedTools")
+        assert result.cmd[idx + 1] == "Bash"
+
+    def test_gemini_with_allowed_tools(self) -> None:
+        exec_config = TaskExecutionConfig(
+            provider="gemini",
+            model="gemini-2.5-pro",
+            reasoning_effort="",
+            cli_parameters=[],
+            permission_mode="bypassPermissions",
+            working_dir="/tmp",
+            file_access="all",
+            allowed_tools=["search", "code_execution"],
+        )
+        with patch("klir.cron.execution.find_gemini_cli", return_value="/usr/bin/gemini"):
+            result = build_cmd(exec_config, "test")
+        assert result is not None
+        assert "--allowed-tools" in result.cmd
+        idx = result.cmd.index("--allowed-tools")
+        assert result.cmd[idx + 1] == "search"
+        assert result.cmd[idx + 2] == "code_execution"
+
     def test_unknown_provider_falls_back_to_claude(self) -> None:
         exec_config = TaskExecutionConfig(
             provider="unknown",

@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from aiogram import Bot
     from aiogram.types import Message
 
+    from klir.cli.tool_activity import ToolActivity
     from klir.config import StreamingConfig
     from klir.orchestrator.core import Orchestrator
 
@@ -114,9 +115,9 @@ async def run_streaming_message(
     async def on_text(delta: str) -> None:
         await coalescer.feed(delta)
 
-    async def on_tool(tool_name: str) -> None:
+    async def on_tool(activity: ToolActivity) -> None:
         await coalescer.flush(force=True)
-        await editor.append_tool(tool_name)
+        await editor.append_tool(activity)
 
     async def on_system(status: str | None) -> None:
         system_map: dict[str, str] = {

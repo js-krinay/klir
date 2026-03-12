@@ -120,6 +120,11 @@ def _build_claude_cmd(exec_config: TaskExecutionConfig, prompt: str) -> OneShotC
         exec_config.permission_mode,
         "--no-session-persistence",
     ]
+    # Add tool filtering
+    if exec_config.allowed_tools:
+        cmd += ["--allowedTools", *exec_config.allowed_tools]
+    if exec_config.disallowed_tools:
+        cmd += ["--disallowedTools", *exec_config.disallowed_tools]
     # Add extra CLI parameters
     cmd.extend(exec_config.cli_parameters)
     cmd += ["--", prompt]
@@ -142,6 +147,10 @@ def _build_gemini_cmd(exec_config: TaskExecutionConfig, prompt: str) -> OneShotC
         cmd += ["--model", exec_config.model]
     if exec_config.permission_mode == "bypassPermissions":
         cmd += ["--approval-mode", "yolo"]
+
+    # Add tool filtering (Gemini only supports allowed-tools)
+    if exec_config.allowed_tools:
+        cmd += ["--allowed-tools", *exec_config.allowed_tools]
 
     cmd.extend(exec_config.cli_parameters)
     return OneShotCommand(cmd=cmd, stdin_input=prompt.encode())

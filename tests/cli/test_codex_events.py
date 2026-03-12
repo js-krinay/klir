@@ -201,3 +201,44 @@ def test_stream_mcp_tool_call() -> None:
 def test_stream_unknown_type_returns_empty() -> None:
     line = json.dumps({"type": "something.else"})
     assert parse_codex_stream_event(line) == []
+
+
+def test_codex_command_execution_includes_command() -> None:
+    line = json.dumps(
+        {
+            "type": "item.started",
+            "item": {"type": "command_execution", "command": "ls -la"},
+        }
+    )
+    events = parse_codex_stream_event(line)
+    assert len(events) == 1
+    assert isinstance(events[0], ToolUseEvent)
+    assert events[0].tool_name == "Bash"
+    assert events[0].parameters == {"command": "ls -la"}
+
+
+def test_codex_file_change_includes_path() -> None:
+    line = json.dumps(
+        {
+            "type": "item.started",
+            "item": {"type": "file_change", "file": "src/main.py"},
+        }
+    )
+    events = parse_codex_stream_event(line)
+    assert len(events) == 1
+    assert isinstance(events[0], ToolUseEvent)
+    assert events[0].tool_name == "Edit"
+    assert events[0].parameters == {"file_path": "src/main.py"}
+
+
+def test_codex_mcp_tool_call_includes_parameters() -> None:
+    line = json.dumps(
+        {
+            "type": "item.started",
+            "item": {"type": "mcp_tool_call", "name": "search", "parameters": {"query": "test"}},
+        }
+    )
+    events = parse_codex_stream_event(line)
+    assert len(events) == 1
+    assert events[0].tool_name == "search"
+    assert events[0].parameters == {"query": "test"}
