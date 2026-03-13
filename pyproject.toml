@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "klir-bot"
-version = "0.6.0"
+version = "0.6.1"
 description = "Control AI coding CLIs from Telegram. Live streaming, sessions, cron jobs, webhooks. Originally forked from ductor by PleasePrompto."
 readme = "README.md"
 requires-python = ">=3.11"
