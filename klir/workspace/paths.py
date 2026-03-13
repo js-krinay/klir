@@ -142,6 +142,10 @@ class KlirPaths:
     def mainmemory_path(self) -> Path:
         return self.memory_system_dir / "MAINMEMORY.md"
 
+    @property
+    def memory_index_path(self) -> Path:
+        return self.memory_system_dir / "index.db"
+
     # -- Framework paths (bundled with package or repo root) --
 
     @property

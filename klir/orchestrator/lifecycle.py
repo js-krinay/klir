@@ -157,6 +157,10 @@ async def shutdown(orch: Orchestrator) -> None:
         logger.info("Shutdown terminated %d active CLI process(es)", killed)
     if orch._api_stop is not None:
         await orch._api_stop()
+    try:
+        orch._memory_store.close()
+    except Exception:
+        logger.exception("Failed to close memory store")
     await asyncio.to_thread(cleanup_klir_links, orch._paths)
     await orch._observers.stop_all()
     logger.info("Orchestrator shutdown")

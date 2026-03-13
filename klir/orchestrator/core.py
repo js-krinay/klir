@@ -26,6 +26,8 @@ from klir.errors import (
     WorkspaceError,
 )
 from klir.infra.inflight import InflightTracker
+from klir.memory.files import MemoryFileManager
+from klir.memory.store import MemoryStore
 from klir.orchestrator.commands import (
     cmd_compact,
     cmd_cron,
@@ -173,6 +175,8 @@ class Orchestrator:
         self._hook_registry.register(MAINMEMORY_REMINDER)
         self._hook_registry.register(DELEGATION_BRIEF)
         self._hook_registry.register(DELEGATION_REMINDER)
+        self._memory_store = MemoryStore(paths.memory_index_path)
+        self._memory_files = MemoryFileManager(paths.memory_system_dir, self._memory_store)
         self._user_hooks = UserHookEvaluator(config.message_hooks)
         self._supervisor: AgentSupervisor | None = None  # Set by AgentSupervisor after creation
         self._task_hub: TaskHub | None = None  # Set by supervisor or __main__.py
@@ -208,6 +212,16 @@ class Orchestrator:
     def named_sessions(self) -> NamedSessionRegistry:
         """Public access to the named session registry."""
         return self._named_sessions
+
+    @property
+    def memory_store(self) -> MemoryStore:
+        """Public access to the memory store."""
+        return self._memory_store
+
+    @property
+    def memory_files(self) -> MemoryFileManager:
+        """Public access to the memory file manager."""
+        return self._memory_files
 
     @property
     def available_providers(self) -> frozenset[str]:
