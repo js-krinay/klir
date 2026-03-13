@@ -42,13 +42,14 @@ BOT_COMMANDS: list[tuple[str, str]] = [
     # Maintenance (rare)
     ("diagnose", "System diagnostics"),
     ("upgrade", "Check for updates"),
+    ("update_plugins", "Update all plugins"),
     ("restart", "Restart bot"),
     ("pair", "Generate pairing code"),
 ]
 
 # Commands shown in group/supergroup chats — admin/maintenance commands filtered out.
 _GROUP_EXCLUDED: frozenset[str] = frozenset(
-    {"diagnose", "upgrade", "restart", "agent_commands", "pair"}
+    {"diagnose", "upgrade", "update_plugins", "restart", "agent_commands", "pair"}
 )
 
 GROUP_COMMANDS: list[tuple[str, str]] = [

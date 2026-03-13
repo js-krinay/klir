@@ -40,6 +40,7 @@ from klir.orchestrator.commands import (
     cmd_status,
     cmd_tasks,
     cmd_think,
+    cmd_update_plugins,
     cmd_upgrade,
 )
 from klir.orchestrator.directives import parse_directives
@@ -405,6 +406,7 @@ class Orchestrator:
         reg.register_async("/sessions", cmd_sessions)
         reg.register_async("/tasks", cmd_tasks)
         reg.register_async("/hooks", cmd_hooks)
+        reg.register_async("/update_plugins", cmd_update_plugins)
 
     def _rebuild_user_hooks(self) -> None:
         """Rebuild user hook evaluator from current config (hot-reload)."""

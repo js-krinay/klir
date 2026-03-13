@@ -121,8 +121,8 @@ _HELP_TEXT = fmt(
     f"Multi-Agent\n{_help_line('agent_commands')}",
     f"Browse & Info\n{_help_line('where')}\n{_help_line('leave')}\n"
     f"{_help_line('showfiles')}\n{_help_line('hooks')}\n{_help_line('info')}\n{_help_line('help')}",
-    f"Maintenance\n{_help_line('diagnose')}\n{_help_line('upgrade')}\n{_help_line('restart')}\n"
-    f"{_help_line('pair')}",
+    f"Maintenance\n{_help_line('diagnose')}\n{_help_line('upgrade')}\n{_help_line('update_plugins')}\n"
+    f"{_help_line('restart')}\n{_help_line('pair')}",
     SEP,
     "Send any message to start working with your agent.",
 )
@@ -384,6 +384,7 @@ class TelegramBot:
             "cron",
             "diagnose",
             "upgrade",
+            "update_plugins",
             "think",
             "compact",
             "hooks",

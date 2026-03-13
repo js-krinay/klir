@@ -433,3 +433,60 @@ async def cmd_hooks(orch: Orchestrator, _key: SessionKey, _text: str) -> Orchest
         if h.condition != "always":
             lines.append(f"  condition: {h.condition}={h.pattern or h.provider}")
     return OrchestratorResult(text="\n".join(lines))
+
+
+async def _run_claude_plugin_update(claude_bin: str, plugin_key: str) -> tuple[str, int]:
+    """Run ``claude plugin update <key>`` and return (output, returncode).
+
+    Uses ``asyncio.create_subprocess_exec`` with a fixed argument list
+    (no shell expansion) to avoid command injection.
+    """
+    proc = await asyncio.create_subprocess_exec(
+        claude_bin,
+        "plugin",
+        "update",
+        plugin_key,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    stdout, _ = await proc.communicate()
+    output = stdout.decode(errors="replace").strip() if stdout else ""
+    return output, proc.returncode or 0
+
+
+async def cmd_update_plugins(
+    _orch: Orchestrator, _key: SessionKey, _text: str
+) -> OrchestratorResult:
+    """Handle /update_plugins: update all enabled Claude Code plugins."""
+    import json
+    import shutil
+
+    claude_bin = shutil.which("claude")
+    if not claude_bin:
+        return OrchestratorResult(text="Claude CLI not found on PATH.")
+
+    settings_path = Path.home() / ".claude" / "settings.json"
+    if not settings_path.exists():
+        return OrchestratorResult(text="No Claude Code settings found.")
+
+    try:
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return OrchestratorResult(text="Failed to read Claude Code settings.")
+
+    enabled = {key for key, val in settings.get("enabledPlugins", {}).items() if val}
+    if not enabled:
+        return OrchestratorResult(text="No enabled plugins found.")
+
+    results: list[str] = []
+    for plugin_key in sorted(enabled):
+        plugin_name = plugin_key.split("@", 1)[0]
+        output, returncode = await _run_claude_plugin_update(claude_bin, plugin_key)
+        # Extract the meaningful line from the output
+        status = output.splitlines()[-1] if output else f"exit code {returncode}"
+        icon = "\u2713" if returncode == 0 else "\u2717"
+        results.append(f"{icon} **{plugin_name}**: {status}")
+
+    return OrchestratorResult(
+        text=fmt("**Plugin Updates**", SEP, "\n".join(results)),
+    )
