@@ -331,7 +331,8 @@ async def test_get_queue_info_with_queued_tasks() -> None:
     info = dq.get_queue_info("dep")
     assert info["locked"] is True
     assert info["queue_length"] == 2
-    task_labels = [t["task_label"] for t in info["queued_tasks"]]
+    queued_tasks: list[dict[str, object]] = info["queued_tasks"]  # type: ignore[assignment]
+    task_labels = [t["task_label"] for t in queued_tasks]
     assert "W1" in task_labels
     assert "W2" in task_labels
 

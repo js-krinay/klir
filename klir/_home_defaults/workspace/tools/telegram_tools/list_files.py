@@ -9,6 +9,7 @@ Usage:
     python tools/telegram_tools/list_files.py --date 2025-01-15
     python tools/telegram_tools/list_files.py --limit 5
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,7 +30,9 @@ def _get_base_dir() -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="List received Telegram files")
-    parser.add_argument("--type", dest="file_type", help="Filter by MIME prefix (image, audio, video, application)")
+    parser.add_argument(
+        "--type", dest="file_type", help="Filter by MIME prefix (image, audio, video, application)"
+    )
     parser.add_argument("--date", help="Filter by date (YYYY-MM-DD)")
     parser.add_argument("--limit", type=int, default=20, help="Max results")
     args = parser.parse_args()
@@ -42,7 +45,9 @@ def main() -> None:
     index_path = base_dir / "_index.yaml"
 
     if not index_path.exists():
-        print(json.dumps({"files": [], "total": 0, "note": "No index found. No files received yet."}))
+        print(
+            json.dumps({"files": [], "total": 0, "note": "No index found. No files received yet."})
+        )
         return
 
     try:
@@ -59,24 +64,32 @@ def main() -> None:
         for f in files:
             if args.file_type and not f.get("type", "").startswith(args.file_type):
                 continue
-            results.append({
-                "date": date_str,
-                "name": f["name"],
-                "type": f.get("type", "unknown"),
-                "size": f.get("size", 0),
-                "path": str(base_dir / date_str / f["name"]),
-            })
+            results.append(
+                {
+                    "date": date_str,
+                    "name": f["name"],
+                    "type": f.get("type", "unknown"),
+                    "size": f.get("size", 0),
+                    "path": str(base_dir / date_str / f["name"]),
+                }
+            )
             if len(results) >= args.limit:
                 break
         if len(results) >= args.limit:
             break
 
-    print(json.dumps({
-        "files": results,
-        "total": len(results),
-        "index_total": data.get("total_files", 0),
-        "last_updated": data.get("last_updated", "unknown"),
-    }, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                "files": results,
+                "total": len(results),
+                "index_total": data.get("total_files", 0),
+                "last_updated": data.get("last_updated", "unknown"),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

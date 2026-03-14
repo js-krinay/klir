@@ -8,6 +8,7 @@ Usage:
     python tools/telegram_tools/process_video.py --file /path/to/video.mp4
     python tools/telegram_tools/process_video.py --file /path/to/video.mp4 --max-frames 5
 """
+
 from __future__ import annotations
 
 import argparse
@@ -19,9 +20,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-_TELEGRAM_FILES = Path(
-    os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))
-).expanduser() / "workspace" / "telegram_files"
+_TELEGRAM_FILES = (
+    Path(os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))).expanduser()
+    / "workspace"
+    / "telegram_files"
+)
 
 _MAX_FRAMES_DEFAULT = 8
 _MAX_FRAMES_HARD = 16
@@ -41,9 +44,13 @@ def _probe(path: Path) -> dict | None:
     try:
         result = subprocess.run(
             [
-                "ffprobe", "-v", "quiet",
-                "-print_format", "json",
-                "-show_format", "-show_streams",
+                "ffprobe",
+                "-v",
+                "quiet",
+                "-print_format",
+                "json",
+                "-show_format",
+                "-show_streams",
                 str(path),
             ],
             capture_output=True,
@@ -113,11 +120,17 @@ def _extract_frames(path: Path, out_dir: Path, count: int, duration: float) -> l
     with contextlib.suppress(subprocess.TimeoutExpired):
         subprocess.run(
             [
-                "ffmpeg", "-v", "quiet",
-                "-i", str(path),
-                "-vf", fps_filter,
-                "-frames:v", str(count),
-                "-q:v", str(_FRAME_QUALITY),
+                "ffmpeg",
+                "-v",
+                "quiet",
+                "-i",
+                str(path),
+                "-vf",
+                fps_filter,
+                "-frames:v",
+                str(count),
+                "-q:v",
+                str(_FRAME_QUALITY),
                 str(pattern),
             ],
             capture_output=True,
@@ -135,9 +148,16 @@ def _extract_audio(path: Path, out_dir: Path) -> Path | None:
     try:
         result = subprocess.run(
             [
-                "ffmpeg", "-v", "quiet",
-                "-i", str(path),
-                "-vn", "-acodec", "libvorbis", "-q:a", "4",
+                "ffmpeg",
+                "-v",
+                "quiet",
+                "-i",
+                str(path),
+                "-vn",
+                "-acodec",
+                "libvorbis",
+                "-q:a",
+                "4",
                 str(audio_path),
             ],
             capture_output=True,
@@ -160,10 +180,14 @@ def _transcribe(audio_path: Path) -> str | None:
     try:
         result = subprocess.run(
             [
-                whisper_bin, str(audio_path),
-                "--model", "small",
-                "--output_format", "txt",
-                "--output_dir", str(audio_path.parent),
+                whisper_bin,
+                str(audio_path),
+                "--model",
+                "small",
+                "--output_format",
+                "txt",
+                "--output_dir",
+                str(audio_path.parent),
             ],
             capture_output=True,
             text=True,

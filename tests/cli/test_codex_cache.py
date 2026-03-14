@@ -446,7 +446,7 @@ def test_serialize_deserialize(fresh_cache: CodexModelCache) -> None:
 
     assert "last_updated" in json_data
     assert "models" in json_data
-    assert len(json_data["models"]) == 2  # type: ignore[arg-type]
+    assert len(json_data["models"]) == 2
 
     restored = CodexModelCache.from_json(json_data)
 

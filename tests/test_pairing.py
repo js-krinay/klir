@@ -43,7 +43,7 @@ class TestPairingService:
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
 
-        result = svc.validate(code, user_id=200)
+        result = svc.validate(code, user_id=200)  # type: ignore[arg-type]
         assert result is True
 
     def test_validate_wrong_code(self) -> None:
@@ -61,8 +61,8 @@ class TestPairingService:
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
 
-        assert svc.validate(code, user_id=200) is True
-        assert svc.validate(code, user_id=300) is False  # already consumed
+        assert svc.validate(code, user_id=200) is True  # type: ignore[arg-type]
+        assert svc.validate(code, user_id=300) is False  # type: ignore[arg-type]
 
     def test_expired_code_rejected(self) -> None:
         from klir.pairing import PairingService
@@ -74,7 +74,7 @@ class TestPairingService:
         for entry in svc._codes.values():
             entry["created_at"] = time.time() - 1
 
-        result = svc.validate(code, user_id=200)
+        result = svc.validate(code, user_id=200)  # type: ignore[arg-type]
         assert result is False
 
     def test_list_active_codes(self) -> None:
@@ -93,8 +93,8 @@ class TestPairingService:
         svc = PairingService(_make_config())
         code = svc.generate_code(admin_user_id=100)
 
-        svc.revoke(code)
-        assert svc.validate(code, user_id=200) is False
+        svc.revoke(code)  # type: ignore[arg-type]
+        assert svc.validate(code, user_id=200) is False  # type: ignore[arg-type]
 
     def test_disabled_service_rejects(self) -> None:
         from klir.pairing import PairingService

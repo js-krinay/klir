@@ -32,8 +32,7 @@ class TestChatOverrides:
     def test_from_dict(self) -> None:
         from klir.config import ChatOverrides
 
-        raw = {"provider": "codex", "model": "o4-mini"}
-        ov = ChatOverrides(**raw)
+        ov = ChatOverrides(provider="codex", model="o4-mini")
         assert ov.provider == "codex"
         assert ov.model == "o4-mini"
 

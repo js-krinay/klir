@@ -56,7 +56,7 @@ def _exec_config(**overrides: object) -> TaskExecutionConfig:
         "allowed_tools": [],
         "disallowed_tools": [],
     }
-    defaults.update(overrides)
+    defaults.update(overrides)  # type: ignore[arg-type]
     return TaskExecutionConfig(**defaults)  # type: ignore[arg-type]
 
 

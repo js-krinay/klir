@@ -238,7 +238,7 @@ def _make_hook(**overrides: object) -> WebhookEntry:
         "prompt_template": "{{msg}}",
     }
     defaults.update(overrides)
-    return WebhookEntry(**defaults)
+    return WebhookEntry(**defaults)  # type: ignore[arg-type]
 
 
 class TestValidateHookAuth:

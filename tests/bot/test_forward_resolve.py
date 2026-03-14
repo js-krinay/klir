@@ -25,7 +25,7 @@ class TestForwardResolve:
         from klir.bot.forward_context import extract_forward_context
 
         origin = MagicMock()
-        origin.__class__ = MessageOriginUser
+        origin.__class__ = MessageOriginUser  # type: ignore[assignment]
         origin.type = "user"
         origin.sender_user.full_name = "Bob"
         origin.sender_user.id = 50

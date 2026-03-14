@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -23,7 +25,7 @@ def api(bus: InterAgentBus) -> InternalAgentAPI:
 
 
 @pytest.fixture
-async def client(api: InternalAgentAPI) -> TestClient:
+async def client(api: InternalAgentAPI) -> AsyncGenerator[TestClient[Any, Any]]:
     """Create aiohttp test client for the internal API."""
     from aiohttp.test_utils import TestServer
 
@@ -37,7 +39,7 @@ async def client(api: InternalAgentAPI) -> TestClient:
 class TestHandleSend:
     """Test POST /interagent/send."""
 
-    async def test_send_success(self, client: TestClient, bus: InterAgentBus) -> None:
+    async def test_send_success(self, client: TestClient[Any, Any], bus: InterAgentBus) -> None:
         stack = MagicMock()
         stack.bot.orchestrator = MagicMock()
         stack.bot.orchestrator.handle_interagent_message = AsyncMock(
@@ -54,7 +56,7 @@ class TestHandleSend:
         assert data["success"] is True
         assert data["text"] == "OK"
 
-    async def test_send_missing_fields(self, client: TestClient) -> None:
+    async def test_send_missing_fields(self, client: TestClient[Any, Any]) -> None:
         resp = await client.post(
             "/interagent/send",
             json={"from": "sender"},
@@ -64,7 +66,7 @@ class TestHandleSend:
         assert data["success"] is False
         assert "Missing" in data["error"]
 
-    async def test_send_invalid_json(self, client: TestClient) -> None:
+    async def test_send_invalid_json(self, client: TestClient[Any, Any]) -> None:
         resp = await client.post(
             "/interagent/send",
             data=b"not json",
@@ -72,7 +74,7 @@ class TestHandleSend:
         )
         assert resp.status == 400
 
-    async def test_send_unknown_recipient(self, client: TestClient) -> None:
+    async def test_send_unknown_recipient(self, client: TestClient[Any, Any]) -> None:
         resp = await client.post(
             "/interagent/send",
             json={"from": "sender", "to": "nonexistent", "message": "Hello"},
@@ -85,7 +87,9 @@ class TestHandleSend:
 class TestHandleSendAsync:
     """Test POST /interagent/send_async."""
 
-    async def test_send_async_success(self, client: TestClient, bus: InterAgentBus) -> None:
+    async def test_send_async_success(
+        self, client: TestClient[Any, Any], bus: InterAgentBus
+    ) -> None:
         stack = MagicMock()
         stack.bot.orchestrator = MagicMock()
         stack.bot.orchestrator.handle_interagent_message = AsyncMock(
@@ -102,7 +106,7 @@ class TestHandleSendAsync:
         assert data["success"] is True
         assert "task_id" in data
 
-    async def test_send_async_unknown_recipient(self, client: TestClient) -> None:
+    async def test_send_async_unknown_recipient(self, client: TestClient[Any, Any]) -> None:
         resp = await client.post(
             "/interagent/send_async",
             json={"from": "sender", "to": "nonexistent", "message": "Hello"},
@@ -111,7 +115,7 @@ class TestHandleSendAsync:
         assert data["success"] is False
         assert "not found" in data["error"]
 
-    async def test_send_async_missing_fields(self, client: TestClient) -> None:
+    async def test_send_async_missing_fields(self, client: TestClient[Any, Any]) -> None:
         resp = await client.post(
             "/interagent/send_async",
             json={"from": "sender"},
@@ -123,7 +127,7 @@ class TestNewSessionFlag:
     """Test new_session flag in /interagent/send and /interagent/send_async."""
 
     async def test_send_passes_new_session_true(
-        self, client: TestClient, bus: InterAgentBus
+        self, client: TestClient[Any, Any], bus: InterAgentBus
     ) -> None:
         stack = MagicMock()
         stack.bot.orchestrator = MagicMock()
@@ -149,7 +153,7 @@ class TestNewSessionFlag:
         )
 
     async def test_send_defaults_new_session_false(
-        self, client: TestClient, bus: InterAgentBus
+        self, client: TestClient[Any, Any], bus: InterAgentBus
     ) -> None:
         stack = MagicMock()
         stack.bot.orchestrator = MagicMock()
@@ -170,7 +174,7 @@ class TestNewSessionFlag:
         )
 
     async def test_send_async_passes_new_session(
-        self, client: TestClient, bus: InterAgentBus
+        self, client: TestClient[Any, Any], bus: InterAgentBus
     ) -> None:
         stack = MagicMock()
         stack.bot.orchestrator = MagicMock()
@@ -196,13 +200,13 @@ class TestNewSessionFlag:
 class TestHandleList:
     """Test GET /interagent/agents."""
 
-    async def test_list_empty(self, client: TestClient) -> None:
+    async def test_list_empty(self, client: TestClient[Any, Any]) -> None:
         resp = await client.get("/interagent/agents")
         assert resp.status == 200
         data = await resp.json()
         assert data["agents"] == []
 
-    async def test_list_with_agents(self, client: TestClient, bus: InterAgentBus) -> None:
+    async def test_list_with_agents(self, client: TestClient[Any, Any], bus: InterAgentBus) -> None:
         bus.register("main", MagicMock())
         bus.register("sub1", MagicMock())
 
@@ -214,12 +218,14 @@ class TestHandleList:
 class TestHandleHealth:
     """Test GET /interagent/health."""
 
-    async def test_health_no_ref(self, client: TestClient) -> None:
+    async def test_health_no_ref(self, client: TestClient[Any, Any]) -> None:
         resp = await client.get("/interagent/health")
         data = await resp.json()
         assert data["agents"] == {}
 
-    async def test_health_with_agents(self, client: TestClient, api: InternalAgentAPI) -> None:
+    async def test_health_with_agents(
+        self, client: TestClient[Any, Any], api: InternalAgentAPI
+    ) -> None:
         h = AgentHealth(name="main")
         h.mark_running()
         api.set_health_ref({"main": h})
@@ -230,7 +236,9 @@ class TestHandleHealth:
         assert data["agents"]["main"]["status"] == "running"
         assert data["agents"]["main"]["restart_count"] == 0
 
-    async def test_health_crashed_agent(self, client: TestClient, api: InternalAgentAPI) -> None:
+    async def test_health_crashed_agent(
+        self, client: TestClient[Any, Any], api: InternalAgentAPI
+    ) -> None:
         h = AgentHealth(name="sub1")
         h.mark_crashed("OOM")
         api.set_health_ref({"sub1": h})

@@ -56,7 +56,7 @@ def base_config() -> AgentConfig:
     return AgentConfig(
         provider="claude",
         model="opus",
-        cli_parameters={"claude": [], "codex": []},
+        cli_parameters={"claude": [], "codex": []},  # type: ignore[arg-type]
         permission_mode="bypassPermissions",
         cli_timeout=600,
     )
@@ -211,7 +211,7 @@ async def test_cron_task_fallback_to_global(
     global_config = AgentConfig(
         provider="claude",
         model="opus",
-        cli_parameters={"claude": [], "codex": []},
+        cli_parameters={"claude": [], "codex": []},  # type: ignore[arg-type]
         permission_mode="bypassPermissions",
         cli_timeout=600,
     )
@@ -264,7 +264,7 @@ async def test_cron_task_provider_switch(
     base_config = AgentConfig(
         provider="claude",
         model="opus",
-        cli_parameters={"claude": [], "codex": []},
+        cli_parameters={"claude": [], "codex": []},  # type: ignore[arg-type]
         permission_mode="bypassPermissions",
         cli_timeout=600,
     )

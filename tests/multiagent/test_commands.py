@@ -34,12 +34,20 @@ class TestCmdAgents:
 
     async def test_no_supervisor(self) -> None:
         orch = _make_orch(with_supervisor=False)
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         assert "not active" in result.text
 
     async def test_no_agents(self) -> None:
         orch = _make_orch()
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         assert "No agents" in result.text
 
     async def test_lists_running_agent(self) -> None:
@@ -51,7 +59,11 @@ class TestCmdAgents:
         stack.is_main = True
         orch.supervisor.stacks = {"main": stack}
 
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         assert "main" in result.text
         assert "running" in result.text
 
@@ -64,7 +76,11 @@ class TestCmdAgents:
         stack.is_main = False
         orch.supervisor.stacks = {"sub1": stack}
 
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         assert "crashed" in result.text
         assert "Connection refused" in result.text
 
@@ -78,7 +94,11 @@ class TestCmdAgents:
         stack.is_main = False
         orch.supervisor.stacks = {"sub1": stack}
 
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         assert "restarts: 2" in result.text
 
     async def test_shows_uptime_for_running(self) -> None:
@@ -90,7 +110,11 @@ class TestCmdAgents:
         stack.is_main = True
         orch.supervisor.stacks = {"main": stack}
 
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         # Uptime is very short, so it shows seconds
         assert "s)" in result.text or "m)" in result.text
 
@@ -106,7 +130,11 @@ class TestCmdAgents:
             "alpha": MagicMock(is_main=False),
         }
 
-        result = await cmd_agents(orch, 1, "/agents")
+        result = await cmd_agents(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agents",
+        )
         # "alpha" should come before "main" (sorted)
         alpha_pos = result.text.index("alpha")
         main_pos = result.text.index("main")
@@ -118,28 +146,48 @@ class TestCmdAgentStop:
 
     async def test_no_supervisor(self) -> None:
         orch = _make_orch(with_supervisor=False)
-        result = await cmd_agent_stop(orch, 1, "/agent_stop sub1")
+        result = await cmd_agent_stop(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_stop sub1",
+        )
         assert "not active" in result.text
 
     async def test_missing_name(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_stop(orch, 1, "/agent_stop")
+        result = await cmd_agent_stop(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_stop",
+        )
         assert "Usage" in result.text
 
     async def test_cannot_stop_main(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_stop(orch, 1, "/agent_stop main")
+        result = await cmd_agent_stop(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_stop main",
+        )
         assert "Cannot stop the main agent" in result.text
 
     async def test_agent_not_running(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_stop(orch, 1, "/agent_stop sub1")
+        result = await cmd_agent_stop(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_stop sub1",
+        )
         assert "not running" in result.text
 
     async def test_stop_success(self) -> None:
         orch = _make_orch()
         orch.supervisor.stacks = {"sub1": MagicMock()}
-        result = await cmd_agent_stop(orch, 1, "/agent_stop sub1")
+        result = await cmd_agent_stop(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_stop sub1",
+        )
         assert "stopped" in result.text
         orch.supervisor.stop_agent.assert_called_once_with("sub1")
 
@@ -149,17 +197,29 @@ class TestCmdAgentStart:
 
     async def test_no_supervisor(self) -> None:
         orch = _make_orch(with_supervisor=False)
-        result = await cmd_agent_start(orch, 1, "/agent_start sub1")
+        result = await cmd_agent_start(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_start sub1",
+        )
         assert "not active" in result.text
 
     async def test_missing_name(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_start(orch, 1, "/agent_start")
+        result = await cmd_agent_start(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_start",
+        )
         assert "Usage" in result.text
 
     async def test_start_success(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_start(orch, 1, "/agent_start sub1")
+        result = await cmd_agent_start(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_start sub1",
+        )
         assert "started" in result.text
         orch.supervisor.start_agent_by_name.assert_called_once_with("sub1")
 
@@ -169,12 +229,20 @@ class TestCmdAgentRestart:
 
     async def test_no_supervisor(self) -> None:
         orch = _make_orch(with_supervisor=False)
-        result = await cmd_agent_restart(orch, 1, "/agent_restart sub1")
+        result = await cmd_agent_restart(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_restart sub1",
+        )
         assert "not active" in result.text
 
     async def test_missing_name(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_restart(orch, 1, "/agent_restart")
+        result = await cmd_agent_restart(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_restart",
+        )
         assert "Usage" in result.text
 
     async def test_cannot_restart_main(self) -> None:
@@ -182,11 +250,19 @@ class TestCmdAgentRestart:
         orch.supervisor.restart_agent = AsyncMock(
             return_value="Cannot restart main agent via this command. Use /restart instead."
         )
-        result = await cmd_agent_restart(orch, 1, "/agent_restart main")
+        result = await cmd_agent_restart(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_restart main",
+        )
         assert "Cannot restart main" in result.text
 
     async def test_restart_success(self) -> None:
         orch = _make_orch()
-        result = await cmd_agent_restart(orch, 1, "/agent_restart sub1")
+        result = await cmd_agent_restart(
+            orch,
+            1,  # type: ignore[arg-type]
+            "/agent_restart sub1",
+        )
         assert "restarted" in result.text
         orch.supervisor.restart_agent.assert_called_once_with("sub1")

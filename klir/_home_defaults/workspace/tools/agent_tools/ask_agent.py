@@ -63,9 +63,7 @@ def main() -> None:
             result = json.loads(resp.read().decode())
     except urllib.error.URLError as e:
         print(f"Error: Cannot reach inter-agent API at {url}: {e}", file=sys.stderr)
-        print(
-            "Make sure the Klir supervisor is running with multi-agent support.", file=sys.stderr
-        )
+        print("Make sure the Klir supervisor is running with multi-agent support.", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

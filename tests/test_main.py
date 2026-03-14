@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -383,8 +384,8 @@ class TestReExecBot:
         assert exc_info.value.code == 0
 
 
-def _mock_asyncio_run(return_value: int):
-    def _side_effect(coro):
+def _mock_asyncio_run(return_value: int) -> Any:
+    def _side_effect(coro: Any) -> int:
         coro.close()
         return return_value
 

@@ -9,6 +9,7 @@ Strategies (tried in order):
 Usage:
     python tools/telegram_tools/transcribe_audio.py --file /path/to/audio.ogg
 """
+
 from __future__ import annotations
 
 import argparse
@@ -19,9 +20,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-_TELEGRAM_FILES = Path(
-    os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))
-).expanduser() / "workspace" / "telegram_files"
+_TELEGRAM_FILES = (
+    Path(os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))).expanduser()
+    / "workspace"
+    / "telegram_files"
+)
 
 
 def _transcribe_openai(path: Path) -> dict:
@@ -138,12 +141,18 @@ def main() -> None:
             return
         errors.append(result.get("error", "unknown error"))
 
-    print(json.dumps({
-        "error": "All transcription methods failed",
-        "details": errors,
-        "hint": "Install openai (pip install openai) and set OPENAI_API_KEY, "
-        "or install whisper locally (pip install openai-whisper)",
-    }, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                "error": "All transcription methods failed",
+                "details": errors,
+                "hint": "Install openai (pip install openai) and set OPENAI_API_KEY, "
+                "or install whisper locally (pip install openai-whisper)",
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     sys.exit(1)
 
 

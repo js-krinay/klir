@@ -75,7 +75,7 @@ def main() -> None:
         result["user_timezone_hint"] = (
             "No user_timezone set in config.json. "
             "Ask the user where they are and set it. "
-            "Example: edit config.json -> \"user_timezone\": \"Europe/Berlin\""
+            'Example: edit config.json -> "user_timezone": "Europe/Berlin"'
         )
 
     if args.zone:

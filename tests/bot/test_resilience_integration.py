@@ -25,12 +25,14 @@ class TestResilienceIntegration:
             "make_request",
             new=AsyncMock(
                 side_effect=[
-                    TelegramServerError(method=None, message="500"),
+                    TelegramServerError(method=None, message="500"),  # type: ignore[arg-type]
                     mock_response,
                 ]
             ),
         ):
-            result = await session.make_request(bot=MagicMock(), method=MagicMock(), timeout=None)
+            result: object = await session.make_request(
+                bot=MagicMock(), method=MagicMock(), timeout=None
+            )
             assert result is mock_response
 
     @pytest.mark.asyncio
@@ -46,7 +48,7 @@ class TestResilienceIntegration:
             patch.object(
                 type(session).__bases__[0],
                 "make_request",
-                new=AsyncMock(side_effect=TelegramNetworkError(method=None, message="timeout")),
+                new=AsyncMock(side_effect=TelegramNetworkError(method=None, message="timeout")),  # type: ignore[arg-type]
             ),
             pytest.raises(TelegramNetworkError),
         ):
@@ -59,7 +61,7 @@ class TestResilienceIntegration:
 
         cfg = AgentConfig(
             telegram_token="test:token",
-            resilience={"max_retries": 5, "base_backoff_seconds": 2.0},
+            resilience={"max_retries": 5, "base_backoff_seconds": 2.0},  # type: ignore[arg-type]
         )
 
         session = create_bot_session(proxy_url=None, resilience_config=cfg.resilience)

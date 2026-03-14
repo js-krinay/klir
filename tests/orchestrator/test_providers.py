@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,7 +12,7 @@ from klir.orchestrator.providers import ProviderManager
 
 
 @pytest.fixture(autouse=True)
-def _reset_gemini():
+def _reset_gemini() -> Generator[None]:
     reset_gemini_models()
     yield
     reset_gemini_models()
@@ -254,7 +255,7 @@ class TestApplyAuthResults:
             results[name] = r
 
         pm.apply_auth_results(
-            results,
+            results,  # type: ignore[arg-type]
             auth_status_enum=auth_status,
             cli_service=cli_service,
         )
@@ -276,7 +277,7 @@ class TestApplyAuthResults:
             results[name] = r
 
         pm.apply_auth_results(
-            results,
+            results,  # type: ignore[arg-type]
             auth_status_enum=auth_status,
             cli_service=cli_service,
         )

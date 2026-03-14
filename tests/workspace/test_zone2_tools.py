@@ -8,7 +8,7 @@ from klir.workspace.init import _walk_and_copy
 
 
 @pytest.fixture
-def temp_workspace(tmp_path: Path):
+def temp_workspace(tmp_path: Path) -> tuple[Path, Path]:
     """Create a temporary workspace structure."""
     home_defaults = tmp_path / "home_defaults"
     klir_home = tmp_path / "klir_home"
@@ -24,7 +24,7 @@ def temp_workspace(tmp_path: Path):
     return home_defaults, klir_home
 
 
-def test_cron_tools_py_files_are_zone2(temp_workspace):
+def test_cron_tools_py_files_are_zone2(temp_workspace: tuple[Path, Path]) -> None:
     """Test that .py files in tools/cron_tools/ are always overwritten (Zone 2)."""
     home_defaults, klir_home = temp_workspace
 
@@ -50,7 +50,7 @@ def test_cron_tools_py_files_are_zone2(temp_workspace):
     assert deployed_tool.read_text() == "# version 2 - UPDATED"
 
 
-def test_webhook_tools_py_files_are_zone2(temp_workspace):
+def test_webhook_tools_py_files_are_zone2(temp_workspace: tuple[Path, Path]) -> None:
     """Test that .py files in tools/webhook_tools/ are always overwritten (Zone 2)."""
     home_defaults, klir_home = temp_workspace
 
@@ -76,7 +76,7 @@ def test_webhook_tools_py_files_are_zone2(temp_workspace):
     assert deployed_tool.read_text() == "# version 2 - UPDATED"
 
 
-def test_user_tools_py_files_are_zone3(temp_workspace):
+def test_user_tools_py_files_are_zone3(temp_workspace: tuple[Path, Path]) -> None:
     """Test that .py files in tools/user_tools/ are NOT overwritten (Zone 3)."""
     home_defaults, klir_home = temp_workspace
 
@@ -105,7 +105,7 @@ def test_user_tools_py_files_are_zone3(temp_workspace):
     assert deployed_tool.read_text() == "# user's custom version"
 
 
-def test_non_py_files_in_tool_dirs_are_zone3(temp_workspace):
+def test_non_py_files_in_tool_dirs_are_zone3(temp_workspace: tuple[Path, Path]) -> None:
     """Test that non-.py files in framework tool dirs are still Zone 3."""
     home_defaults, klir_home = temp_workspace
 
@@ -134,7 +134,7 @@ def test_non_py_files_in_tool_dirs_are_zone3(temp_workspace):
     assert deployed_config.read_text() == '{"version": 1, "user_setting": true}'
 
 
-def test_shared_py_is_also_zone2(temp_workspace):
+def test_shared_py_is_also_zone2(temp_workspace: tuple[Path, Path]) -> None:
     """Test that _shared.py in tool dirs is also Zone 2 (framework file)."""
     home_defaults, klir_home = temp_workspace
 

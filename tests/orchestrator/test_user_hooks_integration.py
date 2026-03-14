@@ -22,7 +22,7 @@ def _resp(**kw: object) -> AgentResponse:
         "total_tokens": 100,
     }
     defaults.update(kw)
-    return AgentResponse(**defaults)
+    return AgentResponse(**defaults)  # type: ignore[arg-type]
 
 
 @pytest.fixture

@@ -520,7 +520,7 @@ class TestStreamingFlow:
         await orch.handle_message_streaming(
             KEY,
             "Use a tool",
-            on_tool_activity=on_tool,
+            on_tool_activity=on_tool,  # type: ignore[arg-type]
         )
 
         call_kwargs = mock_streaming.call_args[1]

@@ -4,6 +4,7 @@
 Usage:
     python tools/telegram_tools/file_info.py --file /path/to/telegram_files/2025-01-15/photo_abc.jpg
 """
+
 from __future__ import annotations
 
 import argparse
@@ -14,9 +15,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-_TELEGRAM_FILES = Path(
-    os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))
-).expanduser() / "workspace" / "telegram_files"
+_TELEGRAM_FILES = (
+    Path(os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))).expanduser()
+    / "workspace"
+    / "telegram_files"
+)
 
 
 def main() -> None:

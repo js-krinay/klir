@@ -18,7 +18,7 @@ class TestRetryLogging:
 
         fn = AsyncMock(
             side_effect=[
-                TelegramServerError(method=None, message="Internal Error"),
+                TelegramServerError(method=None, message="Internal Error"),  # type: ignore[arg-type]
                 "ok",
             ]
         )
@@ -37,7 +37,7 @@ class TestRetryLogging:
         from klir.bot.retry import retry_async
         from klir.config import ResilienceConfig
 
-        fn = AsyncMock(side_effect=TelegramNetworkError(method=None, message="timeout"))
+        fn = AsyncMock(side_effect=TelegramNetworkError(method=None, message="timeout"))  # type: ignore[arg-type]
         cfg = ResilienceConfig(max_retries=1, base_backoff_seconds=0.01, max_backoff_seconds=0.1)
 
         with (
@@ -60,7 +60,7 @@ class TestRetryLogging:
         from klir.bot.retry import retry_async
         from klir.config import ResilienceConfig
 
-        fn = AsyncMock(side_effect=TelegramConflictError(method=None, message="Conflict"))
+        fn = AsyncMock(side_effect=TelegramConflictError(method=None, message="Conflict"))  # type: ignore[arg-type]
         cfg = ResilienceConfig()
 
         with (

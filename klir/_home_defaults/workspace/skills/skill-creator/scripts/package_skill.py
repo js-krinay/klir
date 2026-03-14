@@ -17,7 +17,9 @@ from typing import Optional, Union
 from quick_validate import validate_skill
 
 
-def package_skill(skill_path: Union[str, Path], output_dir: Optional[Union[str, Path]] = None) -> Optional[Path]:
+def package_skill(
+    skill_path: Union[str, Path], output_dir: Optional[Union[str, Path]] = None
+) -> Optional[Path]:
     """
     Package a skill folder into a .skill file.
 
@@ -66,9 +68,9 @@ def package_skill(skill_path: Union[str, Path], output_dir: Optional[Union[str, 
 
     # Create the .skill file (zip format)
     try:
-        with zipfile.ZipFile(skill_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        with zipfile.ZipFile(skill_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Walk through the skill directory
-            for file_path in skill_path_obj.rglob('*'):
+            for file_path in skill_path_obj.rglob("*"):
                 if file_path.is_file():
                     # Calculate the relative path within the zip
                     arcname = file_path.relative_to(skill_path_obj.parent)

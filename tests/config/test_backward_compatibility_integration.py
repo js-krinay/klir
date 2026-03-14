@@ -35,8 +35,9 @@ def test_old_config_loads_with_new_defaults(tmp_path: Path) -> None:
     # Should have added cli_parameters
     assert changed is True
     assert "cli_parameters" in merged
-    assert merged["cli_parameters"]["claude"] == []
-    assert merged["cli_parameters"]["codex"] == []
+    cli_params: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert cli_params["claude"] == []
+    assert cli_params["codex"] == []
 
     # User values should be preserved
     assert merged["log_level"] == "DEBUG"
@@ -45,7 +46,7 @@ def test_old_config_loads_with_new_defaults(tmp_path: Path) -> None:
     assert merged["allowed_user_ids"] == [12345]
 
     # Should be able to parse into AgentConfig
-    config = AgentConfig(**merged)
+    config = AgentConfig(**merged)  # type: ignore[arg-type]
     assert config.log_level == "DEBUG"
     assert config.cli_parameters.claude == []
     assert config.cli_parameters.codex == []
@@ -71,12 +72,13 @@ def test_partial_cli_parameters_gets_completed(tmp_path: Path) -> None:
 
     # Should add missing codex key
     assert changed is True
-    assert "codex" in merged["cli_parameters"]
-    assert merged["cli_parameters"]["claude"] == ["--fast"]
-    assert merged["cli_parameters"]["codex"] == []
+    cli_params: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert "codex" in cli_params
+    assert cli_params["claude"] == ["--fast"]
+    assert cli_params["codex"] == []
 
     # Should be parseable
-    config = AgentConfig(**merged)
+    config = AgentConfig(**merged)  # type: ignore[arg-type]
     assert config.cli_parameters.claude == ["--fast"]
     assert config.cli_parameters.codex == []
 
@@ -107,8 +109,9 @@ def test_config_with_all_new_fields_needs_no_merge(tmp_path: Path) -> None:
     # Should add missing top-level keys but not change cli_parameters
     # _changed will be True because of missing top-level fields
     assert "cli_parameters" in merged
-    assert merged["cli_parameters"]["claude"] == ["--fast"]
-    assert merged["cli_parameters"]["codex"] == ["--verbose"]
+    cli_params_c: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert cli_params_c["claude"] == ["--fast"]
+    assert cli_params_c["codex"] == ["--verbose"]
 
     # User values preserved
     assert merged["provider"] == "codex"
@@ -117,7 +120,7 @@ def test_config_with_all_new_fields_needs_no_merge(tmp_path: Path) -> None:
 
 def test_deeply_nested_defaults_merge_correctly() -> None:
     """deep_merge_config should handle multiple levels of nesting."""
-    user_config = {
+    user_config: dict[str, object] = {
         "streaming": {
             "enabled": False,
             # min_chars missing - should be added from defaults
@@ -134,11 +137,13 @@ def test_deeply_nested_defaults_merge_correctly() -> None:
     assert changed is True
 
     # Streaming should have user's enabled + default min_chars
-    assert merged["streaming"]["enabled"] is False
-    assert "min_chars" in merged["streaming"]
-    assert merged["streaming"]["min_chars"] == 200  # default value
+    streaming: dict[str, object] = merged["streaming"]  # type: ignore[assignment]
+    assert streaming["enabled"] is False
+    assert "min_chars" in streaming
+    assert streaming["min_chars"] == 200  # default value
 
     # CLI parameters should have user's claude + default codex
-    assert merged["cli_parameters"]["claude"] == ["--custom-flag"]
-    assert "codex" in merged["cli_parameters"]
-    assert merged["cli_parameters"]["codex"] == []
+    cli_params_d: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert cli_params_d["claude"] == ["--custom-flag"]
+    assert "codex" in cli_params_d
+    assert cli_params_d["codex"] == []

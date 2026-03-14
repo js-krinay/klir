@@ -32,6 +32,6 @@ class TestResilienceWiring:
 
         cfg = AgentConfig(
             telegram_token="test:token",
-            resilience={"max_retries": 5},
+            resilience={"max_retries": 5},  # type: ignore[arg-type]
         )
         assert cfg.resilience.max_retries == 5

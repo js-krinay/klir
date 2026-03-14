@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+from klir.config import AgentConfig
 
-def _make_config(**kwargs: object):
-    from klir.config import AgentConfig
 
-    defaults = {"telegram_token": "test:token", "provider": "claude", "model": "opus"}
+def _make_config(**kwargs: object) -> AgentConfig:
+    defaults: dict[str, object] = {
+        "telegram_token": "test:token",
+        "provider": "claude",
+        "model": "opus",
+    }
     defaults.update(kwargs)
-    return AgentConfig(**defaults)
+    return AgentConfig(**defaults)  # type: ignore[arg-type]
 
 
 class TestChatConfigResolver:

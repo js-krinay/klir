@@ -21,8 +21,8 @@ def service_config_with_params() -> CLIServiceConfig:
         max_budget_usd=None,
         permission_mode="normal",
         reasoning_effort="medium",
-        claude_cli_parameters=["--claude-flag", "claude-value"],
-        codex_cli_parameters=["--codex-flag", "codex-value"],
+        claude_cli_parameters=("--claude-flag", "claude-value"),
+        codex_cli_parameters=("--codex-flag", "codex-value"),
     )
 
 
@@ -160,8 +160,8 @@ async def test_cli_service_parameter_routing() -> None:
         max_budget_usd=None,
         permission_mode="normal",
         reasoning_effort="medium",
-        claude_cli_parameters=["--claude-param", "value1"],
-        codex_cli_parameters=["--codex-param", "value2"],
+        claude_cli_parameters=("--claude-param", "value1"),
+        codex_cli_parameters=("--codex-param", "value2"),
     )
 
     # Test Claude parameter routing

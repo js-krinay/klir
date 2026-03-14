@@ -20,7 +20,7 @@ class TestConflictDetector:
         from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
-        err = TelegramConflictError(method=None, message="Conflict")
+        err = TelegramConflictError(method=None, message="Conflict")  # type: ignore[arg-type]
         detector.record(err)
         assert detector.conflict_detected is True
         assert detector.conflict_count == 1
@@ -29,7 +29,7 @@ class TestConflictDetector:
         from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
-        err = TelegramConflictError(method=None, message="Conflict")
+        err = TelegramConflictError(method=None, message="Conflict")  # type: ignore[arg-type]
         detector.record(err)
         detector.record(err)
         assert detector.conflict_count == 2
@@ -38,7 +38,7 @@ class TestConflictDetector:
         from klir.bot.conflict_detector import ConflictDetector
 
         detector = ConflictDetector()
-        err = TelegramConflictError(method=None, message="Conflict")
+        err = TelegramConflictError(method=None, message="Conflict")  # type: ignore[arg-type]
         detector.record(err)
         detector.reset()
         assert detector.conflict_detected is False
@@ -50,7 +50,7 @@ class TestConflictDetector:
 
         callback = AsyncMock()
         detector = ConflictDetector(on_conflict=callback)
-        err = TelegramConflictError(method=None, message="Conflict")
+        err = TelegramConflictError(method=None, message="Conflict")  # type: ignore[arg-type]
         await detector.record_async(err)
         callback.assert_awaited_once()
 

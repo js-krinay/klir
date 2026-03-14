@@ -266,7 +266,7 @@ class TestOnAgentsChanged:
             call_order.append("exit")
             return result
 
-        supervisor._registry.load = slow_load
+        supervisor._registry.load = slow_load  # type: ignore[method-assign]
 
         await asyncio.gather(
             supervisor._on_agents_changed(),
@@ -320,8 +320,8 @@ class TestStopAll:
 
         # Create tasks that are already done
         supervisor._tasks = {
-            "main": asyncio.create_task(asyncio.sleep(999)),
-            "sub1": asyncio.create_task(asyncio.sleep(999)),
+            "main": asyncio.create_task(asyncio.sleep(999)),  # type: ignore[arg-type]
+            "sub1": asyncio.create_task(asyncio.sleep(999)),  # type: ignore[arg-type]
         }
 
         from klir.multiagent.bus import InterAgentBus
@@ -569,7 +569,7 @@ class TestAbortAllAgents:
         from klir.multiagent.bus import InterAgentBus
 
         supervisor._bus = InterAgentBus()
-        supervisor._bus.cancel_all_async = AsyncMock(return_value=2)
+        supervisor._bus.cancel_all_async = AsyncMock(return_value=2)  # type: ignore[method-assign]
 
         killed = await supervisor.abort_all_agents()
         assert killed == 2

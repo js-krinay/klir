@@ -63,8 +63,8 @@ class TestGetCurrentVersion:
 
 
 def _mock_pypi_session(
-    *, status: int = 200, json_data: dict | None = None, error: Exception | None = None
-) -> MagicMock:
+    *, status: int = 200, json_data: dict[str, object] | None = None, error: Exception | None = None
+) -> object:
     """Build a mock aiohttp.ClientSession for check_pypi tests.
 
     Handles the combined ``async with (ClientSession() as s, s.get() as r)`` pattern.

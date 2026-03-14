@@ -30,7 +30,7 @@ class TestTouchIntegration:
     def test_touch_noop_on_non_topic_message(self) -> None:
         """Non-topic messages (topic_id=None) should not call touch."""
         cache = TopicNameCache()
-        topic_id = None
+        topic_id: int | None = None
         # This should be the guard in the handler
         if topic_id is not None:
             cache.touch(-100, topic_id)

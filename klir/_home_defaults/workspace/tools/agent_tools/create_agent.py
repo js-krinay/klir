@@ -133,7 +133,10 @@ def main() -> None:
     # Validate name
     name = args.name.lower().strip()
     if not name or " " in name or name == "main":
-        print(f"Error: Invalid agent name '{name}'. Must be lowercase, no spaces, not 'main'.", file=sys.stderr)
+        print(
+            f"Error: Invalid agent name '{name}'. Must be lowercase, no spaces, not 'main'.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Parse user IDs

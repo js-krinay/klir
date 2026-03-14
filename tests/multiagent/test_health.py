@@ -59,9 +59,9 @@ class TestAgentHealthStates:
         assert h.status == "stopped"
 
         h.mark_starting()
-        assert h.status == "starting"
+        assert h.status == "starting"  # type: ignore[comparison-overlap]
 
-        h.mark_running()
+        h.mark_running()  # type: ignore[unreachable]
         assert h.status == "running"
 
         h.mark_crashed("error")

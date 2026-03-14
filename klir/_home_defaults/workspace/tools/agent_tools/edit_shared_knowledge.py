@@ -74,7 +74,9 @@ def main() -> None:
     if args.append is not None:
         path.parent.mkdir(parents=True, exist_ok=True)
         existing = path.read_text(encoding="utf-8").rstrip() if path.is_file() else ""
-        new_content = f"{existing}\n\n{args.append.strip()}\n" if existing else f"{args.append.strip()}\n"
+        new_content = (
+            f"{existing}\n\n{args.append.strip()}\n" if existing else f"{args.append.strip()}\n"
+        )
         path.write_text(new_content, encoding="utf-8")
         print(f"Appended to shared knowledge ({len(args.append)} chars).")
         print("Changes will sync to all agents automatically.")

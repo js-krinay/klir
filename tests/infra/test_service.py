@@ -19,7 +19,7 @@ def _reload_for_platform(platform: str) -> str:
     try:
         sys.platform = platform
         mod = importlib.reload(service)
-        return mod._backend.__name__
+        return mod._backend.__name__  # type: ignore[no-any-return]
     finally:
         sys.platform = original
         importlib.reload(service)

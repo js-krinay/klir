@@ -49,12 +49,12 @@ def test_hook_config_parses_provider_condition() -> None:
 
 def test_hook_config_rejects_invalid_phase() -> None:
     with pytest.raises(ValueError, match="phase"):
-        UserMessageHookConfig(name="bad", phase="middle", action="prepend", text="x")
+        UserMessageHookConfig(name="bad", phase="middle", action="prepend", text="x")  # type: ignore[arg-type]
 
 
 def test_hook_config_rejects_invalid_action() -> None:
     with pytest.raises(ValueError, match="action"):
-        UserMessageHookConfig(name="bad", phase="pre", action="delete", text="x")
+        UserMessageHookConfig(name="bad", phase="pre", action="delete", text="x")  # type: ignore[arg-type]
 
 
 def test_config_round_trips_hooks() -> None:
@@ -63,6 +63,6 @@ def test_config_round_trips_hooks() -> None:
             {"name": "h1", "phase": "pre", "action": "prepend", "text": "PREFIX: "},
         ]
     }
-    cfg = AgentConfig(**raw)
+    cfg = AgentConfig(**raw)  # type: ignore[arg-type]
     assert len(cfg.message_hooks) == 1
     assert cfg.message_hooks[0].name == "h1"

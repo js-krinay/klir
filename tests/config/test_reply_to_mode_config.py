@@ -30,7 +30,7 @@ class TestReplyToModeConfig:
         from klir.config import AgentConfig
 
         with pytest.raises(ValidationError):
-            AgentConfig(reply_to_mode="invalid")
+            AgentConfig(reply_to_mode="invalid")  # type: ignore[arg-type]
 
 
 class TestChatOverridesReplyToMode:
@@ -52,4 +52,4 @@ class TestChatOverridesReplyToMode:
         from klir.config import ChatOverrides
 
         with pytest.raises(ValidationError):
-            ChatOverrides(reply_to_mode="invalid")
+            ChatOverrides(reply_to_mode="invalid")  # type: ignore[arg-type]

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -329,7 +330,7 @@ class TestWaitingStatus:
 
 
 class TestResume:
-    def _hub(self, registry: TaskRegistry, tmp_path: Path, **cli_kw: str) -> TaskHub:
+    def _hub(self, registry: TaskRegistry, tmp_path: Path, **cli_kw: Any) -> TaskHub:
         hub = TaskHub(
             registry,
             MagicMock(workspace=tmp_path),

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,7 +12,7 @@ from klir.orchestrator.providers import ProviderManager
 
 
 @pytest.fixture(autouse=True)
-def _reset_gemini():
+def _reset_gemini() -> Generator[None]:
     reset_gemini_models()
     yield
     reset_gemini_models()
@@ -43,7 +44,7 @@ class TestBuildProviderInfo:
         assert info[0]["id"] == "claude"
         assert info[0]["name"] == "Claude Code"
         assert info[0]["color"] == "#F97316"
-        assert sorted(info[0]["models"]) == ["haiku", "opus", "sonnet"]
+        assert sorted(info[0]["models"]) == ["haiku", "opus", "sonnet"]  # type: ignore[call-overload]
 
     def test_multiple_providers_sorted(self) -> None:
         pm, obs = _make_provider_manager(frozenset({"gemini", "claude"}))
@@ -61,7 +62,7 @@ class TestBuildProviderInfo:
     def test_gemini_falls_back_to_aliases(self) -> None:
         pm, obs = _make_provider_manager(frozenset({"gemini"}))
         info = pm.build_provider_info(obs)
-        assert "auto" in info[0]["models"]
+        assert "auto" in info[0]["models"]  # type: ignore[operator]
 
     def test_codex_with_cache(self) -> None:
         model1 = MagicMock()

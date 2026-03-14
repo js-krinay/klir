@@ -45,7 +45,7 @@ def _make_editor(
             reply_to=reply_to,
             cfg=cfg,
             thread_id=thread_id,
-            reply_to_mode=reply_to_mode,
+            reply_to_mode=reply_to_mode,  # type: ignore[arg-type]
         ),
     )
     return bot, editor

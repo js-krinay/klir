@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -86,7 +87,7 @@ def _make_app(tmp_path: Path) -> web.Application:
 
 
 @pytest.fixture
-async def api_client(tmp_path: Path, aiohttp_client):
+async def api_client(tmp_path: Path, aiohttp_client: Any) -> Any:
     """Create an aiohttp test client with the API server app."""
     app = _make_app(tmp_path)
     client = await aiohttp_client(app)
@@ -95,11 +96,11 @@ async def api_client(tmp_path: Path, aiohttp_client):
 
 
 class TestFileDownload:
-    async def test_no_auth_returns_401(self, api_client) -> None:
+    async def test_no_auth_returns_401(self, api_client: Any) -> None:
         resp = await api_client.get("/files", params={"path": "/tmp/test"})
         assert resp.status == 401
 
-    async def test_wrong_token_returns_401(self, api_client) -> None:
+    async def test_wrong_token_returns_401(self, api_client: Any) -> None:
         resp = await api_client.get(
             "/files",
             params={"path": "/tmp/test"},
@@ -107,14 +108,14 @@ class TestFileDownload:
         )
         assert resp.status == 401
 
-    async def test_missing_path_returns_400(self, api_client) -> None:
+    async def test_missing_path_returns_400(self, api_client: Any) -> None:
         resp = await api_client.get(
             "/files",
             headers={"Authorization": "Bearer test-token"},
         )
         assert resp.status == 400
 
-    async def test_nonexistent_file_returns_404(self, api_client) -> None:
+    async def test_nonexistent_file_returns_404(self, api_client: Any) -> None:
         tmp = api_client._tmp_path
         resp = await api_client.get(
             "/files",
@@ -123,7 +124,7 @@ class TestFileDownload:
         )
         assert resp.status == 404
 
-    async def test_valid_file_download(self, api_client) -> None:
+    async def test_valid_file_download(self, api_client: Any) -> None:
         tmp = api_client._tmp_path
         test_file = tmp / "download_test.txt"
         test_file.write_text("hello world")
@@ -137,7 +138,7 @@ class TestFileDownload:
         body = await resp.read()
         assert body == b"hello world"
 
-    async def test_path_outside_allowed_roots_returns_403(self, api_client) -> None:
+    async def test_path_outside_allowed_roots_returns_403(self, api_client: Any) -> None:
         resp = await api_client.get(
             "/files",
             params={"path": "/etc/hostname"},
@@ -147,11 +148,11 @@ class TestFileDownload:
 
 
 class TestFileUpload:
-    async def test_no_auth_returns_401(self, api_client) -> None:
+    async def test_no_auth_returns_401(self, api_client: Any) -> None:
         resp = await api_client.post("/upload")
         assert resp.status == 401
 
-    async def test_upload_file(self, api_client) -> None:
+    async def test_upload_file(self, api_client: Any) -> None:
         data = FormData()
         data.add_field("file", b"test content", filename="test.txt")
 
@@ -168,7 +169,7 @@ class TestFileUpload:
         assert "[INCOMING FILE]" in body["prompt"]
         assert "via API" in body["prompt"]
 
-    async def test_upload_with_caption(self, api_client) -> None:
+    async def test_upload_with_caption(self, api_client: Any) -> None:
         data = FormData()
         data.add_field("file", b"img data", filename="photo.jpg", content_type="image/jpeg")
         data.add_field("caption", "Look at this photo")

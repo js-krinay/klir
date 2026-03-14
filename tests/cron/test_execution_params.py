@@ -168,6 +168,7 @@ class TestBuildCmdWithTaskExecutionConfig:
         with patch("klir.cron.execution.which", return_value="/usr/bin/claude"):
             result = build_cmd(exec_config, "my prompt")
 
+        assert result is not None
         # Find the -- separator
         separator_idx = result.cmd.index("--")
         prompt_idx = result.cmd.index("my prompt")

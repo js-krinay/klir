@@ -69,7 +69,7 @@ def test_agent_config_json_round_trip_with_cli_parameters() -> None:
 
 def test_deep_merge_preserves_cli_parameters() -> None:
     """deep_merge_config should preserve user CLI parameters and add new fields."""
-    user_config = {
+    user_config: dict[str, object] = {
         "cli_parameters": {
             "claude": ["--fast"],
             "codex": ["--verbose"],
@@ -81,8 +81,9 @@ def test_deep_merge_preserves_cli_parameters() -> None:
     merged, _changed = deep_merge_config(user_config, defaults)
 
     # User values should be preserved
-    assert merged["cli_parameters"]["claude"] == ["--fast"]
-    assert merged["cli_parameters"]["codex"] == ["--verbose"]
+    cli_params: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert cli_params["claude"] == ["--fast"]
+    assert cli_params["codex"] == ["--verbose"]
 
     # New top-level fields should be added
     assert "log_level" in merged
@@ -91,7 +92,7 @@ def test_deep_merge_preserves_cli_parameters() -> None:
 
 def test_backward_compatibility_without_cli_parameters() -> None:
     """Old config without cli_parameters field should load with defaults."""
-    old_config_dict = {
+    old_config_dict: dict[str, object] = {
         "log_level": "DEBUG",
         "provider": "claude",
         "model": "opus",
@@ -103,8 +104,9 @@ def test_backward_compatibility_without_cli_parameters() -> None:
 
     # Should add cli_parameters with defaults
     assert "cli_parameters" in merged
-    assert merged["cli_parameters"]["claude"] == []
-    assert merged["cli_parameters"]["codex"] == []
+    cli_params: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert cli_params["claude"] == []
+    assert cli_params["codex"] == []
     assert changed is True
 
     # User values should be preserved
@@ -115,7 +117,7 @@ def test_backward_compatibility_without_cli_parameters() -> None:
 def test_deep_merge_nested_cli_parameters() -> None:
     """deep_merge_config should merge nested cli_parameters correctly."""
     # User only specified claude params
-    user_config = {
+    user_config: dict[str, object] = {
         "cli_parameters": {
             "claude": ["--fast"],
         },
@@ -126,11 +128,12 @@ def test_deep_merge_nested_cli_parameters() -> None:
     merged, changed = deep_merge_config(user_config, defaults)
 
     # User's claude should be preserved
-    assert merged["cli_parameters"]["claude"] == ["--fast"]
+    cli_params: dict[str, object] = merged["cli_parameters"]  # type: ignore[assignment]
+    assert cli_params["claude"] == ["--fast"]
 
     # Missing codex should be added from defaults
-    assert "codex" in merged["cli_parameters"]
-    assert merged["cli_parameters"]["codex"] == []
+    assert "codex" in cli_params
+    assert cli_params["codex"] == []
     assert changed is True
 
 

@@ -20,43 +20,43 @@ class TestClassifyError:
     def test_bad_request_is_permanent(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramBadRequest(method=None, message="Bad Request")
+        err = TelegramBadRequest(method=None, message="Bad Request")  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.PERMANENT
 
     def test_forbidden_is_permanent(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramForbiddenError(method=None, message="Forbidden")
+        err = TelegramForbiddenError(method=None, message="Forbidden")  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.PERMANENT
 
     def test_not_found_is_permanent(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramNotFound(method=None, message="Not Found")
+        err = TelegramNotFound(method=None, message="Not Found")  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.PERMANENT
 
     def test_conflict_is_conflict(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramConflictError(method=None, message="Conflict")
+        err = TelegramConflictError(method=None, message="Conflict")  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.CONFLICT
 
     def test_retry_after_is_rate_limited(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramRetryAfter(method=None, message="Retry After", retry_after=5)
+        err = TelegramRetryAfter(method=None, message="Retry After", retry_after=5)  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.RATE_LIMITED
 
     def test_server_error_is_recoverable(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramServerError(method=None, message="Internal Server Error")
+        err = TelegramServerError(method=None, message="Internal Server Error")  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.RECOVERABLE
 
     def test_network_error_is_recoverable(self) -> None:
         from klir.bot.retry import ErrorClass, classify_error
 
-        err = TelegramNetworkError(method=None, message="Network Error")
+        err = TelegramNetworkError(method=None, message="Network Error")  # type: ignore[arg-type]
         assert classify_error(err) is ErrorClass.RECOVERABLE
 
     def test_unknown_exception_is_permanent(self) -> None:
@@ -114,7 +114,7 @@ class TestRetryAsync:
 
         fn = AsyncMock(
             side_effect=[
-                TelegramServerError(method=None, message="err"),
+                TelegramServerError(method=None, message="err"),  # type: ignore[arg-type]
                 "ok",
             ]
         )
@@ -128,7 +128,7 @@ class TestRetryAsync:
         from klir.bot.retry import retry_async
         from klir.config import ResilienceConfig
 
-        fn = AsyncMock(side_effect=TelegramBadRequest(method=None, message="Bad Request"))
+        fn = AsyncMock(side_effect=TelegramBadRequest(method=None, message="Bad Request"))  # type: ignore[arg-type]
         cfg = ResilienceConfig(max_retries=3)
         with pytest.raises(TelegramBadRequest):
             await retry_async(fn, config=cfg)
@@ -139,7 +139,7 @@ class TestRetryAsync:
         from klir.bot.retry import retry_async
         from klir.config import ResilienceConfig
 
-        fn = AsyncMock(side_effect=TelegramServerError(method=None, message="err"))
+        fn = AsyncMock(side_effect=TelegramServerError(method=None, message="err"))  # type: ignore[arg-type]
         cfg = ResilienceConfig(max_retries=2, base_backoff_seconds=0.01, max_backoff_seconds=0.1)
         with pytest.raises(TelegramServerError):
             await retry_async(fn, config=cfg)
@@ -152,7 +152,7 @@ class TestRetryAsync:
 
         fn = AsyncMock(
             side_effect=[
-                TelegramRetryAfter(method=None, message="Rate", retry_after=0.01),
+                TelegramRetryAfter(method=None, message="Rate", retry_after=0.01),  # type: ignore[arg-type]
                 "ok",
             ]
         )
@@ -166,7 +166,7 @@ class TestRetryAsync:
         from klir.bot.retry import retry_async
         from klir.config import ResilienceConfig
 
-        fn = AsyncMock(side_effect=TelegramConflictError(method=None, message="Conflict"))
+        fn = AsyncMock(side_effect=TelegramConflictError(method=None, message="Conflict"))  # type: ignore[arg-type]
         cfg = ResilienceConfig(max_retries=3)
         with pytest.raises(TelegramConflictError):
             await retry_async(fn, config=cfg)
@@ -179,8 +179,8 @@ class TestRetryAsync:
 
         fn = AsyncMock(
             side_effect=[
-                TelegramNetworkError(method=None, message="timeout"),
-                TelegramNetworkError(method=None, message="timeout"),
+                TelegramNetworkError(method=None, message="timeout"),  # type: ignore[arg-type]
+                TelegramNetworkError(method=None, message="timeout"),  # type: ignore[arg-type]
                 "ok",
             ]
         )

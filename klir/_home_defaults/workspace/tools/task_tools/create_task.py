@@ -60,7 +60,7 @@ def main() -> None:
 
     if not args:
         print(
-            'Usage: python3 create_task.py [--name NAME] [--provider P] '
+            "Usage: python3 create_task.py [--name NAME] [--provider P] "
             '[--model M] [--thinking L] "prompt"',
             file=sys.stderr,
         )

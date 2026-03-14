@@ -240,5 +240,7 @@ def test_codex_mcp_tool_call_includes_parameters() -> None:
     )
     events = parse_codex_stream_event(line)
     assert len(events) == 1
-    assert events[0].tool_name == "search"
-    assert events[0].parameters == {"query": "test"}
+    evt = events[0]
+    assert isinstance(evt, ToolUseEvent)
+    assert evt.tool_name == "search"
+    assert evt.parameters == {"query": "test"}

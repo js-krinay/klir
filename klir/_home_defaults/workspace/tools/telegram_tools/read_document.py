@@ -7,6 +7,7 @@ Usage:
     python tools/telegram_tools/read_document.py --file /path/to/document.pdf
     python tools/telegram_tools/read_document.py --file /path/to/document.pdf --max-pages 10
 """
+
 from __future__ import annotations
 
 import argparse
@@ -15,16 +16,37 @@ import os
 import sys
 from pathlib import Path
 
-_TEXT_EXTENSIONS = frozenset({
-    ".txt", ".md", ".csv", ".tsv", ".json", ".yaml", ".yml",
-    ".xml", ".html", ".htm", ".log", ".ini", ".cfg", ".conf",
-    ".py", ".js", ".ts", ".sh", ".bash", ".toml",
-})
+_TEXT_EXTENSIONS = frozenset(
+    {
+        ".txt",
+        ".md",
+        ".csv",
+        ".tsv",
+        ".json",
+        ".yaml",
+        ".yml",
+        ".xml",
+        ".html",
+        ".htm",
+        ".log",
+        ".ini",
+        ".cfg",
+        ".conf",
+        ".py",
+        ".js",
+        ".ts",
+        ".sh",
+        ".bash",
+        ".toml",
+    }
+)
 
 _MAX_TEXT_CHARS = 100_000
-_TELEGRAM_FILES = Path(
-    os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))
-).expanduser() / "workspace" / "telegram_files"
+_TELEGRAM_FILES = (
+    Path(os.environ.get("KLIR_HOME", str(Path.home() / ".klir"))).expanduser()
+    / "workspace"
+    / "telegram_files"
+)
 
 
 def _read_pdf(path: Path, max_pages: int) -> dict:

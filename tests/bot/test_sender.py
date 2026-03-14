@@ -309,18 +309,18 @@ class TestExtractFilePaths:
     """Test file path extraction from text."""
 
     def test_single_file(self) -> None:
-        from klir.bot.sender import extract_file_paths
+        from klir.bot.sender import extract_file_paths  # type: ignore[attr-defined]
 
         assert extract_file_paths("see <file:/tmp/a.txt>") == ["/tmp/a.txt"]
 
     def test_multiple_files(self) -> None:
-        from klir.bot.sender import extract_file_paths
+        from klir.bot.sender import extract_file_paths  # type: ignore[attr-defined]
 
         result = extract_file_paths("<file:/a> and <file:/b>")
         assert result == ["/a", "/b"]
 
     def test_no_files(self) -> None:
-        from klir.bot.sender import extract_file_paths
+        from klir.bot.sender import extract_file_paths  # type: ignore[attr-defined]
 
         assert extract_file_paths("no files here") == []
 

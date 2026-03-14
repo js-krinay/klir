@@ -38,7 +38,7 @@ class TestResilienceConfig:
 
         cfg = AgentConfig(
             telegram_token="test:token",
-            resilience={"max_retries": 5, "base_backoff_seconds": 2.0},
+            resilience={"max_retries": 5, "base_backoff_seconds": 2.0},  # type: ignore[arg-type]
         )
         assert cfg.resilience.max_retries == 5
         assert cfg.resilience.base_backoff_seconds == 2.0

@@ -66,12 +66,14 @@ class TestBusSyncSend:
         bus = InterAgentBus()
         result = await bus.send("sender", "unknown", "Hello")
         assert result.success is False
+        assert result.error is not None
         assert "not found" in result.error
 
     async def test_send_lists_available_agents_in_error(self) -> None:
         bus = InterAgentBus()
         bus.register("agent1", _make_stack())
         result = await bus.send("sender", "unknown", "Hello")
+        assert result.error is not None
         assert "agent1" in result.error
 
     async def test_send_to_agent_without_orchestrator(self) -> None:
@@ -81,6 +83,7 @@ class TestBusSyncSend:
         bus.register("target", stack)
         result = await bus.send("sender", "target", "Hello")
         assert result.success is False
+        assert result.error is not None
         assert "not initialized" in result.error
 
     async def test_send_timeout(self) -> None:
@@ -96,6 +99,7 @@ class TestBusSyncSend:
 
         result = await bus.send("sender", "slow", "Hello", send_timeout=0.01)
         assert result.success is False
+        assert result.error is not None
         assert "Timeout" in result.error
 
     async def test_send_exception_handling(self) -> None:
@@ -108,6 +112,7 @@ class TestBusSyncSend:
 
         result = await bus.send("sender", "target", "Hello")
         assert result.success is False
+        assert result.error is not None
         assert "RuntimeError" in result.error
 
     async def test_message_log_populated(self) -> None:
@@ -158,9 +163,9 @@ class TestBusAsyncSend:
 
         assert len(delivered) == 1
         result = delivered[0]
-        assert result.success is True
-        assert result.result_text == "async response"
-        assert result.task_id == task_id
+        assert result.success is True  # type: ignore[attr-defined]
+        assert result.result_text == "async response"  # type: ignore[attr-defined]
+        assert result.task_id == task_id  # type: ignore[attr-defined]
 
     async def test_send_async_without_handler_does_not_crash(self) -> None:
         """If no result handler is registered, result is silently dropped."""
@@ -302,7 +307,7 @@ class TestBusSessionNameInResult:
         await asyncio.sleep(0.1)
 
         assert len(delivered) == 1
-        assert delivered[0].session_name == "ia-main"
+        assert delivered[0].session_name == "ia-main"  # type: ignore[attr-defined]
 
     async def test_async_result_default_session_name(self) -> None:
         """Default session_name from _make_stack is 'ia-sender'."""
@@ -317,7 +322,7 @@ class TestBusSessionNameInResult:
         await asyncio.sleep(0.1)
 
         assert len(delivered) == 1
-        assert delivered[0].session_name == "ia-sender"
+        assert delivered[0].session_name == "ia-sender"  # type: ignore[attr-defined]
 
 
 class TestBusNotifyRecipient:
@@ -437,9 +442,9 @@ class TestBusChatTopicPropagation:
 
         assert len(delivered) == 1
         result = delivered[0]
-        assert result.chat_id == 12345
-        assert result.topic_id == 678
-        assert result.success is True
+        assert result.chat_id == 12345  # type: ignore[attr-defined]
+        assert result.topic_id == 678  # type: ignore[attr-defined]
+        assert result.success is True  # type: ignore[attr-defined]
 
     async def test_async_result_defaults_without_context(self) -> None:
         """When no chat_id/topic_id are provided, defaults are 0/None."""
@@ -454,8 +459,8 @@ class TestBusChatTopicPropagation:
 
         assert len(delivered) == 1
         result = delivered[0]
-        assert result.chat_id == 0
-        assert result.topic_id is None
+        assert result.chat_id == 0  # type: ignore[attr-defined]
+        assert result.topic_id is None  # type: ignore[attr-defined]
 
     async def test_error_result_carries_chat_and_topic_id(self) -> None:
         """chat_id/topic_id are preserved even when the task fails."""
@@ -479,9 +484,9 @@ class TestBusChatTopicPropagation:
 
         assert len(delivered) == 1
         result = delivered[0]
-        assert result.success is False
-        assert result.chat_id == 99999
-        assert result.topic_id == 42
+        assert result.success is False  # type: ignore[attr-defined]
+        assert result.chat_id == 99999  # type: ignore[attr-defined]
+        assert result.topic_id == 42  # type: ignore[attr-defined]
 
     async def test_no_orchestrator_result_carries_context(self) -> None:
         """chat_id/topic_id are preserved when orchestrator is None."""
@@ -503,6 +508,6 @@ class TestBusChatTopicPropagation:
 
         assert len(delivered) == 1
         result = delivered[0]
-        assert result.success is False
-        assert result.chat_id == 111
-        assert result.topic_id == 222
+        assert result.success is False  # type: ignore[attr-defined]
+        assert result.chat_id == 111  # type: ignore[attr-defined]
+        assert result.topic_id == 222  # type: ignore[attr-defined]

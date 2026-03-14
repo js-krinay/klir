@@ -20,7 +20,7 @@ class TestCmdUpgrade:
             patch("klir.infra.install.detect_install_mode", return_value="pipx"),
             patch("klir.orchestrator.commands.check_pypi", return_value=info),
         ):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]
 
         assert "Update Available" in result.text
         assert "1.0.0" in result.text
@@ -39,7 +39,7 @@ class TestCmdUpgrade:
             patch("klir.infra.install.detect_install_mode", return_value="pip"),
             patch("klir.orchestrator.commands.check_pypi", return_value=info),
         ):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]
 
         assert "up to date" in result.text.lower()
         assert "2.0.0" in result.text
@@ -52,7 +52,7 @@ class TestCmdUpgrade:
             patch("klir.infra.install.detect_install_mode", return_value="pipx"),
             patch("klir.orchestrator.commands.check_pypi", return_value=None),
         ):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]
 
         assert "could not reach" in result.text.lower() or "pypi" in result.text.lower()
         assert result.buttons is None
@@ -63,8 +63,9 @@ class TestCmdUpgrade:
             patch("klir.infra.install.detect_install_mode", return_value="pipx"),
             patch("klir.orchestrator.commands.check_pypi", return_value=info),
         ):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]
 
+        assert result.buttons is not None
         all_buttons = [b for row in result.buttons.rows for b in row]
         labels = [b.text for b in all_buttons]
         assert any("upgrade" in label.lower() or "yes" in label.lower() for label in labels)
@@ -77,7 +78,7 @@ class TestCmdUpgrade:
             patch("klir.infra.install.detect_install_mode", return_value="pip"),
             patch("klir.orchestrator.commands.check_pypi", return_value=info),
         ):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]
 
         assert "3.5.1" in result.text
         assert "latest" in result.text.lower()
@@ -88,15 +89,16 @@ class TestCmdUpgrade:
             patch("klir.infra.install.detect_install_mode", return_value="pipx"),
             patch("klir.orchestrator.commands.check_pypi", return_value=info),
         ):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]
 
+        assert result.buttons is not None
         all_buttons = [b for row in result.buttons.rows for b in row]
         assert any(b.callback_data == "upg:cl:2.0.0" for b in all_buttons)
         assert any(b.callback_data == "upg:yes:2.0.0" for b in all_buttons)
 
     async def test_dev_mode_rejects_upgrade(self, orch: Orchestrator) -> None:
         with patch("klir.infra.install.detect_install_mode", return_value="dev"):
-            result = await cmd_upgrade(orch, 1, "/upgrade")
+            result = await cmd_upgrade(orch, 1, "/upgrade")  # type: ignore[arg-type]  # type: ignore[arg-type]
 
         assert "source" in result.text.lower() or "git pull" in result.text.lower()
         assert result.buttons is None
