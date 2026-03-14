@@ -439,10 +439,10 @@ class TelegramBot:
 
     # -- Chat tracker (my_chat_member + /where + /leave) ------------------------
 
-    def _on_group_rejected(self, chat_id: int, chat_type: str, title: str) -> None:
+    async def _on_group_rejected(self, chat_id: int, chat_type: str, title: str) -> None:
         """Callback from AuthMiddleware when a group message is rejected."""
         if self._chat_tracker:
-            self._chat_tracker.record_rejected(chat_id, chat_type, title)
+            await self._chat_tracker.record_rejected(chat_id, chat_type, title)
 
     async def _on_paired(self, user_id: int) -> None:
         """Persist newly paired user to config.json."""
@@ -468,7 +468,7 @@ class TelegramBot:
         chat = event.chat
         allowed = chat.id in self._allowed_groups
         if self._chat_tracker:
-            self._chat_tracker.record_join(
+            await self._chat_tracker.record_join(
                 chat.id,
                 chat.type,
                 chat.title or "",
@@ -483,7 +483,7 @@ class TelegramBot:
             with contextlib.suppress(TelegramAPIError):
                 await self._bot.leave_chat(chat.id)
             if self._chat_tracker:
-                self._chat_tracker.record_leave(chat.id, "auto_left")
+                await self._chat_tracker.record_leave(chat.id, "auto_left")
             logger.info("Auto-left unauthorized group chat_id=%d title=%s", chat.id, chat.title)
 
     async def _on_bot_removed(self, event: ChatMemberUpdated) -> None:
@@ -491,7 +491,7 @@ class TelegramBot:
         chat = event.chat
         status = "kicked" if event.new_chat_member.status == "kicked" else "left"
         if self._chat_tracker:
-            self._chat_tracker.record_leave(chat.id, status)
+            await self._chat_tracker.record_leave(chat.id, status)
         logger.info("Bot removed from group chat_id=%d status=%s", chat.id, status)
 
     _GROUP_AUDIT_INTERVAL = 86400  # 24 hours
@@ -531,7 +531,7 @@ class TelegramBot:
                 await self._bot.leave_chat(rec.chat_id)
             except TelegramAPIError:
                 logger.debug("audit_groups: leave_chat failed for %d", rec.chat_id, exc_info=True)
-            self._chat_tracker.record_leave(rec.chat_id, "auto_left")
+            await self._chat_tracker.record_leave(rec.chat_id, "auto_left")
             logger.info("Audit: auto-left group %d (%s)", rec.chat_id, rec.title)
             left += 1
         return left
@@ -618,7 +618,7 @@ class TelegramBot:
             return
 
         if self._chat_tracker:
-            self._chat_tracker.record_leave(group_id, "left")
+            await self._chat_tracker.record_leave(group_id, "left")
 
         await send_rich(
             self._bot,

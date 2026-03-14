@@ -138,6 +138,7 @@ class CleanupConfig(BaseModel):
     telegram_files_days: int = 30
     output_to_user_days: int = 30
     api_files_days: int = 30
+    chat_activity_days: int = 90
     check_hour: int = 3
 
 

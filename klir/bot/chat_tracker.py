@@ -2,24 +2,41 @@
 
 Tracks group joins/leaves (via ``my_chat_member`` events), rejected
 group access attempts (via AuthMiddleware callback), and private chat
-activity.  Persists to ``chat_activity.json`` in the klir home.
+activity.  Persists to the ``chat_activity`` table in ``klir.db``.
+
+One-time migration from legacy ``chat_activity.json`` happens automatically
+on first load when the JSON file exists and the SQLite table is empty.
 """
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
+from dataclasses import fields as dc_fields
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from klir.infra.json_store import atomic_json_save, load_json
+if TYPE_CHECKING:
+    from klir.infra.db import KlirDB
 
 logger = logging.getLogger(__name__)
 
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def _ts_to_iso(ts: float) -> str:
+    """Convert a UNIX timestamp to ISO-8601 string."""
+    return datetime.fromtimestamp(ts, tz=UTC).isoformat(timespec="seconds")
+
+
+def _iso_to_ts(iso: str) -> float:
+    """Convert an ISO-8601 string to UNIX timestamp."""
+    return datetime.fromisoformat(iso).timestamp()
 
 
 @dataclass
@@ -37,16 +54,32 @@ class ChatRecord:
 
 
 class ChatTracker:
-    """In-memory tracker backed by a JSON file."""
+    """In-memory tracker backed by the ``chat_activity`` SQLite table."""
 
-    def __init__(self, path: Path) -> None:
-        self._path = path
+    def __init__(self, db: KlirDB) -> None:
+        self._db = db
         self._records: dict[int, ChatRecord] = {}
-        self._load()
+
+    # -- Factory ---------------------------------------------------------------
+
+    @classmethod
+    async def create(
+        cls,
+        db: KlirDB,
+        legacy_json_path: Path | None = None,
+    ) -> ChatTracker:
+        """Create a tracker, loading from SQLite and migrating legacy JSON."""
+        tracker = cls(db)
+        await tracker._load()
+        if legacy_json_path is not None:
+            json_exists = await asyncio.to_thread(legacy_json_path.is_file)
+            if json_exists and not tracker._records:
+                await tracker._migrate_json(legacy_json_path)
+        return tracker
 
     # -- Public API -----------------------------------------------------------
 
-    def record_join(
+    async def record_join(
         self,
         chat_id: int,
         chat_type: str,
@@ -73,9 +106,9 @@ class ChatTracker:
                 status="active",
                 allowed=allowed,
             )
-        self._save()
+        await self._upsert(self._records[chat_id])
 
-    def record_leave(self, chat_id: int, status: str = "left") -> None:
+    async def record_leave(self, chat_id: int, status: str = "left") -> None:
         """Record a group leave/kick from ``my_chat_member`` or ``/leave``."""
         existing = self._records.get(chat_id)
         now = _now_iso()
@@ -89,9 +122,9 @@ class ChatTracker:
                 last_seen=now,
                 status=status,
             )
-        self._save()
+        await self._upsert(self._records[chat_id])
 
-    def record_rejected(self, chat_id: int, chat_type: str, title: str) -> None:
+    async def record_rejected(self, chat_id: int, chat_type: str, title: str) -> None:
         """Record a rejected group message from AuthMiddleware."""
         existing = self._records.get(chat_id)
         now = _now_iso()
@@ -110,26 +143,106 @@ class ChatTracker:
                 allowed=False,
                 rejected_count=1,
             )
-            self._save()
-            return
-        self._save()
+        await self._upsert(self._records[chat_id])
 
     def get_all(self) -> list[ChatRecord]:
         """Return all records sorted by last_seen (newest first)."""
         return sorted(self._records.values(), key=lambda r: r.last_seen, reverse=True)
 
+    async def prune_inactive(self, max_age_days: int) -> int:
+        """Delete records with ``last_seen`` older than *max_age_days*.
+
+        Returns the number of records pruned.
+        """
+        cutoff = datetime.now(UTC).timestamp() - max_age_days * 86400
+        pruned = [cid for cid, rec in self._records.items() if _iso_to_ts(rec.last_seen) < cutoff]
+        if not pruned:
+            return 0
+
+        for cid in pruned:
+            del self._records[cid]
+        await self._db.execute("DELETE FROM chat_activity WHERE last_seen < ?", (cutoff,))
+        logger.info("Pruned %d inactive chat activity record(s)", len(pruned))
+        return len(pruned)
+
     # -- Persistence ----------------------------------------------------------
 
-    def _load(self) -> None:
-        raw = load_json(self._path)
+    async def _load(self) -> None:
+        """Load all records from the ``chat_activity`` table."""
+        rows = await self._db.fetch_all(
+            "SELECT chat_id, title, type, first_seen, last_seen, status, metadata "
+            "FROM chat_activity ORDER BY last_seen DESC"
+        )
+        for row in rows:
+            meta = _parse_metadata(row.get("metadata"))
+            chat_id = int(str(row["chat_id"]))
+            self._records[chat_id] = ChatRecord(
+                chat_id=chat_id,
+                chat_type=str(row.get("type") or "private"),
+                title=str(row.get("title") or ""),
+                first_seen=_ts_to_iso(float(str(row["first_seen"]))),
+                last_seen=_ts_to_iso(float(str(row["last_seen"]))),
+                status=str(row.get("status") or "active"),
+                allowed=bool(meta.get("allowed", True)),
+                rejected_count=int(meta.get("rejected_count", 0)),
+            )
+
+    async def _upsert(self, rec: ChatRecord) -> None:
+        """Insert or replace a single record in the ``chat_activity`` table."""
+        meta = json.dumps({"allowed": rec.allowed, "rejected_count": rec.rejected_count})
+        await self._db.execute(
+            "INSERT INTO chat_activity (chat_id, title, type, first_seen, last_seen, status, metadata) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(chat_id) DO UPDATE SET "
+            "title=excluded.title, type=excluded.type, "
+            "last_seen=excluded.last_seen, "
+            "status=excluded.status, metadata=excluded.metadata",
+            (
+                rec.chat_id,
+                rec.title,
+                rec.chat_type,
+                _iso_to_ts(rec.first_seen),
+                _iso_to_ts(rec.last_seen),
+                rec.status,
+                meta,
+            ),
+        )
+
+    async def _migrate_json(self, json_path: Path) -> None:
+        """One-time migration from ``chat_activity.json``."""
+        from klir.infra.json_store import load_json
+
+        raw = await asyncio.to_thread(load_json, json_path)
         if not isinstance(raw, dict):
             return
         records: dict[str, Any] = raw.get("records", {})
-        for key, val in records.items():
-            if isinstance(val, dict) and "chat_id" in val:
-                self._records[int(key)] = ChatRecord(**val)
+        if not records:
+            return
 
-    def _save(self) -> None:
-        data = {"records": {str(k): asdict(v) for k, v in self._records.items()}}
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        atomic_json_save(self._path, data)
+        migrated = 0
+        for key, val in records.items():
+            if not isinstance(val, dict) or "chat_id" not in val:
+                continue
+            known = {f.name for f in dc_fields(ChatRecord)}
+            rec = ChatRecord(**{k: v for k, v in val.items() if k in known})
+            self._records[int(key)] = rec
+            await self._upsert(rec)
+            migrated += 1
+
+        if migrated:
+            logger.info("Migrated %d record(s) from %s to SQLite", migrated, json_path.name)
+            # Rename so the file is no longer picked up on next boot.
+            backup = json_path.with_suffix(".json.migrated")
+            await asyncio.to_thread(json_path.rename, backup)
+            logger.info("Renamed %s -> %s", json_path.name, backup.name)
+
+
+def _parse_metadata(raw: object) -> dict[str, Any]:
+    """Parse a metadata JSON string, returning {} on failure."""
+    if not raw or not isinstance(raw, str):
+        return {}
+    try:
+        result = json.loads(raw)
+        return result if isinstance(result, dict) else {}
+    except (json.JSONDecodeError, TypeError):
+        return {}

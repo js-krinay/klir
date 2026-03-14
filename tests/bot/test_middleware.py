@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -29,6 +30,17 @@ def _make_message(
     msg.is_topic_message = topic_thread_id is not None
     msg.message_thread_id = topic_thread_id
     return msg
+
+
+def _make_rejected_cb(
+    calls: list[tuple[int, str, str]],
+) -> Callable[[int, str, str], Awaitable[None]]:
+    """Create an async rejected callback that appends to *calls*."""
+
+    async def _cb(cid: int, ct: str, t: str) -> None:
+        calls.append((cid, ct, t))
+
+    return _cb
 
 
 class TestAuthMiddleware:
@@ -203,7 +215,7 @@ class TestAuthMiddleware:
             AuthMiddlewareConfig(
                 allowed_user_ids={100},
                 allowed_group_ids={-1002},
-                on_rejected=lambda cid, ct, t: calls.append((cid, ct, t)),
+                on_rejected=_make_rejected_cb(calls),
             )
         )
         handler = AsyncMock()
@@ -223,7 +235,7 @@ class TestAuthMiddleware:
             AuthMiddlewareConfig(
                 allowed_user_ids={100},
                 allowed_group_ids={-1001},
-                on_rejected=lambda cid, ct, t: calls.append((cid, ct, t)),
+                on_rejected=_make_rejected_cb(calls),
             )
         )
         handler = AsyncMock(return_value="ok")
@@ -241,7 +253,7 @@ class TestAuthMiddleware:
         mw = AuthMiddleware(
             AuthMiddlewareConfig(
                 allowed_user_ids={100},
-                on_rejected=lambda cid, ct, t: calls.append((cid, ct, t)),
+                on_rejected=_make_rejected_cb(calls),
             )
         )
         handler = AsyncMock()

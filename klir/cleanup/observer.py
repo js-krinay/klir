@@ -15,6 +15,7 @@ from klir.cron.run_log import prune_run_outputs
 from klir.infra.base_observer import BaseObserver
 
 if TYPE_CHECKING:
+    from klir.bot.chat_tracker import ChatTracker
     from klir.config import AgentConfig, CleanupConfig
     from klir.workspace.paths import KlirPaths
 
@@ -65,6 +66,11 @@ class CleanupObserver(BaseObserver):
         self._config = config
         self._paths = paths
         self._last_run_date: str = ""
+        self._chat_tracker: ChatTracker | None = None
+
+    def set_chat_tracker(self, tracker: ChatTracker) -> None:
+        """Wire the chat tracker for retention-based cleanup."""
+        self._chat_tracker = tracker
 
     @property
     def _cfg(self) -> CleanupConfig:
@@ -77,10 +83,12 @@ class CleanupObserver(BaseObserver):
             return
         await super().start()
         logger.info(
-            "File cleanup started (telegram: %dd, output: %dd, api: %dd, hour: %d:00)",
+            "File cleanup started (telegram: %dd, output: %dd, api: %dd, "
+            "chat_activity: %dd, hour: %d:00)",
             self._cfg.telegram_files_days,
             self._cfg.output_to_user_days,
             self._cfg.api_files_days,
+            self._cfg.chat_activity_days,
             self._cfg.check_hour,
         )
 
@@ -133,13 +141,19 @@ class CleanupObserver(BaseObserver):
             asyncio.to_thread(prune_run_outputs, self._paths.cron_state_dir),
         )
 
-        if any(results) or cron_deleted:
+        # Prune inactive chat activity records from SQLite.
+        activity_pruned = 0
+        if self._chat_tracker:
+            activity_pruned = await self._chat_tracker.prune_inactive(self._cfg.chat_activity_days)
+
+        if any(results) or cron_deleted or activity_pruned:
             logger.info(
-                "Cleanup complete: telegram=%d, output=%d, api=%d, cron_runs=%d",
+                "Cleanup complete: telegram=%d, output=%d, api=%d, cron_runs=%d, chat_activity=%d",
                 results[0],
                 results[1],
                 results[2],
                 cron_deleted,
+                activity_pruned,
             )
         else:
             logger.debug("Cleanup: nothing to delete")

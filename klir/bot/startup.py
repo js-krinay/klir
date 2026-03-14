@@ -107,7 +107,11 @@ async def run_startup(bot: TelegramBot) -> None:
 
     from klir.bot.chat_tracker import ChatTracker
 
-    bot._chat_tracker = ChatTracker(bot._orch.paths.chat_activity_path)
+    bot._chat_tracker = await ChatTracker.create(
+        bot._orch.db,
+        legacy_json_path=bot._orch.paths.chat_activity_path,
+    )
+    bot._orch._observers.cleanup.set_chat_tracker(bot._chat_tracker)
 
     # Seed topic name cache from persisted sessions and wire the resolver.
     all_sessions = await bot._orch._sessions.list_all()

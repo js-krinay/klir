@@ -82,8 +82,8 @@ def is_quick_command(text: str, bot_username: str | None = None) -> bool:
     return cmd_part in QUICK_COMMANDS
 
 
-RejectedCallback = Callable[[int, str, str], None]
-"""Sync callback for rejected group messages: (chat_id, chat_type, title)."""
+RejectedCallback = Callable[[int, str, str], Awaitable[None]]
+"""Async callback for rejected group messages: (chat_id, chat_type, title)."""
 
 
 class PairingValidator(Protocol):
@@ -142,7 +142,7 @@ class AuthMiddleware(BaseMiddleware):
         chat_type = chat.type if chat else None
 
         if chat_type in ("group", "supergroup"):
-            if not self._authorize_group(user, chat, chat_type):
+            if not await self._authorize_group(user, chat, chat_type):
                 return None
             return await self._check_enabled_and_proceed(handler, event, data, user, chat)
 
@@ -178,12 +178,12 @@ class AuthMiddleware(BaseMiddleware):
             return getattr(event.message, "chat", None)
         return None
 
-    def _authorize_group(self, user: Any, chat: Any, chat_type: str | None) -> bool:
+    async def _authorize_group(self, user: Any, chat: Any, chat_type: str | None) -> bool:
         """Return True if the group AND user are allowlisted."""
         group_id = chat.id if chat else None
         if group_id not in self._allowed_groups:
             if self._on_rejected and chat and chat_type:
-                self._on_rejected(chat.id, chat_type, chat.title or "")
+                await self._on_rejected(chat.id, chat_type, chat.title or "")
             return False
         return user.id in self._allowed_users
 
