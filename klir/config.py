@@ -140,6 +140,7 @@ class CleanupConfig(BaseModel):
     api_files_days: int = 30
     chat_activity_days: int = 90
     session_retention_days: int = 30
+    history_retention_days: int = 30
     check_hour: int = 3
 
 

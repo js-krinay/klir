@@ -17,6 +17,7 @@ from klir.background import BackgroundObserver, BackgroundResult
 
 if TYPE_CHECKING:
     from klir.bus.bus import MessageBus
+    from klir.history.store import MessageHistory
 from klir.cleanup import CleanupObserver
 from klir.cli.codex_cache import CodexModelCache
 from klir.cli.codex_cache_observer import CodexCacheObserver
@@ -41,11 +42,18 @@ logger = logging.getLogger(__name__)
 class ObserverManager:
     """Owns all background observers and manages their lifecycle."""
 
-    def __init__(self, config: AgentConfig, paths: KlirPaths, db: KlirDB) -> None:
+    def __init__(
+        self,
+        config: AgentConfig,
+        paths: KlirPaths,
+        db: KlirDB,
+        *,
+        message_history: MessageHistory | None = None,
+    ) -> None:
         self._config = config
         self._paths = paths
         self.heartbeat = HeartbeatObserver(config)
-        self.cleanup = CleanupObserver(config, paths, db)
+        self.cleanup = CleanupObserver(config, paths, db, message_history=message_history)
 
         self.cron: CronObserver | None = None
         self.webhook: WebhookObserver | None = None

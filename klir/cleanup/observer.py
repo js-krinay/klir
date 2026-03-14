@@ -17,6 +17,7 @@ from klir.infra.base_observer import BaseObserver
 if TYPE_CHECKING:
     from klir.bot.chat_tracker import ChatTracker
     from klir.config import AgentConfig, CleanupConfig
+    from klir.history.store import MessageHistory
     from klir.infra.db import KlirDB
     from klir.session.manager import SessionManager
     from klir.workspace.paths import KlirPaths
@@ -63,11 +64,19 @@ class CleanupObserver(BaseObserver):
     ``start()`` / ``stop()`` with an asyncio background task.
     """
 
-    def __init__(self, config: AgentConfig, paths: KlirPaths, db: KlirDB) -> None:
+    def __init__(
+        self,
+        config: AgentConfig,
+        paths: KlirPaths,
+        db: KlirDB,
+        *,
+        message_history: MessageHistory | None = None,
+    ) -> None:
         super().__init__()
         self._config = config
         self._paths = paths
         self._db = db
+        self._message_history = message_history
         self._last_run_date: str = ""
         self._chat_tracker: ChatTracker | None = None
         self._session_manager: SessionManager | None = None
@@ -162,16 +171,22 @@ class CleanupObserver(BaseObserver):
                 retention_days=self._cfg.session_retention_days
             )
 
-        if any(results) or cron_deleted or activity_pruned or session_pruned:
+        # Prune old message history records from SQLite.
+        history_deleted = 0
+        if self._message_history:
+            history_deleted = await self._message_history.cleanup(self._cfg.history_retention_days)
+
+        if any(results) or cron_deleted or activity_pruned or session_pruned or history_deleted:
             logger.info(
                 "Cleanup complete: telegram=%d, output=%d, api=%d, "
-                "cron_runs=%d, chat_activity=%d, sessions=%d",
+                "cron_runs=%d, chat_activity=%d, sessions=%d, history=%d",
                 results[0],
                 results[1],
                 results[2],
                 cron_deleted,
                 activity_pruned,
                 session_pruned,
+                history_deleted,
             )
         else:
             logger.debug("Cleanup: nothing to delete")

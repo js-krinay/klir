@@ -14,6 +14,7 @@ from klir.cli.timeout_controller import TimeoutConfig as TCConfig
 from klir.cli.timeout_controller import TimeoutController
 from klir.cli.types import AgentRequest, AgentResponse
 from klir.config import NULLISH_TEXT_VALUES, resolve_timeout
+from klir.history.store import ResponseRecord
 from klir.infra.inflight import InflightTurn
 from klir.log_context import set_log_context
 from klir.orchestrator.hooks import HookContext
@@ -28,6 +29,22 @@ if TYPE_CHECKING:
     from klir.orchestrator.core import Orchestrator
 
 logger = logging.getLogger(__name__)
+
+_background_tasks: set[asyncio.Task[None]] = set()
+
+
+def _record_fire_and_forget(coro: Awaitable[object]) -> None:
+    """Schedule *coro* as a fire-and-forget task with exception logging."""
+
+    async def _wrapper() -> None:
+        try:
+            await coro
+        except Exception:
+            logger.warning("Message history recording failed", exc_info=True)
+
+    task = asyncio.create_task(_wrapper())
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
 
 
 @dataclass(slots=True)
@@ -337,6 +354,17 @@ async def normal(
         logger.warning("Gemini API-key mode without configured klir key")
         return warning
 
+    model_name, provider_name = _request_target(orch, request)
+    _record_fire_and_forget(
+        orch.message_history.record_inbound(
+            chat_id=key.chat_id,
+            topic_id=key.topic_id,
+            text=text,
+            provider=provider_name,
+            model=model_name,
+        )
+    )
+
     _begin_inflight(orch, request, session, is_recovery=is_recovery)
     try:
         response = await orch._cli_service.execute(request)
@@ -370,6 +398,21 @@ async def normal(
                 cli_detail=response.result,
             )
         await _update_session(orch, session, response)
+        _record_fire_and_forget(
+            orch.message_history.record_response(
+                ResponseRecord(
+                    chat_id=key.chat_id,
+                    topic_id=key.topic_id,
+                    text=response.result,
+                    provider=provider_name,
+                    model=model_name,
+                    session_id=session.session_id or "",
+                    cost_usd=response.cost_usd or 0.0,
+                    tokens=response.total_tokens,
+                    elapsed_seconds=(response.duration_ms or 0) / 1000.0,
+                )
+            )
+        )
         logger.info("Normal flow completed")
         result = _finish_normal(
             response,
@@ -407,6 +450,17 @@ async def normal_streaming(
     if warning is not None:
         logger.warning("Gemini API-key mode without configured klir key")
         return warning
+
+    model_name, provider_name = _request_target(orch, request)
+    _record_fire_and_forget(
+        orch.message_history.record_inbound(
+            chat_id=key.chat_id,
+            topic_id=key.topic_id,
+            text=text,
+            provider=provider_name,
+            model=model_name,
+        )
+    )
 
     _begin_inflight(orch, request, session, is_recovery=False)
     try:
@@ -447,6 +501,21 @@ async def normal_streaming(
                 cli_detail=response.result,
             )
         await _update_session(orch, session, response)
+        _record_fire_and_forget(
+            orch.message_history.record_response(
+                ResponseRecord(
+                    chat_id=key.chat_id,
+                    topic_id=key.topic_id,
+                    text=response.result,
+                    provider=provider_name,
+                    model=model_name,
+                    session_id=session.session_id or "",
+                    cost_usd=response.cost_usd or 0.0,
+                    tokens=response.total_tokens,
+                    elapsed_seconds=(response.duration_ms or 0) / 1000.0,
+                )
+            )
+        )
         logger.info("Streaming flow completed")
         result = _finish_normal(
             response,

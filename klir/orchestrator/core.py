@@ -25,6 +25,7 @@ from klir.errors import (
     WebhookError,
     WorkspaceError,
 )
+from klir.history import MessageHistory
 from klir.infra.db import KlirDB
 from klir.infra.inflight import InflightTracker
 from klir.memory.files import MemoryFileManager
@@ -74,6 +75,7 @@ from klir.workspace.paths import KlirPaths
 if TYPE_CHECKING:
     from klir.background import BackgroundObserver
     from klir.bus.bus import MessageBus
+    from klir.bus.envelope import Envelope
     from klir.cli.tool_activity import ToolActivity
     from klir.config import ModelRegistry
     from klir.multiagent.bus import AsyncInterAgentResult
@@ -163,9 +165,12 @@ class Orchestrator:
             available_providers=frozenset(),
             process_registry=self._process_registry,
         )
+        self._message_history = MessageHistory(self._db)
         self._cron_manager = CronManager(jobs_path=paths.cron_jobs_path)
         self._webhook_manager = WebhookManager(hooks_path=paths.webhooks_path)
-        self._observers = ObserverManager(config, paths, self._db)
+        self._observers = ObserverManager(
+            config, paths, self._db, message_history=self._message_history
+        )
 
         async def _hb_handler(
             chat_id: int,
@@ -206,6 +211,11 @@ class Orchestrator:
     def db(self) -> KlirDB:
         """Public access to the SQLite database."""
         return self._db
+
+    @property
+    def message_history(self) -> MessageHistory:
+        """Public access to the message history store."""
+        return self._message_history
 
     @property
     def effective_working_dir(self) -> str:
@@ -522,6 +532,17 @@ class Orchestrator:
         """Wire all observer result callbacks to the message bus."""
         self._observers.wire_to_bus(bus, wake_handler=wake_handler)
         bus.set_injector(self)
+
+        history = self._message_history
+
+        async def _audit_record_outbound(envelope: Envelope) -> None:
+            if envelope.result_text:
+                try:
+                    await history.record_outbound(envelope)
+                except Exception:
+                    logger.exception("Failed to record outbound message")
+
+        bus.set_audit_hook(_audit_record_outbound)
 
     async def handle_heartbeat(
         self, key: SessionKey, *, prompt_override: str | None = None
