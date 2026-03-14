@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
 
 from klir.background import (
@@ -349,6 +349,17 @@ class Orchestrator:
         )
         if result is not None:
             return result
+
+        # Telegram commands can't contain hyphens, so skill names like
+        # "dispatching-parallel-agents" become "/dispatching_parallel_agents"
+        # in the menu.  Restore hyphens so the CLI can find the skill.
+        text = dispatch.text
+        if text.startswith("/"):
+            parts = text.split(None, 1)
+            restored = parts[0].replace("_", "-")
+            if restored != parts[0]:
+                text = restored if len(parts) == 1 else f"{restored} {parts[1]}"
+                dispatch = replace(dispatch, text=text)
 
         directives = parse_directives(dispatch.text, self._providers._known_model_ids)
 
