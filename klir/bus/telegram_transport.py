@@ -145,9 +145,13 @@ class TelegramTransport:
             self._bot.bot_instance,
             env.chat_id,
             env.result_text,
-            SendRichOpts(allowed_roots=self._roots()),
+            self._opts(env),
         )
-        logger.info("Heartbeat delivered")
+        logger.info(
+            "Heartbeat delivered chat=%d topic=%s",
+            env.chat_id,
+            env.topic_id,
+        )
 
     async def _deliver_interagent(self, env: Envelope) -> None:
         """Deliver inter-agent result (error notification or injected response)."""

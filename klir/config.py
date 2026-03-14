@@ -94,6 +94,18 @@ _DEFAULT_HEARTBEAT_PROMPT = (
 _DEFAULT_HEARTBEAT_ACK = "HEARTBEAT_OK"
 
 
+class HeartbeatGroupTarget(BaseModel):
+    """A single group/topic heartbeat target with independent scheduling."""
+
+    enabled: bool = True
+    chat_id: int
+    topic_id: int | None = None
+    prompt: str = _DEFAULT_HEARTBEAT_PROMPT
+    interval_minutes: int = 30
+    quiet_start: int | None = None  # None = inherit global
+    quiet_end: int | None = None  # None = inherit global
+
+
 class HeartbeatConfig(BaseModel):
     """Settings for the periodic heartbeat system."""
 
@@ -104,6 +116,19 @@ class HeartbeatConfig(BaseModel):
     quiet_end: int = 8
     prompt: str = _DEFAULT_HEARTBEAT_PROMPT
     ack_token: str = _DEFAULT_HEARTBEAT_ACK
+    group_targets: list[HeartbeatGroupTarget] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _reject_duplicate_targets(self) -> HeartbeatConfig:
+        """Reject duplicate (chat_id, topic_id) pairs in group_targets."""
+        seen: set[tuple[int, int | None]] = set()
+        for t in self.group_targets:
+            key = (t.chat_id, t.topic_id)
+            if key in seen:
+                msg = f"Duplicate heartbeat target: chat_id={t.chat_id}, topic_id={t.topic_id}"
+                raise ValueError(msg)
+            seen.add(key)
+        return self
 
 
 class CleanupConfig(BaseModel):

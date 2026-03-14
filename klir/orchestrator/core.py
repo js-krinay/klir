@@ -164,9 +164,18 @@ class Orchestrator:
         self._cron_manager = CronManager(jobs_path=paths.cron_jobs_path)
         self._webhook_manager = WebhookManager(hooks_path=paths.webhooks_path)
         self._observers = ObserverManager(config, paths)
-        self._observers.heartbeat.set_heartbeat_handler(
-            lambda chat_id: self.handle_heartbeat(SessionKey(chat_id=chat_id))
-        )
+
+        async def _hb_handler(
+            chat_id: int,
+            topic_id: int | None = None,
+            prompt_override: str | None = None,
+        ) -> str | None:
+            return await self.handle_heartbeat(
+                SessionKey(chat_id=chat_id, topic_id=topic_id),
+                prompt_override=prompt_override,
+            )
+
+        self._observers.heartbeat.set_heartbeat_handler(_hb_handler)
         self._observers.heartbeat.set_busy_check(self._process_registry.has_active)
         stale_max = config.cli_timeout * 2
         self._observers.heartbeat.set_stale_cleanup(
@@ -507,10 +516,12 @@ class Orchestrator:
         self._observers.wire_to_bus(bus, wake_handler=wake_handler)
         bus.set_injector(self)
 
-    async def handle_heartbeat(self, key: SessionKey) -> str | None:
+    async def handle_heartbeat(
+        self, key: SessionKey, *, prompt_override: str | None = None
+    ) -> str | None:
         """Run a heartbeat turn in the main session. Returns alert text or None."""
         logger.debug("Heartbeat flow starting")
-        return await heartbeat_flow(self, key)
+        return await heartbeat_flow(self, key, prompt_override=prompt_override)
 
     def submit_named_session(
         self,

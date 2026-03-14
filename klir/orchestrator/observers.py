@@ -11,7 +11,7 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from klir.background import BackgroundObserver, BackgroundResult
 
@@ -56,6 +56,7 @@ class ObserverManager:
         self._config_reloader: ConfigReloader | None = None
         self._rule_sync_task: asyncio.Task[None] | None = None
         self._skill_sync_task: asyncio.Task[None] | None = None
+        self._reconcile_task: asyncio.Task[None] | None = None
 
     # -- Model cache initialization -------------------------------------------
 
@@ -131,10 +132,17 @@ class ObserverManager:
         on_restart_needed: Callable[[list[str]], None],
     ) -> None:
         """Start the config file watcher."""
+        original_on_hot_reload = on_hot_reload
+
+        def _on_hot_reload_extended(config: AgentConfig, hot_fields: dict[str, object]) -> None:
+            original_on_hot_reload(config, hot_fields)
+            if "heartbeat" in hot_fields:
+                self._reconcile_task = asyncio.create_task(self.heartbeat.reconcile_target_tasks())
+
         self._config_reloader = ConfigReloader(
             self._paths.config_path,
             self._config,
-            on_hot_reload=on_hot_reload,
+            on_hot_reload=_on_hot_reload_extended,
             on_restart_needed=on_restart_needed,
         )
         await self._config_reloader.start()
@@ -163,6 +171,24 @@ class ObserverManager:
                 with contextlib.suppress(asyncio.CancelledError):
                     await task
 
+    # -- Chat validation -------------------------------------------------------
+
+    def set_heartbeat_chat_validator(
+        self,
+        bot_instance: Any,
+    ) -> None:
+        """Wire chat validation using the bot instance for get_chat."""
+
+        async def _validate(chat_id: int) -> bool:
+            try:
+                await bot_instance.get_chat(chat_id)
+            except Exception:
+                return False
+            else:
+                return True
+
+        self.heartbeat.set_chat_validator(_validate)
+
     # -- Bus wiring (single entry point) --------------------------------------
 
     def wire_to_bus(
@@ -189,8 +215,8 @@ class ObserverManager:
 
             self.cron.set_result_handler(_on_cron)
 
-        async def _on_heartbeat(chat_id: int, text: str) -> None:
-            await bus.submit(from_heartbeat(chat_id, text))
+        async def _on_heartbeat(chat_id: int, text: str, topic_id: int | None = None) -> None:
+            await bus.submit(from_heartbeat(chat_id, text, topic_id))
 
         self.heartbeat.set_result_handler(_on_heartbeat)
 

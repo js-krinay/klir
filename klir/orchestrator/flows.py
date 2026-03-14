@@ -667,7 +667,12 @@ async def named_session_streaming(
 # ---------------------------------------------------------------------------
 
 
-async def heartbeat_flow(orch: Orchestrator, key: SessionKey) -> str | None:
+async def heartbeat_flow(
+    orch: Orchestrator,
+    key: SessionKey,
+    *,
+    prompt_override: str | None = None,
+) -> str | None:
     """Run a heartbeat turn in the existing session.
 
     Returns the alert text if the model has something to say, or None if the
@@ -707,7 +712,7 @@ async def heartbeat_flow(orch: Orchestrator, key: SessionKey) -> str | None:
         return None
 
     request = AgentRequest(
-        prompt=hb_cfg.prompt,
+        prompt=prompt_override if prompt_override is not None else hb_cfg.prompt,
         model_override=req_model,
         provider_override=req_provider,
         chat_id=key.chat_id,

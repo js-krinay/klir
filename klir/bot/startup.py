@@ -130,6 +130,7 @@ async def run_startup(bot: TelegramBot) -> None:
     sentinel = await _handle_restart_sentinel(bot)
 
     bot._orch.wire_observers_to_bus(bot._bus, wake_handler=bot._handle_webhook_wake)
+    bot._orch._observers.set_heartbeat_chat_validator(bot.bot_instance)
     bot._orchestrator.set_config_hot_reload_handler(bot._on_auth_hot_reload)
 
     await _notify_and_recover(bot, sentinel)
