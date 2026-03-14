@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 import yaml
 from aiogram.exceptions import TelegramAPIError
 
+from klir.config import ImageConfig
 from klir.files.prompt import MediaInfo
 from klir.files.prompt import build_media_prompt as _build_media_prompt_generic
 from klir.files.storage import prepare_destination as _prepare_destination
@@ -118,6 +119,8 @@ async def resolve_media_text(
     message: Message,
     telegram_files_dir: Path,
     workspace: Path,
+    *,
+    image_cfg: ImageConfig | None = None,
 ) -> str | None:
     """Download media from *message*, update index, return agent prompt.
 
@@ -126,7 +129,7 @@ async def resolve_media_text(
     await asyncio.to_thread(telegram_files_dir.mkdir, parents=True, exist_ok=True)
 
     try:
-        info = await download_media(bot, message, telegram_files_dir)
+        info = await download_media(bot, message, telegram_files_dir, image_cfg=image_cfg)
     except (TelegramAPIError, OSError):
         logger.exception("Failed to download media from chat=%d", message.chat.id)
         await message.answer("Could not download that file.")
@@ -150,8 +153,17 @@ async def resolve_media_text(
 _MediaTuple = tuple[str | None, Any, str, str]
 
 
-async def download_media(bot: Bot, message: Message, base_dir: Path) -> MediaInfo | None:
+async def download_media(
+    bot: Bot,
+    message: Message,
+    base_dir: Path,
+    *,
+    image_cfg: ImageConfig | None = None,
+) -> MediaInfo | None:
     """Download the first media attachment into *base_dir*/YYYY-MM-DD/.
+
+    When *image_cfg* is provided and the attachment is a photo,
+    the file is resized/converted via :func:`process_image` before returning.
 
     Returns ``None`` when the message contains no supported media.
     """
@@ -163,6 +175,12 @@ async def download_media(bot: Bot, message: Message, base_dir: Path) -> MediaInf
     await bot.download(file_obj, destination=dest)
     logger.info("Downloaded %s -> %s (%s)", kind, dest, mime)
 
+    if kind == "photo" and image_cfg is not None:
+        processed = await process_image(dest, image_cfg)
+        if processed != dest:
+            dest = processed
+            mime = f"image/{image_cfg.output_format.lower()}"
+
     return MediaInfo(
         path=dest,
         media_type=mime,
@@ -170,6 +188,63 @@ async def download_media(bot: Bot, message: Message, base_dir: Path) -> MediaInf
         caption=message.caption,
         original_type=kind,
     )
+
+
+# ---------------------------------------------------------------------------
+# Image processing
+# ---------------------------------------------------------------------------
+
+
+_PILLOW_FORMAT: dict[str, str] = {"jpg": "JPEG", "jpeg": "JPEG", "webp": "WEBP", "png": "PNG"}
+
+
+def _process_image_sync(path: Path, cfg: ImageConfig) -> Path:
+    """Blocking resize + re-encode; call via ``asyncio.to_thread``."""
+    from PIL import Image
+
+    fmt = cfg.output_format.lower()
+    pillow_fmt = _PILLOW_FORMAT.get(fmt, fmt.upper())
+
+    with Image.open(path) as src:
+        img: Image.Image = src
+
+        # Convert to RGB for lossy formats that don't support alpha.
+        if fmt in ("jpeg", "jpg") and img.mode not in ("RGB", "L"):
+            img = img.convert("RGB")
+
+        # Resize if the longest edge exceeds the cap.
+        w, h = img.size
+        longest = max(w, h)
+        if longest > cfg.max_dimension:
+            scale = cfg.max_dimension / longest
+            new_size = (int(w * scale), int(h * scale))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+        ext_map = {"webp": ".webp", "jpeg": ".jpg", "jpg": ".jpg", "png": ".png"}
+        ext = ext_map.get(fmt, f".{fmt}")
+
+        out_path = path.with_suffix(ext)
+        quality = cfg.quality if fmt in ("webp", "jpeg", "jpg") else None
+        img.save(out_path, format=pillow_fmt, quality=quality)
+
+    # Remove original only when a new file was written at a different path.
+    if out_path != path:
+        path.unlink(missing_ok=True)
+
+    return out_path
+
+
+async def process_image(path: Path, cfg: ImageConfig) -> Path:
+    """Resize and convert *path* to the configured format.
+
+    Runs in a thread pool to avoid blocking the event loop.
+    Non-fatal: returns the original *path* on any error.
+    """
+    try:
+        return await asyncio.to_thread(_process_image_sync, path, cfg)
+    except Exception:
+        logger.warning("Image processing failed for %s, using original", path, exc_info=True)
+        return path
 
 
 # ---------------------------------------------------------------------------

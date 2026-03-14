@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 import yaml
 from aiogram.types import Message
 
@@ -445,3 +446,145 @@ class TestTelegramBuildMediaPrompt:
         )
         prompt = build_media_prompt(info, tmp_path)
         assert "User message: Hello!" in prompt
+
+
+# ---------------------------------------------------------------------------
+# process_image
+# ---------------------------------------------------------------------------
+
+
+class TestProcessImage:
+    @pytest.mark.asyncio
+    async def test_resizes_large_image(self, tmp_path: Path) -> None:
+        from PIL import Image
+
+        from klir.bot.media import process_image
+        from klir.config import ImageConfig
+
+        img = Image.new("RGB", (4000, 3000), color=(255, 0, 0))
+        src = tmp_path / "big.jpg"
+        img.save(src, format="JPEG")
+
+        cfg = ImageConfig(max_dimension=2000, output_format="webp", quality=85)
+        out = await process_image(src, cfg)
+
+        result = Image.open(out)
+        assert max(result.size) <= 2000
+        assert out.suffix == ".webp"
+
+    @pytest.mark.asyncio
+    async def test_small_image_not_enlarged(self, tmp_path: Path) -> None:
+        from PIL import Image
+
+        from klir.bot.media import process_image
+        from klir.config import ImageConfig
+
+        img = Image.new("RGB", (400, 300))
+        src = tmp_path / "small.jpg"
+        img.save(src, format="JPEG")
+
+        cfg = ImageConfig(max_dimension=2000, output_format="webp", quality=85)
+        out = await process_image(src, cfg)
+
+        result = Image.open(out)
+        assert result.size == (400, 300)
+
+    @pytest.mark.asyncio
+    async def test_non_fatal_on_corrupt_file(self, tmp_path: Path) -> None:
+        from klir.bot.media import process_image
+        from klir.config import ImageConfig
+
+        corrupt = tmp_path / "bad.jpg"
+        corrupt.write_bytes(b"not an image")
+
+        cfg = ImageConfig()
+        out = await process_image(corrupt, cfg)
+
+        assert out == corrupt  # original path returned as fallback
+
+    @pytest.mark.asyncio
+    async def test_rgba_converted_for_jpeg(self, tmp_path: Path) -> None:
+        from PIL import Image
+
+        from klir.bot.media import process_image
+        from klir.config import ImageConfig
+
+        img = Image.new("RGBA", (800, 600), color=(255, 0, 0, 128))
+        src = tmp_path / "alpha.png"
+        img.save(src, format="PNG")
+
+        cfg = ImageConfig(output_format="jpeg", quality=85)
+        out = await process_image(src, cfg)
+
+        result = Image.open(out)
+        assert result.mode == "RGB"
+        assert out.suffix == ".jpg"
+
+    @pytest.mark.asyncio
+    async def test_original_deleted_on_format_change(self, tmp_path: Path) -> None:
+        from PIL import Image
+
+        from klir.bot.media import process_image
+        from klir.config import ImageConfig
+
+        img = Image.new("RGB", (100, 100))
+        src = tmp_path / "pic.jpg"
+        img.save(src, format="JPEG")
+
+        cfg = ImageConfig(output_format="webp")
+        out = await process_image(src, cfg)
+
+        assert out.suffix == ".webp"
+        assert not src.exists()  # original .jpg removed
+
+    @pytest.mark.asyncio
+    async def test_output_format_jpg(self, tmp_path: Path) -> None:
+        from PIL import Image
+
+        from klir.bot.media import process_image
+        from klir.config import ImageConfig
+
+        img = Image.new("RGB", (800, 600))
+        src = tmp_path / "pic.png"
+        img.save(src, format="PNG")
+
+        cfg = ImageConfig(output_format="jpg", quality=80)
+        out = await process_image(src, cfg)
+
+        assert out.suffix == ".jpg"
+        result = Image.open(out)
+        assert result.format == "JPEG"
+
+    @pytest.mark.asyncio
+    async def test_fallback_preserves_original_mime(self, tmp_path: Path) -> None:
+        from klir.bot.media import download_media
+        from klir.config import ImageConfig
+
+        src = tmp_path / "photo_abc123.jpg"
+        src.write_bytes(b"not an image")
+
+        bot = MagicMock()
+        bot.download = AsyncMock()
+        msg = _make_message(photo=True)
+
+        cfg = ImageConfig(output_format="webp")
+        with patch("klir.bot.media._prepare_destination", return_value=src):
+            info = await download_media(bot, msg, tmp_path, image_cfg=cfg)
+
+        assert info is not None
+        assert info.media_type == "image/jpeg"  # original, not webp
+
+    @pytest.mark.asyncio
+    async def test_no_processing_when_image_cfg_none(self, tmp_path: Path) -> None:
+        from klir.bot.media import download_media
+
+        bot = MagicMock()
+        bot.download = AsyncMock()
+        msg = _make_message(photo=True)
+
+        with (
+            patch("klir.bot.media._prepare_destination", return_value=tmp_path / "p.jpg"),
+            patch("klir.bot.media.process_image") as mock_pi,
+        ):
+            await download_media(bot, msg, tmp_path, image_cfg=None)
+            mock_pi.assert_not_called()

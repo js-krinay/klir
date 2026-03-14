@@ -41,6 +41,7 @@ dependencies = [
     "questionary>=2.1.1",
     "filetype>=1.2.0",
     "tzdata>=2024.1",
+    "Pillow>=10.0.0",
 ]
 
 [project.optional-dependencies]
@@ -189,6 +190,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["nacl.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["PIL.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

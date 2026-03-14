@@ -60,6 +60,7 @@ _HOT_RELOADABLE: frozenset[str] = frozenset(
         "chat_overrides",
         "pairing",
         "approval",
+        "image",
     }
 )
 
