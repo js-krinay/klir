@@ -253,6 +253,10 @@ class NamedSessionRegistry:
             key=lambda s: s.created_at,
         )
 
+    def list_all_active(self) -> list[NamedSession]:
+        """Return all non-ended sessions across all chats."""
+        return [s for s in self._sessions.values() if s.status != "ended"]
+
     def end_session(self, chat_id: int, name: str) -> bool:
         """Mark a session as ended. Returns True if found and ended."""
         ns = self._sessions.get((chat_id, name))

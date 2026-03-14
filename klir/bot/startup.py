@@ -134,6 +134,18 @@ async def run_startup(bot: TelegramBot) -> None:
     sentinel = await _handle_restart_sentinel(bot)
 
     bot._orch.wire_observers_to_bus(bot._bus, wake_handler=bot._handle_webhook_wake)
+
+    # Wire dashboard audit hook to broadcast envelopes to connected dashboards
+    _dashboard_hub = getattr(bot._orch, "_dashboard_hub", None)
+    if _dashboard_hub is not None:
+        from klir.api.dashboard import envelope_to_dto
+        from klir.bus.envelope import Envelope
+
+        async def _dashboard_audit(envelope: Envelope) -> None:
+            await _dashboard_hub.broadcast("envelope", envelope_to_dto(envelope))
+
+        bot._bus.set_audit_hook(_dashboard_audit)
+
     bot._orch._observers.set_heartbeat_chat_validator(bot.bot_instance)
     bot._orchestrator.set_config_hot_reload_handler(bot._on_auth_hot_reload)
 

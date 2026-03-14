@@ -184,6 +184,15 @@ class WebhookConfig(BaseModel):
     rate_limit_per_minute: int = 30
 
 
+class DashboardConfig(BaseModel):
+    """Settings for the real-time web dashboard."""
+
+    enabled: bool = True
+    e2e_required: bool = False
+    history_retention_days: int = 30
+    max_clients: int = 5
+
+
 class ApiConfig(BaseModel):
     """Settings for the direct WebSocket API server.
 
@@ -201,6 +210,7 @@ class ApiConfig(BaseModel):
     token: str = ""
     chat_id: int = 0
     allow_public: bool = False
+    dashboard: DashboardConfig = Field(default_factory=DashboardConfig)
 
 
 def deep_merge_config(

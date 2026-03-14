@@ -149,6 +149,40 @@ async def start_api_server(
         lambda: orch._providers.resolve_runtime_target(orch._config.model)
     )
 
+    # -- Dashboard hub ---------------------------------------------------------
+    dashboard_hub = None
+    if config.api.dashboard.enabled:
+        try:
+            from klir.api.dashboard import DashboardHub
+        except ImportError:
+            logger.warning("Dashboard enabled but klir.api.dashboard not available")
+        else:
+            dashboard_hub = DashboardHub(max_clients=config.api.dashboard.max_clients)
+            server.set_dashboard_hub(dashboard_hub)
+            server.set_snapshot_sources(
+                session_mgr=orch._sessions,
+                named_registry=orch._named_sessions,
+                agent_health_getter=lambda: orch._supervisor.health if orch._supervisor else {},
+                cron_mgr=orch._cron_manager,
+                task_registry_getter=lambda: orch._task_hub._registry if orch._task_hub else None,
+                process_registry=orch._process_registry,
+                observer_status_getter=lambda: {
+                    "heartbeat": orch._observers.heartbeat is not None,
+                    "cron": orch._observers.cron is not None,
+                    "webhook": orch._observers.webhook is not None,
+                    "background": orch._observers.background is not None,
+                },
+                config_summary_getter=lambda: {
+                    "provider": orch._config.provider,
+                    "model": orch._config.model,
+                    "language": orch._config.language,
+                },
+            )
+            logger.info(
+                "Dashboard hub initialized (max_clients=%d)",
+                config.api.dashboard.max_clients,
+            )
+
     try:
         await server.start()
     except OSError:
@@ -160,6 +194,7 @@ async def start_api_server(
         return
 
     orch._api_stop = server.stop
+    orch._dashboard_hub = dashboard_hub
 
 
 async def shutdown(orch: Orchestrator) -> None:

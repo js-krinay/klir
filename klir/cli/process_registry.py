@@ -110,6 +110,15 @@ class ProcessRegistry:
         entries = self._processes.get(chat_id, [])
         return any(e.process.returncode is None for e in entries)
 
+    def list_all_active(self) -> list[TrackedProcess]:
+        """Return all running processes across all chats."""
+        return [
+            tp
+            for entries in self._processes.values()
+            for tp in entries
+            if tp.process.returncode is None
+        ]
+
     async def kill_by_label(self, chat_id: int, label: str) -> int:
         """Kill processes matching *label* for *chat_id*. Returns count killed."""
         self._aborted_labels.add((chat_id, label))

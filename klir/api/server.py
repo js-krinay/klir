@@ -43,6 +43,13 @@ from aiohttp import BodyPartReader, WSMsgType, web
 
 from klir.api.crypto import E2ESession
 from klir.bus.lock_pool import LockPool
+
+try:
+    from klir.api.dashboard import DashboardClient, DashboardFilter, DashboardHub
+except ImportError:  # pragma: no cover - module created by another agent
+    DashboardHub = None  # type: ignore[assignment,misc]
+    DashboardClient = None  # type: ignore[assignment,misc]
+    DashboardFilter = None  # type: ignore[assignment,misc]
 from klir.files.prompt import MediaInfo, build_media_prompt
 from klir.files.storage import prepare_destination, sanitize_filename
 from klir.files.tags import (
@@ -189,6 +196,9 @@ class ApiServer:
         self._workspace: Path | None = None
         self._provider_info: list[dict[str, object]] = []
         self._active_state_getter: Callable[[], tuple[str, str]] | None = None
+        # Dashboard hub (set via set_dashboard_hub)
+        self._dashboard_hub: DashboardHub | None = None
+        self._snapshot_sources: dict[str, Any] | None = None
 
     # -- Handler wiring --------------------------------------------------------
 
@@ -220,6 +230,33 @@ class ApiServer:
         """Set a callback that returns (active_provider, active_model)."""
         self._active_state_getter = getter
 
+    def set_dashboard_hub(self, hub: DashboardHub) -> None:
+        """Attach a DashboardHub for /ws/dashboard connections."""
+        self._dashboard_hub = hub
+
+    def set_snapshot_sources(  # noqa: PLR0913
+        self,
+        session_mgr: Any,
+        named_registry: Any,
+        agent_health_getter: Callable[[], Any],
+        cron_mgr: Any,
+        task_registry_getter: Callable[[], Any],
+        process_registry: Any,
+        observer_status_getter: Callable[[], dict[str, Any]],
+        config_summary_getter: Callable[[], dict[str, Any]],
+    ) -> None:
+        """Store references for snapshot assembly on dashboard connect."""
+        self._snapshot_sources = {
+            "session_mgr": session_mgr,
+            "named_registry": named_registry,
+            "agent_health_getter": agent_health_getter,
+            "cron_mgr": cron_mgr,
+            "task_registry_getter": task_registry_getter,
+            "process_registry": process_registry,
+            "observer_status_getter": observer_status_getter,
+            "config_summary_getter": config_summary_getter,
+        }
+
     # -- Lifecycle -------------------------------------------------------------
 
     async def start(self) -> None:
@@ -239,6 +276,7 @@ class ApiServer:
         app.router.add_get("/ws", self._handle_websocket)
         app.router.add_get("/files", self._handle_file_download)
         app.router.add_post("/upload", self._handle_file_upload)
+        app.router.add_get("/ws/dashboard", self._handle_dashboard_ws)
 
         self._runner = web.AppRunner(app, access_log=None)
         await self._runner.setup()
@@ -631,3 +669,169 @@ class ApiServer:
         if self._handle_abort:
             killed = await self._handle_abort(chat_id)
         await channel.send({"type": "abort_ok", "killed": killed})
+
+    # -- Dashboard WebSocket ---------------------------------------------------
+
+    async def _handle_dashboard_ws(
+        self,
+        request: web.Request,
+    ) -> web.WebSocketResponse | web.Response:
+        """Handle a /ws/dashboard connection for real-time monitoring."""
+        if not self._config.dashboard.enabled or self._dashboard_hub is None:
+            return web.json_response({"error": "dashboard not enabled"}, status=404)
+
+        ws = web.WebSocketResponse(heartbeat=30.0)
+        await ws.prepare(request)
+        logger.info("Dashboard WebSocket opened from %s", request.remote)
+
+        result = await self._authenticate_dashboard(ws)
+        if result is None:
+            return ws
+
+        client, e2e = result
+
+        # -- Auth OK response --
+        auth_ok_payload: dict[str, object] = {"type": "auth_ok"}
+        if e2e is not None:
+            auth_ok_payload["e2e_pk"] = e2e.local_pk_b64
+        await _ws_send(ws, auth_ok_payload)
+        logger.info("Dashboard client authenticated (E2E=%s)", e2e is not None)
+
+        self._active_ws.add(ws)
+        try:
+            await self._dashboard_session_loop(ws, client)
+        except (asyncio.CancelledError, ConnectionError, ConnectionResetError):
+            pass
+        finally:
+            self._dashboard_hub.remove_client(client)
+            self._active_ws.discard(ws)
+            logger.info("Dashboard WebSocket closed")
+
+        return ws
+
+    async def _authenticate_dashboard(  # noqa: PLR0911
+        self,
+        ws: web.WebSocketResponse,
+    ) -> tuple[DashboardClient, E2ESession | None] | None:
+        """Authenticate a dashboard WS client. Returns (client, e2e) or None."""
+        assert self._dashboard_hub is not None
+        data = await self._read_auth_message(ws)
+        if data is None:
+            return None
+
+        if not self._config.token:
+            logger.warning("Dashboard auth rejected: server token not configured")
+            await _ws_reject(ws, "auth_failed", "Server token not configured")
+            return None
+
+        token = str(data.get("token", ""))
+        if not hmac.compare_digest(token, self._config.token):
+            logger.warning("Dashboard auth failed (invalid token)")
+            await _ws_reject(ws, "auth_failed", "Invalid token")
+            return None
+
+        # Optional E2E key exchange
+        e2e: E2ESession | None = None
+        e2e_pk = data.get("e2e_pk")
+        if isinstance(e2e_pk, str) and e2e_pk:
+            try:
+                e2e = E2ESession()
+                e2e.set_remote_key(e2e_pk)
+            except Exception:
+                logger.warning("Dashboard E2E key exchange failed")
+                await _ws_reject(ws, "auth_failed", "Invalid e2e_pk")
+                return None
+        elif self._config.dashboard.e2e_required:
+            await _ws_reject(ws, "auth_failed", "e2e_pk required")
+            return None
+
+        client = self._dashboard_hub.add_client(ws, e2e=e2e)
+        if client is None:
+            await _ws_reject(ws, "max_clients", "Too many dashboard clients")
+            return None
+
+        return client, e2e
+
+    async def _dashboard_session_loop(
+        self,
+        ws: web.WebSocketResponse,
+        client: DashboardClient,
+    ) -> None:
+        """Send snapshot then process dashboard messages until disconnect."""
+        assert self._dashboard_hub is not None
+
+        # Send initial snapshot
+        if self._snapshot_sources is not None:
+            src = self._snapshot_sources
+            snapshot = await self._dashboard_hub.assemble_snapshot(
+                src["session_mgr"],
+                src["named_registry"],
+                src["agent_health_getter"](),
+                src["cron_mgr"],
+                src["task_registry_getter"](),
+                src["process_registry"],
+                src["observer_status_getter"](),
+                src["config_summary_getter"](),
+            )
+            await self._dashboard_hub.send_snapshot(client, snapshot)
+
+        # Message loop
+        async for raw in ws:
+            if raw.type == WSMsgType.TEXT:
+                await self._route_dashboard_message(client, raw.data)
+            elif raw.type in (WSMsgType.ERROR, WSMsgType.CLOSE):
+                break
+
+    async def _route_dashboard_message(
+        self,
+        client: DashboardClient,
+        raw_data: str,
+    ) -> None:
+        """Route an incoming dashboard control message."""
+        assert self._dashboard_hub is not None
+        try:
+            data = json.loads(raw_data)
+        except (json.JSONDecodeError, ValueError):
+            return  # ignore malformed frames
+
+        if not isinstance(data, dict):
+            return
+
+        msg_type = str(data.get("type", ""))
+
+        if msg_type == "subscribe":
+            self._apply_dashboard_filter(client, data)
+        elif msg_type == "unsubscribe":
+            self._dashboard_hub.set_filter(client, None)
+        elif msg_type == "ping":
+            await self._dashboard_hub.send_pong(client)
+        # Unknown types are silently ignored
+
+    def _apply_dashboard_filter(
+        self,
+        client: DashboardClient,
+        data: dict[str, Any],
+    ) -> None:
+        """Parse and apply a subscribe filter to a dashboard client."""
+        assert self._dashboard_hub is not None
+        raw_filter = data.get("filter")
+        if isinstance(raw_filter, dict):
+            try:
+                # Only pass known fields to prevent unexpected kwargs
+                filt = DashboardFilter(
+                    origins=raw_filter.get("origins"),
+                    chat_ids=raw_filter.get("chat_ids"),
+                    event_types=raw_filter.get("event_types"),
+                )
+            except Exception:
+                logger.debug("Dashboard: invalid filter payload, ignoring")
+                return
+            # Cap list sizes to prevent memory abuse
+            max_items = 100
+            for lst in (filt.origins, filt.chat_ids, filt.event_types):
+                if lst is not None and len(lst) > max_items:
+                    logger.debug("Dashboard: filter list too large, ignoring")
+                    return
+            self._dashboard_hub.set_filter(client, filt)
+        else:
+            self._dashboard_hub.set_filter(client, DashboardFilter())

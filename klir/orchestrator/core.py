@@ -73,6 +73,7 @@ from klir.webhook.manager import WebhookManager
 from klir.workspace.paths import KlirPaths
 
 if TYPE_CHECKING:
+    from klir.api.dashboard import DashboardHub
     from klir.background import BackgroundObserver
     from klir.bus.bus import MessageBus
     from klir.bus.envelope import Envelope
@@ -189,6 +190,7 @@ class Orchestrator:
             lambda: self._process_registry.kill_stale(stale_max)
         )
         self._api_stop: Callable[[], Awaitable[None]] | None = None
+        self._dashboard_hub: DashboardHub | None = None
         self._inflight_tracker = InflightTracker(paths.inflight_turns_path)
         self._hook_registry = MessageHookRegistry()
         self._hook_registry.register(MAINMEMORY_REMINDER)
