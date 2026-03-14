@@ -47,6 +47,35 @@ def test_agent_config_streaming_defaults() -> None:
     assert cfg.streaming.max_chars == 4000
 
 
+def test_image_config_defaults() -> None:
+    from klir.config import ImageConfig
+
+    cfg = ImageConfig()
+    assert cfg.max_dimension == 2000
+    assert cfg.output_format == "webp"
+    assert cfg.quality == 85
+
+
+def test_agent_config_has_image_section() -> None:
+    cfg = AgentConfig()
+    assert cfg.image.max_dimension == 2000
+    assert cfg.image.output_format == "webp"
+    assert cfg.image.quality == 85
+
+
+def test_image_config_rejects_invalid_values() -> None:
+    from klir.config import ImageConfig
+
+    with pytest.raises(ValidationError, match="max_dimension"):
+        ImageConfig(max_dimension=0)
+    with pytest.raises(ValidationError, match="quality"):
+        ImageConfig(quality=0)
+    with pytest.raises(ValidationError, match="quality"):
+        ImageConfig(quality=101)
+    with pytest.raises(ValidationError, match="output_format"):
+        ImageConfig(output_format="gif")
+
+
 def test_agent_config_rejects_invalid_types() -> None:
     with pytest.raises(ValidationError, match="idle_timeout_minutes"):
         AgentConfig(idle_timeout_minutes="not_a_number")  # type: ignore[arg-type]

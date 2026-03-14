@@ -293,6 +293,42 @@ class ResilienceConfig(BaseModel):
     jitter: bool = True
 
 
+_ALLOWED_IMAGE_FORMATS: frozenset[str] = frozenset({"webp", "jpeg", "jpg", "png"})
+
+
+class ImageConfig(BaseModel):
+    """Settings for automatic image resizing and format conversion."""
+
+    max_dimension: int = 2000
+    output_format: str = "webp"
+    quality: int = 85
+
+    @field_validator("max_dimension")
+    @classmethod
+    def _validate_max_dimension(cls, v: int) -> int:
+        if v < 1:
+            msg = "max_dimension must be >= 1"
+            raise ValueError(msg)
+        return v
+
+    @field_validator("quality")
+    @classmethod
+    def _validate_quality(cls, v: int) -> int:
+        if not 1 <= v <= 100:
+            msg = "quality must be between 1 and 100"
+            raise ValueError(msg)
+        return v
+
+    @field_validator("output_format")
+    @classmethod
+    def _validate_output_format(cls, v: str) -> str:
+        normalized = v.lower()
+        if normalized not in _ALLOWED_IMAGE_FORMATS:
+            msg = f"output_format must be one of {sorted(_ALLOWED_IMAGE_FORMATS)}"
+            raise ValueError(msg)
+        return normalized
+
+
 class UserMessageHookConfig(BaseModel):
     """User-defined message hook from config.json."""
 
@@ -351,6 +387,7 @@ class AgentConfig(BaseModel):
     thread_binding: ThreadBindingConfig = Field(default_factory=ThreadBindingConfig)
     reply_to_mode: ReplyToMode = "first"
     resilience: ResilienceConfig = Field(default_factory=ResilienceConfig)
+    image: ImageConfig = Field(default_factory=ImageConfig)
     message_hooks: list[UserMessageHookConfig] = Field(default_factory=list)
     allowed_tools: list[str] = Field(default_factory=list)
     disallowed_tools: list[str] = Field(default_factory=list)

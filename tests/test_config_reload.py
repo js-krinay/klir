@@ -62,6 +62,12 @@ class TestClassifyChanges:
         assert "reasoning_effort" in hot
         assert restart == []
 
+    def test_image_is_hot_reloadable(self) -> None:
+        changes: dict[str, tuple[Any, Any]] = {"image": ({}, {"max_dimension": 1000})}
+        hot, restart = classify_changes(changes)
+        assert "image" in hot
+        assert restart == []
+
     def test_restart_required(self) -> None:
         changes = {"telegram_token": ("old", "new"), "api": ({}, {"enabled": True})}
         hot, restart = classify_changes(changes)

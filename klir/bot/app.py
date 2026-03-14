@@ -1420,7 +1420,11 @@ class TelegramBot:
                 return None
             paths = self._orch.paths
             return await resolve_media_text(
-                self._bot, message, paths.telegram_files_dir, paths.workspace
+                self._bot,
+                message,
+                paths.telegram_files_dir,
+                paths.workspace,
+                image_cfg=self._config.image,
             )
         if not message.text:
             return None
