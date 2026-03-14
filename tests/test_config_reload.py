@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 
 from klir.config import AgentConfig
 from klir.config_reload import (
+    _HOT_RELOADABLE,
     ConfigReloader,
     classify_changes,
     diff_configs,
@@ -223,3 +224,7 @@ class TestConfigReloader:
 
         await reloader._check()
         on_hot.assert_not_called()
+
+
+def test_scene_is_hot_reloadable() -> None:
+    assert "scene" in _HOT_RELOADABLE

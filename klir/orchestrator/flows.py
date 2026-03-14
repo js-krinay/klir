@@ -23,6 +23,7 @@ from klir.text.response_format import session_error_text, timeout_error_text
 from klir.workspace.loader import read_mainmemory
 
 if TYPE_CHECKING:
+    from klir.bot.footer import FooterData
     from klir.cli.tool_activity import ToolActivity
     from klir.orchestrator.core import Orchestrator
 
@@ -370,7 +371,12 @@ async def normal(
             )
         await _update_session(orch, session, response)
         logger.info("Normal flow completed")
-        result = _finish_normal(response, session, orch._config.session_age_warning_hours)
+        result = _finish_normal(
+            response,
+            session,
+            orch._config.session_age_warning_hours,
+            technical_footer=orch._config.scene.technical_footer,
+        )
         post_ctx = HookContext(
             chat_id=key.chat_id,
             message_count=session.message_count,
@@ -442,7 +448,12 @@ async def normal_streaming(
             )
         await _update_session(orch, session, response)
         logger.info("Streaming flow completed")
-        result = _finish_normal(response, session, orch._config.session_age_warning_hours)
+        result = _finish_normal(
+            response,
+            session,
+            orch._config.session_age_warning_hours,
+            technical_footer=orch._config.scene.technical_footer,
+        )
         post_ctx = HookContext(
             chat_id=key.chat_id,
             message_count=session.message_count,
@@ -478,6 +489,8 @@ def _finish_normal(
     response: AgentResponse,
     session: SessionData | None = None,
     warning_hours: int = 0,
+    *,
+    technical_footer: bool = False,
 ) -> OrchestratorResult:
     """Post-processing for normal() and normal_streaming()."""
     if response.is_error:
@@ -491,9 +504,22 @@ def _finish_normal(
     if session:
         text += _session_age_note(session, warning_hours)
 
+    footer: FooterData | None = None
+    if technical_footer and not response.is_error:
+        from klir.bot.footer import FooterData
+
+        footer = FooterData(
+            model_id=session.model if session else "",
+            input_tokens=response.input_tokens,
+            output_tokens=response.total_tokens - response.input_tokens,
+            cost_usd=response.cost_usd or None,
+            duration_ms=response.duration_ms,
+        )
+
     return OrchestratorResult(
         text=text,
         stream_fallback=response.stream_fallback,
+        footer=footer,
     )
 
 

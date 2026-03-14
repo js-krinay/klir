@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
+from klir.bot.footer import FooterData
 from klir.orchestrator.selectors.models import ButtonGrid
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class OrchestratorResult(BaseModel):
     text: str
     stream_fallback: bool = False
     buttons: ButtonGrid | None = None
+    footer: FooterData | None = None
 
 
 @dataclass(frozen=True, slots=True)

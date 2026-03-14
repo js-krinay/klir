@@ -164,12 +164,16 @@ class EditStreamEditor:
         self._s.tool_tracker.add(text, style="system")
         await self._schedule_edit()
 
-    async def finalize(self, full_text: str) -> None:
+    async def finalize(self, full_text: str, *, footer_html: str = "") -> None:
         """Force a final edit with indicators stripped for a clean message."""
         self._cancel_timer()
         if self._s.fallen_back:
+            if footer_html:
+                await self._send_new(footer_html)
             return
         self._flush_text_segment()
+        if footer_html:
+            self._s.segments.append(footer_html)
         # Discard pending indicators and strip flushed ones from active portion.
         self._s.tool_tracker = _ToolTracker()
         self._strip_active_indicators()

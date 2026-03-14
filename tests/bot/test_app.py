@@ -65,10 +65,14 @@ def _make_orchestrator(
 ) -> MagicMock:
     orch = MagicMock()
     orch.handle_message = AsyncMock(
-        return_value=MagicMock(text=handle_message_text, buttons=None),
+        return_value=MagicMock(text=handle_message_text, buttons=None, footer=None),
     )
     orch.handle_message_streaming = AsyncMock(
-        return_value=MagicMock(text=handle_streaming_text, stream_fallback=stream_fallback),
+        return_value=MagicMock(
+            text=handle_streaming_text,
+            stream_fallback=stream_fallback,
+            footer=None,
+        ),
     )
     orch.abort = AsyncMock(return_value=1)
     orch.reset_session = AsyncMock()
@@ -1213,7 +1217,7 @@ class TestSyncCommands:
         from klir.bot.app import _BOT_COMMANDS
 
         tg_bot, bot_instance = _make_tg_bot()
-        reversed_cmds = list(reversed(_BOT_COMMANDS))
+        reversed_cmds: list[object] = list(reversed(_BOT_COMMANDS))
 
         async def _get_my_commands(**kwargs: object) -> list[object]:
             if kwargs.get("scope"):
@@ -1371,7 +1375,7 @@ def telegram_bot() -> MagicMock:
     orch = _make_orchestrator()
     tg_bot._orchestrator = orch
     tg_bot._bot_username = "test_bot"
-    return tg_bot  # type: ignore[return-value]
+    return tg_bot
 
 
 # ---------------------------------------------------------------------------

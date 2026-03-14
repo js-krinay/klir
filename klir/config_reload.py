@@ -50,6 +50,7 @@ _HOT_RELOADABLE: frozenset[str] = frozenset(
         "user_timezone",
         "streaming",
         "reactions",
+        "scene",
         "heartbeat",
         "cleanup",
         "cli_parameters",

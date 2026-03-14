@@ -69,11 +69,19 @@ async def run_non_streaming_message(
     async with TypingContext(dispatch.bot, dispatch.key.chat_id, thread_id=dispatch.thread_id):
         result = await dispatch.orchestrator.handle_message(dispatch.key, dispatch.text)
 
+    display_text = result.text
+    if result.footer is not None:
+        from klir.bot.footer import build_footer_markdown
+
+        md = build_footer_markdown(result.footer)
+        if md:
+            display_text += md
+
     reply_id = dispatch.reply_to.message_id if dispatch.reply_to else None
     await send_rich(
         dispatch.bot,
         dispatch.key.chat_id,
-        result.text,
+        display_text,
         SendRichOpts(
             reply_to_message_id=reply_id,
             allowed_roots=dispatch.allowed_roots,
@@ -85,7 +93,7 @@ async def run_non_streaming_message(
             forwarding_targets=dispatch.forwarding_targets,
         ),
     )
-    return result.text
+    return display_text
 
 
 async def run_streaming_message(
@@ -144,9 +152,15 @@ async def run_streaming_message(
             on_system_status=on_system,
         )
 
+    footer_html = ""
+    if result.footer is not None:
+        from klir.bot.footer import build_footer_html
+
+        footer_html = build_footer_html(result.footer)
+
     await coalescer.flush(force=True)
     coalescer.stop()
-    await editor.finalize(result.text)
+    await editor.finalize(result.text, footer_html=footer_html)
 
     logger.info(
         "Streaming flow completed fallback=%s content=%s",
@@ -155,10 +169,18 @@ async def run_streaming_message(
     )
 
     if result.stream_fallback or not editor.has_content:
+        display_text = result.text
+        if result.footer is not None:
+            from klir.bot.footer import build_footer_markdown
+
+            md = build_footer_markdown(result.footer)
+            if md:
+                display_text += md
+
         await send_rich(
             dispatch.bot,
             dispatch.key.chat_id,
-            result.text,
+            display_text,
             SendRichOpts(
                 reply_to_message_id=dispatch.message.message_id,
                 allowed_roots=dispatch.allowed_roots,

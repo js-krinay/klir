@@ -55,7 +55,7 @@ class StreamEditorProtocol(Protocol):
     async def append_text(self, text: str) -> None: ...
     async def append_tool(self, activity: ToolActivity) -> None: ...
     async def append_system(self, text: str) -> None: ...
-    async def finalize(self, full_text: str) -> None: ...
+    async def finalize(self, full_text: str, *, footer_html: str = "") -> None: ...
 
 
 class StreamEditor:
@@ -109,10 +109,12 @@ class StreamEditor:
         indicator = f"<i>[{html.escape(text)}]</i>"
         await self._send(indicator)
 
-    async def finalize(self, full_text: str) -> None:
+    async def finalize(self, full_text: str, *, footer_html: str = "") -> None:
         """Attach button keyboard to the last sent message, if any."""
         if self._last_msg is None:
             return
+        if footer_html:
+            await self._send(footer_html)
         _, markup = extract_buttons(full_text)
         if markup is None:
             return

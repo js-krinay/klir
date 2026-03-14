@@ -34,6 +34,7 @@ class TestNonStreamingDispatchReplyToMode:
         orch = MagicMock()
         result = MagicMock()
         result.text = "response"
+        result.footer = None
         orch.handle_message = AsyncMock(return_value=result)
         reply_msg = MagicMock()
         reply_msg.message_id = 42
@@ -78,6 +79,7 @@ class TestStreamingDispatchReplyToMode:
         result = MagicMock()
         result.text = "response"
         result.stream_fallback = False
+        result.footer = None
         orch.handle_message_streaming = AsyncMock(return_value=result)
 
         msg = MagicMock()

@@ -354,6 +354,12 @@ class ImageConfig(BaseModel):
         return normalized
 
 
+class SceneConfig(BaseModel):
+    """Visual presentation settings."""
+
+    technical_footer: bool = False
+
+
 class UserMessageHookConfig(BaseModel):
     """User-defined message hook from config.json."""
 
@@ -413,6 +419,7 @@ class AgentConfig(BaseModel):
     reply_to_mode: ReplyToMode = "first"
     resilience: ResilienceConfig = Field(default_factory=ResilienceConfig)
     image: ImageConfig = Field(default_factory=ImageConfig)
+    scene: SceneConfig = Field(default_factory=SceneConfig)
     message_hooks: list[UserMessageHookConfig] = Field(default_factory=list)
     allowed_tools: list[str] = Field(default_factory=list)
     disallowed_tools: list[str] = Field(default_factory=list)

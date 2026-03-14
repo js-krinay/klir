@@ -147,3 +147,15 @@ def test_streaming_config_fields() -> None:
     s = StreamingConfig(enabled=False, min_chars=100)
     assert s.enabled is False
     assert s.min_chars == 100
+
+
+def test_scene_config_defaults() -> None:
+    cfg = AgentConfig()
+    assert cfg.scene.technical_footer is False
+
+
+def test_scene_config_can_enable_footer() -> None:
+    from klir.config import SceneConfig
+
+    cfg = AgentConfig(scene=SceneConfig(technical_footer=True))
+    assert cfg.scene.technical_footer is True
