@@ -25,6 +25,7 @@ from klir.errors import (
     WebhookError,
     WorkspaceError,
 )
+from klir.infra.db import KlirDB
 from klir.infra.inflight import InflightTracker
 from klir.memory.files import MemoryFileManager
 from klir.memory.store import MemoryStore
@@ -161,6 +162,7 @@ class Orchestrator:
             available_providers=frozenset(),
             process_registry=self._process_registry,
         )
+        self._db = KlirDB(paths.db_path)
         self._cron_manager = CronManager(jobs_path=paths.cron_jobs_path)
         self._webhook_manager = WebhookManager(hooks_path=paths.webhooks_path)
         self._observers = ObserverManager(config, paths)
@@ -199,6 +201,11 @@ class Orchestrator:
     def paths(self) -> KlirPaths:
         """Public access to resolved workspace paths."""
         return self._paths
+
+    @property
+    def db(self) -> KlirDB:
+        """Public access to the SQLite database."""
+        return self._db
 
     @property
     def effective_working_dir(self) -> str:

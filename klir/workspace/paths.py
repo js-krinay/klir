@@ -134,6 +134,10 @@ class KlirPaths:
         return self.klir_home / "inflight_turns.json"
 
     @property
+    def db_path(self) -> Path:
+        return self.klir_home / "klir.db"
+
+    @property
     def env_file(self) -> Path:
         """User-managed ``.env`` for external API secrets."""
         return self.klir_home / ".env"

@@ -51,6 +51,8 @@ async def create_orchestrator(
         interagent_port=config.interagent_port,
     )
 
+    await orch.db.open()
+
     from klir.cli.auth import AuthStatus, check_all_auth
 
     auth_results = await asyncio.to_thread(check_all_auth)
@@ -163,4 +165,8 @@ async def shutdown(orch: Orchestrator) -> None:
         logger.exception("Failed to close memory store")
     await asyncio.to_thread(cleanup_klir_links, orch._paths)
     await orch._observers.stop_all()
+    try:
+        await orch.db.close()
+    except Exception:
+        logger.exception("Failed to close database")
     logger.info("Orchestrator shutdown")
