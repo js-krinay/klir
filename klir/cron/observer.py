@@ -33,8 +33,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Callback signature: (job_title, result_text, status)
-CronResultCallback = Callable[[str, str, str], Awaitable[None]]
+# Callback: (job_title, result_text, status,
+#            routing_chat_id, routing_topic_id, routing_transport)
+CronResultCallback = Callable[
+    [str, str, str, int | None, int | None, str | None],
+    Awaitable[None],
+]
 
 
 @dataclass(slots=True)
@@ -291,8 +295,16 @@ class CronObserver(BaseTaskObserver):
             model=job.model if job else None,
         )
 
-    async def _deliver_result(
-        self, job_id: str, job_title: str, result_text: str, status: str
+    async def _deliver_result(  # noqa: PLR0913
+        self,
+        job_id: str,
+        job_title: str,
+        result_text: str,
+        status: str,
+        *,
+        routing_chat_id: int | None,
+        routing_topic_id: int | None,
+        routing_transport: str | None,
     ) -> tuple[str, str | None]:
         """Send result to the external handler (e.g. Telegram).
 
@@ -303,7 +315,14 @@ class CronObserver(BaseTaskObserver):
         """
         if self._on_result:
             try:
-                await self._on_result(job_title, result_text, status)
+                await self._on_result(
+                    job_title,
+                    result_text,
+                    status,
+                    routing_chat_id,
+                    routing_topic_id,
+                    routing_transport,
+                )
             except Exception as exc:
                 logger.exception("Error in cron result handler for job %s", job_id)
                 return "error", str(exc)
@@ -321,6 +340,11 @@ class CronObserver(BaseTaskObserver):
         set_log_context(operation="cron")
         job = self._manager.get_job(job_id)
         job_title = job.title if job else job_id
+        routing_chat_id, routing_topic_id, routing_transport = (
+            (job.routing_chat_id, job.routing_topic_id, job.routing_transport)
+            if job
+            else (None, None, None)
+        )
 
         if self._is_quiet_hours(job, job_title):
             return
@@ -377,7 +401,13 @@ class CronObserver(BaseTaskObserver):
         if result.execution is None:
             logger.error("CLI not found for cron job %s", job_id)
             delivery_status, delivery_error = await self._deliver_result(
-                job_id, job_title, result.result_text, result.status
+                job_id,
+                job_title,
+                result.result_text,
+                result.status,
+                routing_chat_id=routing_chat_id,
+                routing_topic_id=routing_topic_id,
+                routing_transport=routing_transport,
             )
             self._manager.record_error(
                 job_id,
@@ -422,7 +452,13 @@ class CronObserver(BaseTaskObserver):
         # Telegram message is sent even if the task is cancelled during
         # the subsequent file I/O.
         delivery_status, delivery_error = await self._deliver_result(
-            job_id, job_title, result.result_text, result.status
+            job_id,
+            job_title,
+            result.result_text,
+            result.status,
+            routing_chat_id=routing_chat_id,
+            routing_topic_id=routing_topic_id,
+            routing_transport=routing_transport,
         )
 
         if result.status == "success":
@@ -452,7 +488,15 @@ class CronObserver(BaseTaskObserver):
                     f"consecutive errors\nJob: {job_title}\n"
                     f"Last error: {job_after.last_error or result.status}"
                 )
-                await self._deliver_result(job_id, job_title, disable_msg, "auto_disabled")
+                await self._deliver_result(
+                    job_id,
+                    job_title,
+                    disable_msg,
+                    "auto_disabled",
+                    routing_chat_id=routing_chat_id,
+                    routing_topic_id=routing_topic_id,
+                    routing_transport=routing_transport,
+                )
                 self._manager.set_enabled(job_id, enabled=False)
                 self._backoff_until.pop(job_id, None)
                 logger.warning(
@@ -472,7 +516,15 @@ class CronObserver(BaseTaskObserver):
                     job_after.consecutive_errors,
                     job_after.last_error or result.status,
                 )
-                await self._deliver_result(job_id, job_title, alert_text, "alert")
+                await self._deliver_result(
+                    job_id,
+                    job_title,
+                    alert_text,
+                    "alert",
+                    routing_chat_id=routing_chat_id,
+                    routing_topic_id=routing_topic_id,
+                    routing_transport=routing_transport,
+                )
                 self._manager.record_alert(job_id)
                 logger.warning(
                     "Failure alert sent for job %s (%d consecutive errors)",

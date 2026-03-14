@@ -226,6 +226,44 @@ class TelegramTransport:
         if env.result_text:
             await send_rich(self._bot.bot_instance, env.chat_id, env.result_text, opts)
 
+    async def _deliver_cron(self, env: Envelope) -> None:
+        """Deliver a routed (unicast) cron result to a specific chat/topic."""
+        title = env.metadata.get("title", "?")
+        clean_result = _sanitize_cron_result_text(env.result_text)
+        if env.result_text and not clean_result and env.status == "success":
+            logger.debug(
+                "Cron result only had transport confirmations; skipping unicast task=%s", title
+            )
+            return
+        text = (
+            f"**TASK: {title}**\n\n{clean_result}"
+            if clean_result
+            else f"**TASK: {title}**\n\n_{env.status}_"
+        )
+        try:
+            await send_rich(self._bot.bot_instance, env.chat_id, text, self._opts(env))
+        except Exception as exc:
+            logger.warning("Cron unicast delivery failed for chat=%d: %s", env.chat_id, exc)
+            fallback_id = (
+                self._bot._config.allowed_user_ids[0]
+                if self._bot._config.allowed_user_ids
+                else None
+            )
+            if fallback_id and fallback_id != env.chat_id:
+                fallback_text = (
+                    f"**TASK: {title}** _(delivery to chat {env.chat_id} failed)_\n\n"
+                    + (clean_result or f"_{env.status}_")
+                )
+                try:
+                    await send_rich(
+                        self._bot.bot_instance,
+                        fallback_id,
+                        fallback_text,
+                        SendRichOpts(allowed_roots=self._roots()),
+                    )
+                except Exception:
+                    logger.exception("Cron fallback delivery also failed for chat=%d", fallback_id)
+
     async def _deliver_webhook_wake(self, env: Envelope) -> None:
         """Deliver webhook wake result."""
         if env.result_text:
@@ -270,6 +308,7 @@ _Handler = Callable[[TelegramTransport, Envelope], Awaitable[None]]
 
 _HANDLERS: dict[Origin, _Handler] = {
     Origin.BACKGROUND: TelegramTransport._deliver_background,
+    Origin.CRON: TelegramTransport._deliver_cron,
     Origin.HEARTBEAT: TelegramTransport._deliver_heartbeat,
     Origin.INTERAGENT: TelegramTransport._deliver_interagent,
     Origin.TASK_RESULT: TelegramTransport._deliver_task_result,

@@ -210,8 +210,24 @@ class ObserverManager:
 
         if self.cron:
 
-            async def _on_cron(title: str, result: str, status: str) -> None:
-                await bus.submit(from_cron_result(title, result, status))
+            async def _on_cron(  # noqa: PLR0913
+                title: str,
+                result: str,
+                status: str,
+                routing_chat_id: int | None,
+                routing_topic_id: int | None,
+                routing_transport: str | None,
+            ) -> None:
+                await bus.submit(
+                    from_cron_result(
+                        title,
+                        result,
+                        status,
+                        routing_chat_id,
+                        routing_topic_id,
+                        routing_transport,
+                    )
+                )
 
             self.cron.set_result_handler(_on_cron)
 

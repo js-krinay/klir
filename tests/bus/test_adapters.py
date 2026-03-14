@@ -1,4 +1,5 @@
 """Tests for the Envelope adapter functions."""
+# mypy: disable-error-code="arg-type"
 
 from __future__ import annotations
 
@@ -102,13 +103,23 @@ def test_from_background_result_error() -> None:
 
 
 def test_from_cron_result() -> None:
-    env = from_cron_result("Daily Report", "all good", "success")
+    env = from_cron_result("Daily Report", "all good", "success", None, None, None)
     assert env.origin == Origin.CRON
     assert env.chat_id == 0
     assert env.delivery == DeliveryMode.BROADCAST
     assert env.lock_mode == LockMode.NONE
     assert env.metadata["title"] == "Daily Report"
     assert env.result_text == "all good"
+
+
+def test_from_cron_result_routed() -> None:
+    env = from_cron_result("Group Report", "done", "success", -100123, 42, "tg")
+    assert env.origin == Origin.CRON
+    assert env.chat_id == -100123
+    assert env.topic_id == 42
+    assert env.delivery == DeliveryMode.UNICAST
+    assert env.metadata["title"] == "Group Report"
+    assert env.metadata["routing_transport"] == "tg"
 
 
 def test_from_heartbeat() -> None:

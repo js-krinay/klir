@@ -29,7 +29,7 @@ class TestWireToBus:
         mgr = _make_observers()
         bus = MessageBus()
         mgr.wire_to_bus(bus)
-        mgr.heartbeat.set_result_handler.assert_called_once()
+        mgr.heartbeat.set_result_handler.assert_called_once()  # type: ignore[attr-defined]
 
     def test_cron_handler_wired_when_present(self) -> None:
         mgr = _make_observers()
@@ -153,7 +153,7 @@ class TestWireIntegration:
         bus.register_transport(transport)
         mgr.wire_to_bus(bus)
 
-        handler = mgr.heartbeat.set_result_handler.call_args[0][0]
+        handler = mgr.heartbeat.set_result_handler.call_args[0][0]  # type: ignore[attr-defined]
         await handler(99, "Alert text")
 
         transport.deliver.assert_awaited_once()
@@ -171,7 +171,7 @@ class TestWireIntegration:
         mgr.wire_to_bus(bus)
 
         handler = mgr.cron.set_result_handler.call_args[0][0]
-        await handler("Backup", "Done", "success")
+        await handler("Backup", "Done", "success", None, None, None)
 
         transport.deliver_broadcast.assert_awaited_once()
         env = transport.deliver_broadcast.call_args[0][0]

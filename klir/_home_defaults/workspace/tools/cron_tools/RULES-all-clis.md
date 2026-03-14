@@ -49,6 +49,12 @@ Scripts for creating, editing, listing, and removing scheduled jobs.
    - Explain: "Jobs with the SAME dependency run sequentially. Different dependencies run in parallel."
    - Use `--dependency <name>` (e.g., `chrome_browser`, `api_rate_limit`, `database`)
 
+6. **Should results go to a specific chat/topic?**
+   - Ask: "Should results be delivered to this chat specifically, or broadcast to all your chats?"
+   - If specific chat (e.g., group chat or forum topic): pass `--routing-chat-id` and optionally `--routing-topic-id`
+   - If broadcast (default): omit routing args
+   - Explain: "Jobs created in a group will deliver results back to that group instead of all chats."
+
 **Present these options and wait for the user's choice!**
 
 Do NOT suggest `--cli-parameters` proactively. Only mention it exists if the user asks.
@@ -110,6 +116,8 @@ python3 tools/cron_tools/cron_add.py \
 - `--provider` - CLI provider: `claude`, `codex`, or `gemini` (optional, uses global config if omitted)
 - `--model` - Model choice (optional, uses global config if omitted)
 - `--reasoning-effort` - Codex only: thinking level (optional, defaults to `medium`)
+- `--routing-chat-id` - Telegram chat ID for UNICAST delivery (optional, omit for broadcast)
+- `--routing-topic-id` - Forum topic ID within the routing chat (optional)
 - `--cli-parameters` - Advanced: JSON array of CLI flags (only if user explicitly requests)
 
 ### List Jobs
@@ -128,6 +136,9 @@ python3 tools/cron_tools/cron_edit.py "exact-job-id" --model gemini-2.5-flash
 python3 tools/cron_tools/cron_edit.py "exact-job-id" --reasoning-effort xhigh
 python3 tools/cron_tools/cron_edit.py "exact-job-id" --enable
 python3 tools/cron_tools/cron_edit.py "exact-job-id" --disable
+python3 tools/cron_tools/cron_edit.py "exact-job-id" --routing-chat-id 12345
+python3 tools/cron_tools/cron_edit.py "exact-job-id" --routing-chat-id 12345 --routing-topic-id 67
+python3 tools/cron_tools/cron_edit.py "exact-job-id" --clear-routing
 ```
 
 ### Remove Job
@@ -136,7 +147,7 @@ python3 tools/cron_tools/cron_edit.py "exact-job-id" --disable
 python3 tools/cron_tools/cron_remove.py "exact-job-id"
 ```
 
-Use `cron_edit.py` for in-place updates (title/description/schedule/timezone/provider/model/reasoning_effort/enabled).
+Use `cron_edit.py` for in-place updates (title/description/schedule/timezone/provider/model/reasoning_effort/routing/enabled).
 
 ## Task Content
 

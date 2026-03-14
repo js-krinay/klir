@@ -291,8 +291,8 @@ class TestCronObserverExecution:
 
         # Mock cache for Codex model
         codex_cache = _make_codex_cache()
-        codex_cache.validate_model.return_value = True
-        codex_cache.get_model.return_value = CodexModelInfo(
+        codex_cache.validate_model.return_value = True  # type: ignore[attr-defined]
+        codex_cache.get_model.return_value = CodexModelInfo(  # type: ignore[attr-defined]
             id="gpt-5.2",
             display_name="GPT-5.2",
             description="Codex model",
@@ -480,7 +480,7 @@ class TestCronObserverExecution:
         ):
             await observer._execute_job("daily", "Do work", "daily")
 
-        callback.assert_awaited_once_with("My Daily Task", "All done.", "success")
+        callback.assert_awaited_once_with("My Daily Task", "All done.", "success", None, None, None)
 
     async def test_execute_job_timeout_kills_process(self, tmp_path: Path) -> None:
         """Subprocess that exceeds cli_timeout is killed and reported as timeout."""
@@ -582,7 +582,14 @@ class TestCronObserverExecution:
 
         delivered: list[tuple[str, str]] = []
 
-        async def _capture(_title: str, text: str, status: str) -> None:
+        async def _capture(
+            _title: str,
+            text: str,
+            status: str,
+            _routing_chat_id: int | None = None,
+            _routing_topic_id: int | None = None,
+            _routing_transport: str | None = None,
+        ) -> None:
             delivered.append((text, status))
 
         observer = _make_observer(paths, mgr)
@@ -622,7 +629,14 @@ class TestCronObserverExecution:
 
         delivered: list[tuple[str, str]] = []
 
-        async def _capture(_title: str, text: str, status: str) -> None:
+        async def _capture(
+            _title: str,
+            text: str,
+            status: str,
+            _routing_chat_id: int | None = None,
+            _routing_topic_id: int | None = None,
+            _routing_transport: str | None = None,
+        ) -> None:
             delivered.append((text, status))
 
         observer = _make_observer(paths, mgr)
@@ -682,10 +696,10 @@ class TestCronResultDelivery:
 
         # Result must be delivered using job_id as fallback title
         callback.assert_awaited_once()
-        title, result_text, status = callback.call_args[0]
-        assert title == "ephemeral"
-        assert result_text == "Done"
-        assert status == "success"
+        args = callback.call_args[0]
+        assert args[0] == "ephemeral"  # title
+        assert args[1] == "Done"  # result_text
+        assert args[2] == "success"  # status
 
     async def test_result_delivered_before_file_write(self, tmp_path: Path) -> None:
         """Result handler is called before record_success writes to disk."""
@@ -705,7 +719,7 @@ class TestCronResultDelivery:
 
         def track_record(*args: object, **kwargs: object) -> None:
             call_order.append("file_written")
-            original_record(*args, **kwargs)
+            original_record(*args, **kwargs)  # type: ignore[arg-type]
 
         observer.set_result_handler(track_result)
 
@@ -741,9 +755,9 @@ class TestCronResultDelivery:
             await observer._execute_job("broken", "Do work", "broken")
 
         callback.assert_awaited_once()
-        title, result_text, _status = callback.call_args[0]
-        assert title == "Broken Job"
-        assert "not found" in result_text.lower()
+        args = callback.call_args[0]
+        assert args[0] == "Broken Job"  # title
+        assert "not found" in args[1].lower()  # result_text
 
     async def test_run_at_catches_unexpected_exception(self, tmp_path: Path) -> None:
         """Unexpected exception in _execute_job does not crash the observer."""

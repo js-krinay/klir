@@ -76,6 +76,12 @@ DEPENDENCIES (optional, prevent concurrent resource conflicts):
                       Examples: --dependency chrome_browser (multiple browser automation jobs)
                                 --dependency api_rate_limit (API calls with rate limiting)
 
+ROUTING (optional, control where job results are delivered):
+  --routing-chat-id     Telegram chat ID for UNICAST result delivery
+  --routing-topic-id    Forum topic ID within the routing chat
+                        Omit both for broadcast to all allowed users (default).
+                        When set, results go to the specific chat/topic instead of all users.
+
 TIMEZONE REMINDER:
   Hours in cron expressions are interpreted in the user's timezone.
   If user_timezone is NOT set in config.json, ask the user where they are
@@ -249,12 +255,27 @@ def main() -> None:
         help="Resource dependency (e.g. 'chrome_browser'). "
         "Jobs with same dependency run sequentially, different dependencies run in parallel.",
     )
+    parser.add_argument(
+        "--routing-chat-id",
+        type=int,
+        help="Telegram chat ID to deliver results to (UNICAST). "
+        "Omit for broadcast to all allowed users.",
+    )
+    parser.add_argument(
+        "--routing-topic-id",
+        type=int,
+        help="Telegram message thread / topic ID within the routing chat.",
+    )
     args = parser.parse_args()
 
     missing = [p for p in ("name", "title", "description", "schedule") if not getattr(args, p)]
     if missing:
         print(_TUTORIAL)
         print(f"Missing required parameters: {', '.join('--' + m for m in missing)}")
+        sys.exit(1)
+
+    if args.routing_topic_id is not None and args.routing_chat_id is None:
+        print(json.dumps({"error": "--routing-topic-id requires --routing-chat-id"}))
         sys.exit(1)
 
     name = sanitize_name(args.name)
@@ -312,6 +333,11 @@ def main() -> None:
         job["quiet_end"] = args.quiet_end
     if args.dependency:
         job["dependency"] = args.dependency.strip()
+    if args.routing_chat_id is not None:
+        job["routing_chat_id"] = args.routing_chat_id
+        job["routing_transport"] = "tg"
+        if args.routing_topic_id is not None:
+            job["routing_topic_id"] = args.routing_topic_id
     data["jobs"].append(job)
     save_jobs(JOBS_PATH, data)
 
@@ -343,6 +369,9 @@ def main() -> None:
             "To modify this task later: edit TASK_DESCRIPTION.md only. "
             "CLAUDE.md and AGENTS.md are fixed framework files.",
             f'To REMOVE this job later: python3 tools/cron_tools/cron_remove.py "{name}"',
+            "If this job was created in a group/topic, results will be delivered there. "
+            'To change routing: python3 tools/cron_tools/cron_edit.py "<id>" '
+            "--routing-chat-id <chat_id>",
         ],
     }
     if not effective_tz:

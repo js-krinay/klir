@@ -97,6 +97,14 @@ async def _toggle_job(
     return await _build_page(orch, page=page, note=note)
 
 
+def _routing_label(job: CronJob) -> str:
+    """Return a display label for the job's routing target, or empty string."""
+    if job.routing_chat_id is None:
+        return ""
+    suffix = f"/topic {job.routing_topic_id}" if job.routing_topic_id is not None else ""
+    return f" | chat {job.routing_chat_id}{suffix}"
+
+
 async def _build_page(
     orch: Orchestrator,
     *,
@@ -128,7 +136,10 @@ async def _build_page(
             last_run = f" | errors: {job.consecutive_errors}"
         elif job.last_duration_ms is not None:
             last_run = " | last: ok"
-        lines.append(f"{number}. **{job.title}** ({status_tag}){last_run}\n   `{job.schedule}`")
+        routing_info = _routing_label(job)
+        lines.append(
+            f"{number}. **{job.title}** ({status_tag}){last_run}{routing_info}\n   `{job.schedule}`"
+        )
         button_text = f"{number}. {'Disable' if job.enabled else 'Enable'}"
         rows.append(
             [

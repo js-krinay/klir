@@ -57,6 +57,11 @@ class CronJob:
     # Optional dependency for sequential execution
     dependency: str | None = None
 
+    # Routing: where results should be delivered (None = broadcast to all users)
+    routing_chat_id: int | None = None
+    routing_topic_id: int | None = None
+    routing_transport: str | None = None  # reserved for future transports; "tg" = Telegram
+
     def __post_init__(self) -> None:
         if not self.created_at:
             self.created_at = datetime.now(UTC).isoformat()
@@ -87,6 +92,9 @@ class CronJob:
             "quiet_start": self.quiet_start,
             "quiet_end": self.quiet_end,
             "dependency": self.dependency,
+            "routing_chat_id": self.routing_chat_id,
+            "routing_topic_id": self.routing_topic_id,
+            "routing_transport": self.routing_transport,
         }
         if self.timezone:
             result["timezone"] = self.timezone
@@ -120,6 +128,9 @@ class CronJob:
             quiet_start=data.get("quiet_start"),
             quiet_end=data.get("quiet_end"),
             dependency=data.get("dependency"),
+            routing_chat_id=data.get("routing_chat_id"),
+            routing_topic_id=data.get("routing_topic_id"),
+            routing_transport=data.get("routing_transport"),
         )
 
 

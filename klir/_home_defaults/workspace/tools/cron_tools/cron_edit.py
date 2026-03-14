@@ -48,6 +48,9 @@ CHANGES:
   --dependency "<name>"      Resource dependency for sequential execution (e.g. 'chrome_browser')
   --clear-quiet-hours        Remove quiet hour settings (use global config)
   --clear-dependency         Remove dependency (allow parallel execution)
+  --routing-chat-id <id>     Set routing chat ID for UNICAST delivery
+  --routing-topic-id <id>    Set routing topic ID within the routing chat
+  --clear-routing            Remove routing (revert to broadcast)
   --enable                   Set enabled=true
   --disable                  Set enabled=false
 
@@ -60,6 +63,8 @@ EXAMPLES:
   python tools/cron_tools/cron_edit.py "web-scraper" --dependency chrome_browser
   python tools/cron_tools/cron_edit.py "web-scraper" --clear-quiet-hours
   python tools/cron_tools/cron_edit.py "web-scraper" --clear-dependency
+  python tools/cron_tools/cron_edit.py "job-id" --routing-chat-id 12345 --routing-topic-id 67
+  python tools/cron_tools/cron_edit.py "job-id" --clear-routing
 """
 
 
@@ -101,6 +106,13 @@ def _parse_args() -> argparse.Namespace:
         "--clear-dependency",
         action="store_true",
         help="Remove dependency (allow parallel execution).",
+    )
+    parser.add_argument(
+        "--routing-chat-id", type=int, help="Set routing chat ID for UNICAST delivery"
+    )
+    parser.add_argument("--routing-topic-id", type=int, help="Set routing topic ID")
+    parser.add_argument(
+        "--clear-routing", action="store_true", help="Remove routing (revert to broadcast)"
     )
     enabled_group = parser.add_mutually_exclusive_group()
     enabled_group.add_argument("--enable", action="store_true", help="Enable the job")
@@ -213,6 +225,34 @@ def _apply_updates(args: argparse.Namespace, job: dict[str, Any]) -> tuple[list[
             job.pop("dependency", None)
             updated_fields.append("dependency (cleared)")
 
+    if (
+        args.routing_topic_id is not None
+        and args.routing_chat_id is None
+        and not job.get("routing_chat_id")
+    ):
+        msg = (
+            "--routing-topic-id requires --routing-chat-id"
+            " (or an existing routing_chat_id on the job)"
+        )
+        raise ValueError(msg)
+
+    if args.routing_chat_id is not None:
+        if job.get("routing_chat_id") != args.routing_chat_id:
+            job["routing_chat_id"] = args.routing_chat_id
+            job["routing_transport"] = "tg"
+            updated_fields.append("routing_chat_id")
+
+    if args.routing_topic_id is not None:
+        if job.get("routing_topic_id") != args.routing_topic_id:
+            job["routing_topic_id"] = args.routing_topic_id
+            updated_fields.append("routing_topic_id")
+
+    if args.clear_routing:
+        if any(k in job for k in ("routing_chat_id", "routing_topic_id", "routing_transport")):
+            for k in ("routing_chat_id", "routing_topic_id", "routing_transport"):
+                job.pop(k, None)
+            updated_fields.append("routing (cleared)")
+
     if args.enable and job.get("enabled", True) is not True:
         job["enabled"] = True
         updated_fields.append("enabled")
@@ -246,6 +286,9 @@ def main() -> None:
             args.dependency is not None,
             args.clear_quiet_hours,
             args.clear_dependency,
+            args.routing_chat_id is not None,
+            args.routing_topic_id is not None,
+            args.clear_routing,
             args.enable,
             args.disable,
         ]

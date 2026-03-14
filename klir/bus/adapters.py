@@ -47,8 +47,33 @@ def from_background_result(result: BackgroundResult) -> Envelope:
 # -- Cron jobs -----------------------------------------------------------------
 
 
-def from_cron_result(title: str, result: str, status: str) -> Envelope:
-    """Convert a cron job result (title, text, status triple)."""
+def from_cron_result(  # noqa: PLR0913
+    title: str,
+    result: str,
+    status: str,
+    routing_chat_id: int | None,
+    routing_topic_id: int | None,
+    routing_transport: str | None,
+) -> Envelope:
+    """Convert a cron job result (title, text, status triple).
+
+    When *routing_chat_id* is set the envelope is unicast to that chat;
+    otherwise it is broadcast to all allowed users.
+    """
+    meta: dict[str, object] = {"title": title}
+    if routing_chat_id is not None:
+        if routing_transport:
+            meta["routing_transport"] = routing_transport
+        return Envelope(
+            origin=Origin.CRON,
+            chat_id=routing_chat_id,
+            topic_id=routing_topic_id,
+            result_text=result,
+            status=status,
+            delivery=DeliveryMode.UNICAST,
+            lock_mode=LockMode.NONE,
+            metadata=meta,
+        )
     return Envelope(
         origin=Origin.CRON,
         chat_id=0,
@@ -56,7 +81,7 @@ def from_cron_result(title: str, result: str, status: str) -> Envelope:
         status=status,
         delivery=DeliveryMode.BROADCAST,
         lock_mode=LockMode.NONE,
-        metadata={"title": title},
+        metadata=meta,
     )
 
 

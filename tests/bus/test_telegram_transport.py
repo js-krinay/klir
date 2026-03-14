@@ -426,13 +426,113 @@ class TestTaskQuestionDelivery:
 # ---------------------------------------------------------------------------
 
 
+class TestDeliverCronUnicast:
+    """Tests for the _deliver_cron unicast handler."""
+
+    async def test_unicast_sends_to_target_chat(self) -> None:
+        transport, _bot, _ = _make_transport()
+        env = _env(
+            origin=Origin.CRON,
+            chat_id=-100123,
+            topic_id=42,
+            result_text="Report done",
+            status="success",
+            metadata={"title": "Daily Report"},
+        )
+        with patch("klir.bus.telegram_transport.send_rich", new_callable=AsyncMock) as mock_send:
+            await transport.deliver(env)
+
+        mock_send.assert_awaited_once()
+        assert mock_send.call_args[0][1] == -100123  # chat_id
+        assert "Daily Report" in mock_send.call_args[0][2]
+        assert "Report done" in mock_send.call_args[0][2]
+
+    async def test_unicast_skips_transport_ack_only(self) -> None:
+        transport, _, _ = _make_transport()
+        env = _env(
+            origin=Origin.CRON,
+            chat_id=-100123,
+            result_text="Message sent successfully. Delivered to Telegram.",
+            status="success",
+            metadata={"title": "Ack Job"},
+        )
+        with patch("klir.bus.telegram_transport.send_rich", new_callable=AsyncMock) as mock_send:
+            await transport.deliver(env)
+
+        mock_send.assert_not_awaited()
+
+    async def test_unicast_fallback_on_failure(self) -> None:
+        transport, bot, _ = _make_transport()
+        bot._config.allowed_user_ids = [999]
+        env = _env(
+            origin=Origin.CRON,
+            chat_id=-100123,
+            result_text="Result text",
+            status="success",
+            metadata={"title": "Fail Job"},
+        )
+        with patch(
+            "klir.bus.telegram_transport.send_rich",
+            new_callable=AsyncMock,
+            side_effect=[Exception("chat not found"), None],
+        ) as mock_send:
+            await transport.deliver(env)
+
+        assert mock_send.await_count == 2
+        fallback_chat = mock_send.call_args_list[1][0][1]
+        assert fallback_chat == 999
+        assert "delivery to chat -100123 failed" in mock_send.call_args_list[1][0][2]
+
+    async def test_unicast_no_fallback_when_no_users(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        transport, bot, _ = _make_transport()
+        bot._config.allowed_user_ids = []
+        env = _env(
+            origin=Origin.CRON,
+            chat_id=-100123,
+            result_text="Result text",
+            status="success",
+            metadata={"title": "Empty Users"},
+        )
+        with patch(
+            "klir.bus.telegram_transport.send_rich",
+            new_callable=AsyncMock,
+            side_effect=Exception("chat not found"),
+        ) as mock_send:
+            await transport.deliver(env)
+
+        mock_send.assert_awaited_once()  # only the primary attempt, no fallback
+
+    async def test_unicast_no_fallback_when_same_chat(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        transport, bot, _ = _make_transport()
+        bot._config.allowed_user_ids = [-100123]  # same as target
+        env = _env(
+            origin=Origin.CRON,
+            chat_id=-100123,
+            result_text="Result text",
+            status="success",
+            metadata={"title": "Same Chat"},
+        )
+        with patch(
+            "klir.bus.telegram_transport.send_rich",
+            new_callable=AsyncMock,
+            side_effect=Exception("chat not found"),
+        ) as mock_send:
+            await transport.deliver(env)
+
+        mock_send.assert_awaited_once()  # no fallback to same chat
+
+
 class TestDispatchFallback:
     async def test_unknown_origin_logs_warning(self, caplog: pytest.LogCaptureFixture) -> None:
         transport, _, _ = _make_transport()
         # Use an origin that's not in _HANDLERS for unicast
-        env = _env(origin=Origin.CRON)  # CRON is broadcast-only
+        env = _env(origin=Origin.USER)  # USER has no unicast handler
 
         with patch("klir.bus.telegram_transport.send_rich", new_callable=AsyncMock):
             await transport.deliver(env)
 
-        assert "No handler for origin=cron" in caplog.text
+        assert "No handler for origin=user" in caplog.text

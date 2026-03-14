@@ -27,10 +27,13 @@ def main() -> None:
             "consecutive_errors": j.get("consecutive_errors", 0),
             "last_error": j.get("last_error"),
             "last_duration_ms": j.get("last_duration_ms"),
-            "task_folder_exists": (CRON_TASKS_DIR / task_folder).is_dir()
-            if task_folder
-            else False,
+            "task_folder_exists": (CRON_TASKS_DIR / task_folder).is_dir() if task_folder else False,
         }
+        if j.get("routing_chat_id") is not None:
+            entry["routing_chat_id"] = j["routing_chat_id"]
+            if j.get("routing_topic_id") is not None:
+                entry["routing_topic_id"] = j["routing_topic_id"]
+            entry["routing_transport"] = j.get("routing_transport", "tg")
         if j.get("timezone"):
             entry["timezone"] = j["timezone"]
         jobs.append(entry)
