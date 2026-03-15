@@ -50,6 +50,12 @@ except ImportError:  # pragma: no cover - module created by another agent
     DashboardHub = None  # type: ignore[assignment,misc]
     DashboardClient = None  # type: ignore[assignment,misc]
     DashboardFilter = None  # type: ignore[assignment,misc]
+try:
+    from klir.api.controller import DashboardController
+    from klir.api.routes import register_dashboard_routes
+except ImportError:  # pragma: no cover
+    DashboardController = None  # type: ignore[assignment,misc]
+    register_dashboard_routes = None  # type: ignore[assignment]
 from klir.files.prompt import MediaInfo, build_media_prompt
 from klir.files.storage import prepare_destination, sanitize_filename
 from klir.files.tags import (
@@ -244,6 +250,9 @@ class ApiServer:
         process_registry: Any,
         observer_status_getter: Callable[[], dict[str, Any]],
         config_summary_getter: Callable[[], dict[str, Any]],
+        task_cancel: Callable[..., Any] | None = None,
+        history_store: Any = None,
+        db: Any = None,
     ) -> None:
         """Store references for snapshot assembly on dashboard connect."""
         self._snapshot_sources = {
@@ -253,8 +262,11 @@ class ApiServer:
             "cron_mgr": cron_mgr,
             "task_registry_getter": task_registry_getter,
             "process_registry": process_registry,
+            "task_cancel": task_cancel,
             "observer_status_getter": observer_status_getter,
             "config_summary_getter": config_summary_getter,
+            "history_store": history_store,
+            "db": db,
         }
 
     # -- Lifecycle -------------------------------------------------------------
@@ -277,6 +289,37 @@ class ApiServer:
         app.router.add_get("/files", self._handle_file_download)
         app.router.add_post("/upload", self._handle_file_upload)
         app.router.add_get("/ws/dashboard", self._handle_dashboard_ws)
+
+        # Dashboard REST API
+        if (
+            self._snapshot_sources is not None
+            and self._dashboard_hub is not None
+            and self._handle_message is not None
+            and self._handle_abort is not None
+            and self._snapshot_sources.get("history_store") is not None
+            and self._snapshot_sources.get("db") is not None
+            and DashboardController is not None
+            and register_dashboard_routes is not None
+        ):
+            src = self._snapshot_sources
+            ctrl = DashboardController(
+                session_mgr=src["session_mgr"],
+                named_registry=src["named_registry"],
+                cron_mgr=src["cron_mgr"],
+                task_registry_getter=src["task_registry_getter"],
+                process_registry=src["process_registry"],
+                task_cancel=src["task_cancel"],
+                message_handler=self._handle_message,
+                abort_handler=self._handle_abort,
+                history_store=src["history_store"],
+                dashboard_hub=self._dashboard_hub,
+                observer_status_getter=src["observer_status_getter"],
+                config_summary_getter=src["config_summary_getter"],
+                agent_health_getter=src["agent_health_getter"],
+                db=src["db"],
+            )
+            register_dashboard_routes(app, ctrl, self._verify_bearer)
+            logger.info("Dashboard REST API routes registered")
 
         self._runner = web.AppRunner(app, access_log=None)
         await self._runner.setup()

@@ -6,6 +6,7 @@ import asyncio
 import logging
 import os
 import secrets
+from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
 from klir.files.allowed_roots import resolve_allowed_roots
@@ -103,6 +104,17 @@ async def create_orchestrator(
     return orch
 
 
+def _make_task_cancel(orch: Orchestrator) -> Callable[[str], Awaitable[bool]]:
+    """Build an awaitable cancel callback that tolerates a missing TaskHub."""
+
+    async def _cancel(task_id: str) -> bool:
+        if orch._task_hub is None:
+            return False
+        return await orch._task_hub.cancel(task_id)
+
+    return _cancel
+
+
 async def start_api_server(
     orch: Orchestrator,
     config: AgentConfig,
@@ -160,6 +172,7 @@ async def start_api_server(
                 agent_health_getter=lambda: orch._supervisor.health if orch._supervisor else {},
                 cron_mgr=orch._cron_manager,
                 task_registry_getter=lambda: orch._task_hub._registry if orch._task_hub else None,
+                task_cancel=_make_task_cancel(orch),
                 process_registry=orch._process_registry,
                 observer_status_getter=lambda: {
                     "heartbeat": orch._observers.heartbeat is not None,
@@ -172,6 +185,8 @@ async def start_api_server(
                     "model": orch._config.model,
                     "language": orch._config.language,
                 },
+                history_store=orch._message_history,
+                db=orch._db,
             )
             logger.info(
                 "Dashboard hub initialized (max_clients=%d)",
